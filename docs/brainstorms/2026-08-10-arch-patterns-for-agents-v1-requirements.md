@@ -230,11 +230,13 @@ Required behaviour: when no pattern's context genuinely matches, or the decision
 
 ## The Ops repositories
 
-Reclassified. FinanceOps, LearnOps, LifeOps, HealthOps and HomeOps are **source material**, read-only, at pinned revisions — not an evaluation set.
+Reclassified. FinanceOps, LearnOps, LifeOps, HealthOps and HomeOps are **source material and a declared family**, read-only, at pinned revisions — not a blinded evaluation set.
 
-They are mined for one thing: real instances of willy-nilly architecture, to generate violation indicators grounded in code that actually got written. That is what they are good for.
+They serve two purposes. First, they are where role inventories come from, grounded in code that actually got written rather than in the literature. Second, they are a family sharing one declared contract (`universal_ui.owner_integration.v1`) with observed, documented divergence, which makes them a genuine answer key for the family conformance check — the drift is a fact about the files, independent of anyone's opinion about good architecture.
 
-They are explicitly **not** evidence of selector quality. There is no ground truth for "the correct architecture of FinanceOps," all five share one author, and any catalog extended from them and then evaluated against them is fitting the test set. Leave-one-project-out does not fix a shared-author confound at n=5 and will not be claimed.
+What they are **not** is evidence of selector quality. There is no ground truth for "the correct architecture of FinanceOps," all five share one author, and any catalog extended from them and then evaluated against them is fitting the test set. Leave-one-project-out does not fix a shared-author confound at n=5 and will not be claimed.
+
+Note the distinction that makes slice 2 legitimate: "does this contract diverge across members" is a checkable fact. "Is this the right architecture" is not, and is not being asked.
 
 Verification: `git status` clean on all five at the end. This is a precondition, not a finding.
 
@@ -269,8 +271,8 @@ The proposal waits for a human. The reviewer is a developer — the repository o
 
 ## Slices
 
-1. **Minimal catalog + schema + layout** — 2–3 *compositions* keyed to real workloads (e.g. "website with background work and an audit trail"), decomposed into 8–12 pattern entries across at least three scopes. Each entry carries a role inventory, cardinalities, role signatures, a check, blind spots, and an exemplar. One file per pattern plus a small workload-keyed `index.json`. Schema and admission tests.
-2. **Bloat detection pass** — map every component of a pinned Ops revision to a role. Count unmapped components and over-filled roles. Compare to a human read of the same code. This is the slice that proves or kills the premise.
+1. **Minimal catalog + schema + layout** — seed with **Plugin Host with Owner Contributions**, whose role inventory is lifted directly from the observed `universal_ui.owner_integration.v1` contract, plus 6–10 further entries across at least three scopes. Each carries roles, cardinalities, role signatures, a check, blind spots, and an exemplar. One file per pattern plus a small workload-keyed `index.json`. Schema and admission tests.
+2. **Family conformance pass** — declare the five Ops repositories as a family, map each member's contribution to the role inventory, and report divergence. The already-observed drift (manifest location, `pythonRoot`/`packageRoot`, `proof` object-vs-string, missing tests, vendored HealthOps inside LifeOps) is the ground-truth answer key. If the check does not find these, the approach does not work and the project stops here.
 3. **Companion integration** — resolve the catalog from `working-skill-repo`, emit a pinned decision record to `docs/context/decisions/architecture.md`, point `PROJECT.md` at it, register it as a protected oracle, and verify conformance through a `kbcheck` check on a real task. Measure drift and repeatability. Prove the graceful-degradation path when the companion is absent.
 
 Deferred until 1–3 produce results:
@@ -278,21 +280,108 @@ Deferred until 1–3 produce results:
 - Python/TypeScript/Rust reference consumers (JSON Schema plus one consumer proves language-neutrality).
 - Versioned release contract, evidence registry, generated indexes (a tag and a CHANGELOG suffice until the skill repo's consumption is stable).
 
-## Repo topology is a human-coordination lever, not an architecture lever
+## Repo topology: correcting an earlier recommendation
 
-Recorded because the instinct "decompose into separate repositories is almost always right" needs qualifying for this consumer.
+An earlier draft argued that agent-authored systems should default to a modular monolith, on the grounds that `kb-map` anchors to one Git root and graph routing indexes a single repository. Inspecting FinanceOps, HealthOps and LifeOps shows that argument was aimed at the wrong target.
 
-Repo count and module boundary are different things that get conflated. Multiple repositories buy independent deploy cadence, team autonomy, and access-control separation — all of which are *human and organisational* benefits. Enforced module boundaries buy dependency control and blast-radius limits, which is the architectural benefit. You can have the second without the first.
+The Ops repositories are not one application split up for preference. They are **one repository per bounded context** — separate products in separate life domains — each internally segmented into domain modules (`src/ledger`, `src/market_regime`, `src/provenance_bundle`, `src/scorecard`, `src/life_state`, `src/control_center`), each carrying its own `AGENTS.md`, `todo.md`, and `docs/context/`. Every repository is a coherent product and a valid `kb-map` root. The boundary follows the domain. That is the correct use of a repository boundary, and the monolith recommendation is withdrawn.
 
-For an agent consumer, splitting across repositories carries specific and concrete costs, visible in the tooling already in use:
+The real cost of segmentation is different, and worse, and it is visible in the code.
 
-- `kb-map`'s Project Root Rule anchors every lookup to one Git root and explicitly forbids searching sibling repos for memory. Project memory does not span repositories.
-- Graph routing indexes a repository. Cross-repo call and impact edges do not exist, so blast-radius analysis stops at the boundary.
-- A cross-repo change needs several contexts assembled by hand, which is exactly the retrieval cost the whole design is trying to reduce.
+### Observed: a real pattern, silently drifted
 
-So the default for agent-authored systems is a **modular monolith with enforced internal boundaries**, and repository splits are justified by an independent deploy, access-control, or lifecycle requirement — not by a preference for decomposition. Decomposition remains right; the unit of decomposition is the module, and the boundary is enforced by a check rather than by a repository URL.
+All five repositories are contributions to a host, `Irtechie/UniversalUI`, declared through an `integration.json` manifest. All three inspected declare the same contract version, `universal_ui.owner_integration.v1`. So a genuine architectural pattern already exists here — plugin host with owner contributions — and it is versioned.
 
-This is a candidate catalog entry in the deployment-and-modularity scope, with the trade-off recorded rather than assumed.
+Under that single schema version, at pinned revisions on 2026-08-10 (FinanceOps `974ee76`, HealthOps `4edf33b`, LifeOps `1806739`):
+
+| Divergence | FinanceOps | HealthOps | LifeOps |
+|---|---|---|---|
+| Manifest location | `packages/*-universal-ui/` | **repo root** | `packages/*-universal-ui/` |
+| `provider.kind` | `python-in-process` | `python-read-provider` | `python-read-provider` |
+| Python root key | `pythonRoot` | `packageRoot` | absent |
+| `proof` type | object, 5 keys | object, 6 keys | **plain string** |
+| `cssRootClass` | `financeops-site` | absent | `.lifeops-owner-site` (leading dot) |
+| Second contribution export | `legacyContributionExport` | `legacyContributionExport` | `contributionV1Export` |
+| `mountExport` | top level | top level | moved inside `routes[]` |
+| `contributionId`, `supportedHostRange`, `repository` | absent | present | absent |
+| Path separators | forward slash | **backslash** | forward slash |
+| Host-contract module | absent | `host-contract-types.ts` | `host-contract.ts` |
+| Contribution tests | 1 | **none** | 2 |
+
+`proof` being an object in two repositories and a string in a third, under an identical declared schema version, is not a stylistic difference. It is a contract violation that nothing detected, because nothing validates the contract.
+
+Separately, `LifeOps/apps/healthops` contains a nested copy of HealthOps' own project memory — `AGENTS.md`, `todo.md`, `docs/context/PROJECT.md`, `.kb/snapshots`, and its brainstorm documents. The same product exists both as its own repository and vendored inside another, giving two sources of truth for one thing.
+
+### What this proves
+
+This is the thesis of the project, demonstrated on real code rather than argued from the literature:
+
+1. **The pattern existed and was named.** A versioned schema, a declared host, a defined contribution shape. Knowledge was not the missing ingredient.
+2. **It drifted anyway**, because nothing could check conformance. Each repository is internally consistent and locally plausible. The drift exists only in the space *between* them.
+3. **No single-repo tool can see it.** `kb-map` is anchored to one root by design and forbids sibling-repo lookup. Graph routing indexes one repository. Every existing check is structurally blind to the most expensive duplication in the system.
+
+### Consequence for V1
+
+Role cardinality must be checkable **across a declared repository family**, or the highest-value detection available in this codebase is impossible by construction.
+
+- A pattern entry may declare `scope: family` for roles shared across repositories.
+- A family is declared explicitly — an opt-in list of repositories plus the contract they share — so this never becomes uncontrolled cross-repo crawling. A named set, checked deliberately, not a search.
+- The family check answers one question: for each role in the shared contract, do all members fill it the same way, and where do they diverge?
+- Findings carry evidence class. Key-name and type divergence are `structural`. "This looks inconsistent" is `llm-inferred` and reported as such.
+
+This also supplies the catalog's first real entry, drawn from working code instead of a textbook: **Plugin Host with Owner Contributions**, its role inventory taken from `universal_ui.owner_integration.v1` — manifest, provider entry point, wire schema, browser bundle, mount export, contribution export, style scope, proof commands — with a family-level cardinality of exactly-one-per-member for each role.
+
+### The remaining topology point, stated correctly
+
+Repository boundaries should follow bounded contexts, as they do here. What does not follow automatically is that shared roles get replicated per repository. `packages/<owner>-universal-ui` exists five times, filling one role five ways. Shared published package versus replicated-and-validated is a genuine trade-off with a defensible answer either way — but it should be an explicit decision with a check behind it, and it is currently neither.
+
+## Deviation policy
+
+Code may extend beyond the selected pattern, and a project may decline the library's recommendation entirely. Neither is forbidden. Both must be **recorded rather than silent**, and the burden of justification scales with the strength of the evidence being overridden.
+
+A closed system that cannot be exceeded gets abandoned the first time real work does not fit. That is the failure mode this policy exists to avoid. The opposite failure mode is the one it must be engineered against.
+
+### The rubber-stamp problem
+
+An escape hatch requiring only a free-text justification is not a gate. Language models produce fluent, plausible rationales on demand and at no cost, so a prose field becomes a generator of permission slips. Every deviation would be justified, and the justifications would all read well.
+
+So justification is **typed, not narrated**. The deviating actor selects a reason from a closed set, and some reasons demand evidence rather than assertion:
+
+| Reason code | Evidence required | Effect |
+|---|---|---|
+| `no-pattern-covers-this` | The decision, stated in scope terms | Raises an `uncovered_decision`; feeds catalog growth |
+| `pattern-cost-exceeds-benefit` | Which specific roles are being dropped and why they are unused at this scale | Allowed; counted |
+| `measured-constraint` | An actual measurement — benchmark, profile, or limit hit | Allowed; measurement is attached and checkable |
+| `external-constraint` | The framework, vendor, platform, or contract that forces it | Allowed; names the constraint |
+| `known-debt` | A review trigger | Expires. Unreviewed debt resurfaces rather than becoming permanent by default |
+
+Free-form prose is permitted only as a supplement to a reason code, never as a substitute. A deviation with no reason code fails the check exactly as an unexplained one would.
+
+### Burden scales with evidence
+
+This is where the `evidence` field stops being decoration. Each pattern carries an evidence tier, and the tier sets the bar for declining it:
+
+- **Strong** — long track record, independent corroboration, well-documented failure modes when omitted. Declining requires a reason code plus evidence, and it is surfaced in the approval summary.
+- **Moderate** — established but context-dependent. Reason code, recorded, not surfaced.
+- **Weak or provisional** — plausible, thinly evidenced, possibly a local habit. Declining costs nothing and is not recorded as a deviation at all.
+
+A weakly-evidenced pattern that demands justification to skip is just dogma with a schema. The gradient is what keeps this a helping hand rather than a bureaucracy.
+
+### Deviation is an amendment, not an exception
+
+The mechanism already exists in the skill repo. The decision record is a protected oracle, and `kb-check`'s rule is that the target "must still match the recorded SHA unless the plan explicitly updated the oracle."
+
+So a deviation is not a note filed alongside the architecture. It is an **amendment to the architecture**, which changes the record, which changes the SHA, which is a visible and reviewable act. The agent cannot drift quietly; it can only amend loudly. That is the whole difference between a guardrail and a suggestion, and it costs nothing new to build.
+
+### Counting, escalation, and the feedback loop
+
+Individual deviations are cheap and fine. Their *distribution* is the signal.
+
+- Deviations are counted per module and per pattern in a register inside the decision record.
+- When deviations against one pattern in one module exceed a threshold, the system stops accepting further justifications and requires **re-selection**. Four justified deviations from a pattern are not four exceptions; they are evidence that a different pattern was the right answer. Continuing to justify at that point is how a codebase ends up shaped like nothing at all.
+- A high deviation rate against a *strongly*-evidenced pattern across several projects is a finding about the **catalog**, not the code. Either the entry's role inventory is wrong, or its context conditions are miscoded.
+
+This converts the escape hatch into the catalog's primary growth input. `no-pattern-covers-this` deviations are the queue of candidate entries, and they arrive with real usage behind them rather than being invented from the literature.
 
 ## Assumptions
 
@@ -312,7 +401,12 @@ Against the pre-repo plan:
 - **Ordering gate reinstated.** "No scaffold before the architecture gate" was in the original plan; an earlier review of mine wrongly called it vacuous. It is the constraint the approach rests on.
 - **Placement specified** — `docs/context/decisions/architecture.md`, pointed to from `PROJECT.md`, so the pattern rides `kb-map`'s existing retrieval path instead of requiring repo rediscovery.
 - **Conformance findings carry an evidence class** from the graph-routing vocabulary already in use, so model opinion cannot masquerade as structural proof.
-- **Repo topology recorded as a human-coordination lever**, with modular monolith as the agent-consumer default.
+- **Deviation policy added.** Extending beyond a pattern or declining the library is allowed but recorded, with typed reason codes rather than free prose, a justification burden that scales with evidence tier, deviation counting with forced re-selection past a threshold, and `no-pattern-covers-this` as the catalog's growth queue.
+- **Monolith default withdrawn.** Inspecting the Ops repos showed the segmentation follows bounded contexts, with each repository a coherent product and valid `kb-map` root. The earlier recommendation was aimed at the wrong target.
+- **Family scope added.** Observed drift across `universal_ui.owner_integration.v1` in three repositories — including `proof` typed as an object in two and a string in a third — is invisible to every single-repo check by construction. Role cardinality must be checkable across a declared repository family.
+- **Slice 2 re-aimed** at family conformance, using that observed drift as a ground-truth answer key, since contract divergence is a checkable fact where "correct architecture" is not.
+- **First catalog entry identified from working code**: Plugin Host with Owner Contributions.
+- **Repo-visibility gate removed.** Invitation accepted 2026-08-10; `Irtechie/ArchPatternsForAgents` is live, private, and now seeded.
 - **Ontology cut to three edge types**; constraint solver deferred. No consumer justifies it yet, and it costs context budget at the point of use.
 - **Ops repos reclassified** from blinded evaluation cases to source material. The blinding was not mechanised, the catalog was to be extended from the same repos used to evaluate it, and leave-one-out cannot control a shared-author confound.
 - **Four metrics dropped, four demoted.** Replaced with detection rate, repeatability, and drift, which are countable in V1.
