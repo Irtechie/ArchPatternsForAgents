@@ -26,23 +26,88 @@ Job 2 is the one that gives the catalog its shape. A pattern entry that cannot b
 - Copying the catalog into `working-skill-repo`. This repo is the **companion**; the skill repo consults it and never vendors it.
 - Modifying the Ops repositories in any way.
 
-## Core design decision: the entry schema is a detection schema
+## Core design decision: roles, not rules
 
 The industry-standard pattern schema (context, forces, resulting context, consequences) is written to teach a human who has time to read prose. It is the wrong shape here, because neither an agent mid-session nor a reviewer scanning a diff will read prose.
 
-Every catalog entry must carry, in addition to the descriptive fields:
+My first attempt at a fix was to enumerate *violations* per pattern. That was also wrong, for an instructive reason: you cannot enumerate all the ways code can be wrong, so an enumerated list silently licenses everything it forgot to mention.
+
+The correct primitive is the inverse. **Each pattern declares the finite set of roles it admits.** Roles are enumerable; violations are not. Three detectors then fall out mechanically:
+
+| Signal | Meaning |
+|---|---|
+| Code filling **no** role in the pattern | Bloat. It has no home. This is the slop detector. |
+| **N components filling one role** | Duplication. "Why do we have four of these?" becomes a query, not an opinion. |
+| A role with **no filler** | Incomplete, or the pattern was the wrong choice. |
+
+This is why the catalog is worth building even though the model already knows what MVC is. Knowing a pattern is not the same as holding a finite role inventory to diff a repository against. The second is checkable; the first is vibes.
+
+Every entry therefore carries:
 
 | Field | Purpose |
 |---|---|
-| `signature` | What the pattern looks like in code when correctly present. Concrete and observable. |
-| `violation_indicators` | The specific code shapes that mean it was done willy-nilly. E.g. for Transactional Outbox: outbox row written outside the aggregate's transaction. For CQRS: write model queried from a read path. |
-| `check` | How to test for it. Tiered: `grep` heuristic, static rule, or executable fitness function. Not every entry gets a fitness function in V1; every entry gets at least a heuristic. |
-| `scope` | Which decision this pattern is an answer to. Same-scope patterns compete; cross-scope patterns compose. |
-| `invariants` | The properties that must hold for the pattern to be meaningfully present. |
+| `roles` | The finite set of responsibilities the pattern admits. The load-bearing field. |
+| `role_signature` | How to recognise a component filling each role — observable, not descriptive. |
+| `cardinality` | Per role: exactly-one, one-per-aggregate, many. This is what makes duplication detectable rather than arguable. |
+| `check` | The query or script that maps code to roles. Tiered: grep heuristic, graph query, or fitness function. |
+| `blind_spots` | What the check cannot see, so silence is never read as conformance. |
+| `scope` | Which decision this pattern answers. Same-scope patterns compete; cross-scope compose. |
+| `exemplar` | The canonical implementation of each role, for imitation. See "the codebase is the prompt" below. |
 
 Descriptive fields retained: context, use/avoid conditions, quality effects (conditional, never scored), costs, failure modes, evidence, licensing.
 
-Rule: **an entry without at least one violation indicator and one check is rejected.** If you cannot say what breaking it looks like, the entry cannot identify slop, and it does not earn its place.
+Rule: **an entry without a role inventory and cardinalities is rejected.** If you cannot say what parts the pattern has and how many of each, it cannot identify bloat, and it does not earn its place.
+
+## Why classical patterns transfer to LLMs — and which parts don't
+
+This has to be answered explicitly, because it decides which patterns are worth carrying and how their rationale gets rewritten.
+
+MVC and MVVM were justified by three things: human cognitive load, parallel work by different specialists, and testability through isolating logic from the UI framework. For an agent consumer the first is weak and the second is nearly irrelevant. Carrying those rationales across unexamined is cargo cult.
+
+But those patterns have a fourth property nobody had to write down, because for humans it was ergonomics rather than a constraint: **predictable location**. An agent's binding constraint is retrieval — it can only modify what it can find and fit in context, and it will not read the whole repository. A pattern guaranteeing "this kind of logic lives in exactly one predictable place" is functioning as a retrieval index. For a human that was convenience. For an agent it is load-bearing.
+
+There is also a force with no human analogue: **the codebase is the prompt.** An agent writing code deep into a session imitates the nearest existing example; it is not consulting a document. This inverts how duplication behaves. A human seeing four copies of a method gets annoyed and consolidates. An agent seeing four copies infers that four copies is the house style, and writes a fifth.
+
+That is the actual explanation for simple applications with enormous codebases. It is not laziness. It is entropy compounding through imitation with nothing anchoring the structure. Which is why a canonical exemplar per role is not documentation — it is a control input, and it belongs in the entry.
+
+Each entry therefore re-scores its rationale on axes that matter for the real consumer:
+
+- **Locatability** — can the agent find the right place without reading the repo?
+- **Blast radius** — how much must be held in context to change one thing safely?
+- **Canonical exemplar** — is there exactly one obvious thing to imitate?
+- **Checkability** — can conformance be decided by a query rather than by judgment?
+
+Consequences worth stating up front: patterns whose value was *team coordination* (backend-for-frontend to separate two teams, microservices for organisational scaling) score materially lower for a single-agent consumer than the literature implies. Patterns creating predictable location and narrow interfaces score higher. MVC survives — on locatability and testability, not on cognitive load — and that changes when you would pick it.
+
+## The glossary front door
+
+The entry point is a task-shaped question — "I'm building a website that does these five things" — not a taxonomy to browse. This mirrors a convention the skill repo already uses: `kb-map` selects a **task-shaped traversal recipe** before expanding structural evidence, from a protected fixture at `evals/graph-routing/traversal-recipes.json`.
+
+The glossary offers **compositions**, not atoms: two or three named, pre-validated pattern bundles fitting a stated workload, each with its combined role inventory. Per-scope alternatives live one level down, for tuning a chosen composition. Nobody asking "how do I build this" should be handed twenty-five atomic patterns to assemble themselves.
+
+Entries may point outward — to reference repositories, upstream documentation, or existing implementations — rather than restating them. The value here is the role inventory and the check, not a re-hosted copy of Fowler.
+
+## Ordering: the pattern is chosen before the first file
+
+Retrofitting a pattern onto code that already exists is more expensive than writing the code, because every existing file is a fact to be renegotiated. The pattern must therefore be selected before any scaffold, page, route, or framework choice is committed.
+
+The pre-repo plan already stated this as "prove no page or framework scaffold is selected before the architecture gate passes." An earlier review of mine dismissed that criterion as vacuous. That was wrong: it is not testing that the system avoids something it cannot do, it is the ordering constraint the whole approach rests on. It is reinstated as a hard gate.
+
+The cost is accepted explicitly: choosing up front spends tokens before any code exists. That is the trade being made.
+
+One real risk runs the other way. Committing to a pattern before requirements are understood produces cargo-cult structure — which is also slop, merely tidier. The mitigation is already in the selection rules: the do-nothing baseline is always a rankable candidate, and a decision with no evidence behind it is recorded as `uncovered` rather than guessed.
+
+## Where the chosen pattern lives
+
+An agent will not rediscover the architecture by reading the repository; that is the context-bloat problem that motivates the whole exercise. So the chosen pattern must sit on the retrieval path the agent already walks.
+
+`kb-map` defines that path: it anchors to the project root and reads `todo.md`, then `docs/context/PROJECT.md`, which it describes as "the routing surface" and "a route map, never a work log." The standard layout it enforces already includes `docs/context/decisions/` and `docs/context/architecture/`.
+
+Placement:
+
+- The pinned decision record lives at `docs/context/decisions/architecture.md` in the target project, with the composition name, selected patterns, pinned catalog versions, and the role-to-location map.
+- `PROJECT.md` carries a one-line pointer to it, so every `kb-map lookup` surfaces the pattern without loading the catalog.
+- The role-to-location map is the part that earns its keep: it tells the agent where a given responsibility belongs before it starts searching, which is cheaper than any retrieval.
 
 ## Consumer and integration
 
@@ -76,16 +141,21 @@ That is precisely the willy-nilly problem, already solved for behaviour. V1's jo
 
 This is the core work, and it is what makes the repo more than a restatement of Fowler.
 
-Classical patterns delegate deviation-detection to a human reviewer's judgment. That worked because an experienced reviewer could look at code and feel that something was off. An LLM has no such reliable feel, and more importantly, its judgment cannot be audited. So for each pattern, the tacit reviewer knowledge must be made explicit and checkable.
+Classical patterns delegate deviation-detection to a human reviewer's judgment. That worked because an experienced reviewer could look at code and feel that something was off. An LLM has no such reliable feel, and more importantly its judgment cannot be audited. So the tacit reviewer knowledge must be made explicit and queryable.
 
 Translation procedure, applied per entry:
 
-1. State what the reviewer would notice — the thing that makes them say "that's wrong."
-2. Reduce it to an observable code shape (`violation_indicators`).
-3. Express it as the cheapest check that can fail: grep heuristic, static rule, or fitness function (`check`).
-4. Record what the check cannot see, so its silence is not mistaken for conformance.
+1. Enumerate the roles the pattern admits, and the cardinality of each.
+2. Give each role an observable signature (`role_signature`).
+3. Express the role mapping as the cheapest check that can fail: grep heuristic, graph query, or fitness function (`check`).
+4. Record what the check cannot see (`blind_spots`), so its silence is not mistaken for conformance.
+5. Name the canonical exemplar for each role, since the agent will imitate whatever it finds nearest.
 
 Step 4 is mandatory. A check with unstated blind spots is worse than no check, because it converts "unverified" into "verified."
+
+**Reuse the existing graph vocabulary.** `kb-map`'s graph routing already emits typed edges — `IMPLEMENTS`, `OVERRIDES`, `REFERENCES`, `CALLS_STATIC`, `CALLS_OBSERVED`, `READS_CONFIG`, `GENERATES`, `BUILDS`, `TESTS`, `DOCUMENTS` — and already grades evidence as `exact`, `observed`, `structural`, `heuristic`, or `llm-inferred`, with the rule that "LLM-inferred edges are never exact."
+
+Role mapping should be expressed in those terms rather than inventing a parallel mechanism, and every conformance finding must carry its evidence class. A role assignment derived from `IMPLEMENTS` edges is structural evidence. One derived from the model's opinion is `llm-inferred`, and must be reported as such rather than presented as a verified violation. This is the difference between "the pattern says you're off track" and "the model feels you're off track," and the distinction has to survive into the output.
 
 ## Relationships
 
@@ -182,7 +252,8 @@ Verification: `git status` clean on all five at the end. This is a precondition,
 **Behavioural (the ones that can fail informatively)**
 - *Counterfactual sensitivity* — a materially changed requirement changes the recommendation.
 - *Paraphrase invariance* — reworded requirements do not. Caveat: if the selector is deterministic over structured scenario input, this is trivially true and proves nothing. Interpret only in light of the open selector decision above.
-- *Detection* — seed a repository with known violations of a selected pattern; measure how many the entry's violation indicators locate, and the false-positive rate on clean code. This is the primary V1 metric, because identification is the primary V1 job.
+- *Bloat detection* — take a real codebase with a known pattern, map every component to a role, and count the components that map to none. Compare against a human pass over the same code. This is the primary V1 metric, because "code with no home in the pattern" is the operational definition of slop.
+- *Duplication detection* — count roles filled by more components than their cardinality allows. Verify against known duplication.
 - *Repeatability* — the same description run N times yields the same pinned decisions. This measures the willy-nilly problem directly.
 - *Drift* — give an agent a decision record and a real task; count violations of its own record in the resulting code.
 
@@ -198,14 +269,30 @@ The proposal waits for a human. The reviewer is a developer — the repository o
 
 ## Slices
 
-1. **Minimal catalog + schema + layout** — 8–12 entries spanning at least three scopes, including competing and composable pairs, each with signature, violation indicators, a check, and stated blind spots. One file per pattern plus a small `index.json`. Schema and admission tests.
-2. **Detection pass** — run the violation indicators against seeded violations and against a pinned Ops revision. Measure hits and false positives. Mine findings back into indicators.
-3. **Companion integration** — resolve the catalog from `working-skill-repo`, emit a pinned decision record, register it as a protected oracle, and verify conformance through a `kbcheck` check on a real task. Measure drift and repeatability. Prove the graceful-degradation path when the companion is absent.
+1. **Minimal catalog + schema + layout** — 2–3 *compositions* keyed to real workloads (e.g. "website with background work and an audit trail"), decomposed into 8–12 pattern entries across at least three scopes. Each entry carries a role inventory, cardinalities, role signatures, a check, blind spots, and an exemplar. One file per pattern plus a small workload-keyed `index.json`. Schema and admission tests.
+2. **Bloat detection pass** — map every component of a pinned Ops revision to a role. Count unmapped components and over-filled roles. Compare to a human read of the same code. This is the slice that proves or kills the premise.
+3. **Companion integration** — resolve the catalog from `working-skill-repo`, emit a pinned decision record to `docs/context/decisions/architecture.md`, point `PROJECT.md` at it, register it as a protected oracle, and verify conformance through a `kbcheck` check on a real task. Measure drift and repeatability. Prove the graceful-degradation path when the companion is absent.
 
 Deferred until 1–3 produce results:
 - Broad Ops-family cross-validation (low marginal information, shared author).
 - Python/TypeScript/Rust reference consumers (JSON Schema plus one consumer proves language-neutrality).
 - Versioned release contract, evidence registry, generated indexes (a tag and a CHANGELOG suffice until the skill repo's consumption is stable).
+
+## Repo topology is a human-coordination lever, not an architecture lever
+
+Recorded because the instinct "decompose into separate repositories is almost always right" needs qualifying for this consumer.
+
+Repo count and module boundary are different things that get conflated. Multiple repositories buy independent deploy cadence, team autonomy, and access-control separation — all of which are *human and organisational* benefits. Enforced module boundaries buy dependency control and blast-radius limits, which is the architectural benefit. You can have the second without the first.
+
+For an agent consumer, splitting across repositories carries specific and concrete costs, visible in the tooling already in use:
+
+- `kb-map`'s Project Root Rule anchors every lookup to one Git root and explicitly forbids searching sibling repos for memory. Project memory does not span repositories.
+- Graph routing indexes a repository. Cross-repo call and impact edges do not exist, so blast-radius analysis stops at the boundary.
+- A cross-repo change needs several contexts assembled by hand, which is exactly the retrieval cost the whole design is trying to reduce.
+
+So the default for agent-authored systems is a **modular monolith with enforced internal boundaries**, and repository splits are justified by an independent deploy, access-control, or lifecycle requirement — not by a preference for decomposition. Decomposition remains right; the unit of decomposition is the module, and the boundary is enforced by a check rather than by a repository URL.
+
+This is a candidate catalog entry in the deployment-and-modularity scope, with the trade-off recorded rather than assumed.
 
 ## Assumptions
 
@@ -218,13 +305,20 @@ Deferred until 1–3 produce results:
 
 Against the pre-repo plan:
 
-- **Entry schema gained detection fields.** Without them the catalog can describe patterns but cannot identify slop, which is the stated purpose.
-- **Ontology cut to three edge types**; constraint solver deferred. No consumer exists to justify it, and it costs context-window budget at the point of use.
+- **Detection primitive changed from violations to roles.** Enumerating violations silently licenses whatever the list forgot. Enumerating roles makes bloat ("fills no role"), duplication ("N fill one role"), and incompleteness ("role with no filler") mechanically detectable.
+- **Rationale re-scored for the actual consumer.** Classical patterns transfer through *locatability* and *checkability*, not through human cognitive load. Team-coordination patterns are downgraded accordingly.
+- **`exemplar` added as a required field**, because an agent imitates the nearest existing code rather than reading documentation, which makes duplication self-amplifying.
+- **Glossary front door is workload-keyed and offers compositions**, mirroring the task-shaped traversal recipes `kb-map` already uses. Not a taxonomy to browse.
+- **Ordering gate reinstated.** "No scaffold before the architecture gate" was in the original plan; an earlier review of mine wrongly called it vacuous. It is the constraint the approach rests on.
+- **Placement specified** — `docs/context/decisions/architecture.md`, pointed to from `PROJECT.md`, so the pattern rides `kb-map`'s existing retrieval path instead of requiring repo rediscovery.
+- **Conformance findings carry an evidence class** from the graph-routing vocabulary already in use, so model opinion cannot masquerade as structural proof.
+- **Repo topology recorded as a human-coordination lever**, with modular monolith as the agent-consumer default.
+- **Ontology cut to three edge types**; constraint solver deferred. No consumer justifies it yet, and it costs context budget at the point of use.
 - **Ops repos reclassified** from blinded evaluation cases to source material. The blinding was not mechanised, the catalog was to be extended from the same repos used to evaluate it, and leave-one-out cannot control a shared-author confound.
 - **Four metrics dropped, four demoted.** Replaced with detection rate, repeatability, and drift, which are countable in V1.
 - **Seven slices to three.** Portability, release contract, and broad cross-validation deferred behind evidence.
 - **Approval summary redefined** as short-for-a-developer rather than jargon-free-for-a-layperson.
-- **Repo-visibility gate removed.** Invitation accepted 2026-08-10; `Irtechie/ArchPatternsForAgents` is live, private, empty.
+- **Repo-visibility gate removed.** Invitation accepted 2026-08-10; `Irtechie/ArchPatternsForAgents` is live, private, and now seeded.
 
 ## Decisions needed before `kb-plan`
 
