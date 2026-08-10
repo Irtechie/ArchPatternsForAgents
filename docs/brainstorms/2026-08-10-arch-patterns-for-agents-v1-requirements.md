@@ -383,6 +383,51 @@ Individual deviations are cheap and fine. Their *distribution* is the signal.
 
 This converts the escape hatch into the catalog's primary growth input. `no-pattern-covers-this` deviations are the queue of candidate entries, and they arrive with real usage behind them rather than being invented from the literature.
 
+## Ownership split: what changes where
+
+Three repositories, three different kinds of change. Keeping them straight is what stops this leaking into the harness.
+
+| | Repository | What it holds | Change size |
+|---|---|---|---|
+| **Catalog** | `ArchPatternsForAgents` (this repo) | Pattern entries, role inventories, cardinalities, checks, schema, workload index, family checker | All new; standalone |
+| **Harness** | `working-skill-repo` | Selection step, conformance check type, oracle registration, pointer read | Small, generic, additive |
+| **Consumers** | The Ops projects and any future project | One `docs/context/decisions/architecture.md` each, plus a family declaration | Data only; no code |
+
+### The harness changes are generic, not Ops-specific
+
+Nothing proposed for `working-skill-repo` encodes anything about Ops. Four additions, each of which applies to any project:
+
+1. **Selection** — consult the companion index, propose per-scope alternatives, emit the pinned decision record. Better as a mode of `kb-brainstorm`/`kb-plan` than as a new skill; see the bloat note below.
+2. **`kb-check`** — a new conformance check type, reading the project's decision record and the companion's checks. Follows the existing conditional-tooling convention: companion present means run the check, companion absent means substitute and record which command produced the proof.
+3. **`kb-plan`** — register the decision record as a protected oracle on affected slices. This is the existing mechanism applied to a new artifact type, not a new mechanism.
+4. **`kb-map`** — surface the `docs/context/decisions/architecture.md` pointer during lookup. `PROJECT.md` is already the routing surface; this is one more row.
+
+If the companion repository never exists, all four degrade to "name and pin your architecture decision," which is still an improvement and still portable.
+
+### Slices 1 and 2 require no harness change at all
+
+Worth stating plainly, because it bounds the risk. The catalog, the role inventories, and the family conformance check can all be built and run entirely inside this repository against read-only clones. Only slice 3 — integration — touches `working-skill-repo`.
+
+So the premise gets tested before the harness is modified. If family conformance does not find the known drift, the project stops and the harness was never touched.
+
+### Harness bloat is a real cost
+
+`working-skill-repo` already carries roughly forty-five skills. Every addition competes for the agent's attention and for the description-matching that decides which skill loads. Adding a forty-sixth skill for architecture selection is not obviously correct.
+
+Prefer extending existing lanes: selection is a phase of `kb-brainstorm`/`kb-plan`, conformance is a check type in `kb-check`. A separate skill is justified only if selection turns out to need its own multi-step workflow that does not fit inside planning.
+
+### Open: where the family checker lives
+
+The family check crosses repository boundaries, which conflicts with an existing harness invariant. `kb-map`'s Project Root Rule anchors to one Git root and explicitly forbids searching sibling repositories — a rule that exists for a good reason, since it stops an agent picking up stale memory from an unrelated project.
+
+Options:
+
+- **In this repository, as a standalone tool** run deliberately against a declared family, emitting a report the harness can consume. Preserves the single-root invariant completely. Recommended.
+- **In the harness, as an explicitly opt-in mode** that suspends the single-root rule for a named repository list. More convenient, but weakens a guardrail that is currently absolute, and absolute guardrails are easier to trust.
+- **In the contract owner** — for this specific case, `UniversalUI` owns `universal_ui.owner_integration.v1` and could validate its own contributors. Correct for that one contract, but not a general mechanism.
+
+Recommendation: the general role-and-cardinality family checker lives here; a contract-specific validator may additionally live with its contract owner. The harness consumes results and never crawls sibling repositories itself.
+
 ## Assumptions
 
 - Patterns are language-neutral; strong types and explicit schemas are mandatory at boundaries.
@@ -417,7 +462,9 @@ Against the pre-repo plan:
 ## Decisions needed before `kb-plan`
 
 1. Is the selector deterministic code, an LLM, or the hybrid proposed above?
-2. Which repository is mined first for violation indicators, and at which pinned revision?
+2. Which repository is mined first for role inventories, and at which pinned revision?
 3. Size budget for `index.json` — the always-loaded artifact.
 4. Which real task is used for the slice-3 drift measurement.
 5. How the skill repo resolves the companion: submodule, pinned clone, or configured path. This decides whether pattern versions can be pinned per project.
+6. Where the family checker lives — this repository, an opt-in harness mode, or the contract owner. See "Ownership split."
+7. Whether selection is a new skill or a phase of `kb-brainstorm`/`kb-plan`. Default to the latter unless it needs its own workflow.
