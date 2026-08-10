@@ -198,14 +198,48 @@ Expansion pack (not V1): microservices, Saga, retry, circuit breaker, backend-fo
 
 ## Selection
 
-- Capture hard constraints plus 3–7 measurable quality scenarios (source, stimulus, environment, artifact, response, threshold), per SEI ADD.
-- Deterministically hard-filter patterns whose avoid-conditions are triggered by the stated constraints. This step is code, not judgement.
+**Resolved: hybrid, with all non-determinism placed before the human checkpoint and none after it.**
+
+The property being bought is *repeatability of the decision*. Unrepeatable selection is the original disease wearing a lab coat. But pure determinism cannot read prose, and something must turn "a website that does these five things" into structured constraints. So the only real question is where the seam goes.
+
+| Stage | Actor | Deterministic |
+|---|---|---|
+| Prose → hard constraints + 3–7 quality scenarios | LLM | No — but the output is written down and human-correctable |
+| **Confirm the extracted facts** | Human | checkpoint |
+| Hard-filter, candidate generation, conflict detection, cardinality | Code | **Yes** |
+| Trade-off narrative and plain-language consequence | LLM | No — cosmetic; cannot change the decision |
+| Accept or send back | Human | gate |
+
+Given the same confirmed facts, the same patterns are selected every time. The unreliable step happens before anything is pinned and is inspected before it matters.
+
+Mechanics:
+
+- Quality scenarios follow SEI ADD form: source, stimulus, environment, artifact, response, threshold.
+- The hard-filter eliminates patterns whose avoid-conditions are triggered. This step is code, not judgement.
 - For each open decision, present 2–4 **materially different** alternatives from the surviving set — different mechanisms for the same decision, never unrelated patterns dressed as alternatives.
 - Never collapse a trade-off into a single unexplained score.
 - Conflicts block with a minimal explanation. No last-file-wins.
 - Model architecture as semantic roles and typed edges, not mandatory folders. One small component may fill several roles.
 
-**Open decision — is the selector deterministic code or an LLM?** This is unresolved and it changes the test plan. Current position: the *filter* is deterministic, the *comparison and narrative* are LLM-authored from catalog fields, and the *decision* is the human's. This must be confirmed before `kb-plan`.
+### The reviewer is not assumed to be an architect
+
+Harness users are developers, not necessarily architects. A checkpoint that asks "Hexagonal or Clean?" demands precisely the judgement the reviewer may not have, and will be rubber-stamped — which is worse than no gate, because it manufactures a record of consent.
+
+Therefore the human confirms **facts, not patterns**:
+
+- Extraction asks questions observable about the project without architectural vocabulary — "will users see data that other users must not see?", "must anything keep working offline?", "who is allowed to approve a change to live data?" — never "what is your tenancy isolation model?"
+- Code selects from the confirmed facts.
+- The selection is presented as a plain-language consequence: what this means for the shape of the code and what it forbids.
+- The escape hatch is **"that is not what I am building,"** which returns to the facts. It is never a pattern menu.
+
+Two consequences follow, both load-bearing:
+
+1. **Catalog admission gets stricter.** Every entry's applicability must be expressible in terms a non-architect can verify about their own project. An entry whose applicability can only be stated in jargon is not usable by the intended audience and does not ship. This is the same forcing function as the filter rules, sharpened.
+2. **The deviation-justification burden leaves the user.** A non-architect cannot weigh evidence tiers. The agent carries that burden; the user sees only the outcome and may reject it.
+
+Cost, stated plainly: the deterministic middle needs authored filter rules per pattern, and that authoring is the real bottleneck. A pattern whose rule cannot be written was not understood well enough to include. Useful, but it will slow catalog growth.
+
+The extraction step is not new machinery — `kb-brainstorm` already performs requirements discovery. This is its output, structured. That also keeps selection from becoming a 46th skill.
 
 ## Output: the decision record
 
@@ -244,7 +278,8 @@ Verification: `git status` clean on all five at the end. This is a precondition,
 
 **Entry admission (blocking)**
 - Reject entries lacking evidence, trade-offs, contraindications, licence provenance, or verifiable invariants.
-- Reject entries lacking a violation indicator or a check.
+- Reject entries lacking a role inventory with cardinalities, a check, blind spots, or an exemplar.
+- Reject entries whose applicability conditions cannot be stated as questions a non-architect can answer about their own project.
 
 **Composition correctness**
 - Reject incompatible authority claims, e.g. CRUD and Event Sourcing over the same aggregate.
@@ -253,7 +288,7 @@ Verification: `git status` clean on all five at the end. This is a precondition,
 
 **Behavioural (the ones that can fail informatively)**
 - *Counterfactual sensitivity* — a materially changed requirement changes the recommendation.
-- *Paraphrase invariance* — reworded requirements do not. Caveat: if the selector is deterministic over structured scenario input, this is trivially true and proves nothing. Interpret only in light of the open selector decision above.
+- *Paraphrase invariance* — reworded requirements do not. This applies to the **extraction** step, not the filter: reworded prose must yield the same structured facts. Under the resolved seam the filter is deterministic and this test would be vacuous applied to it, but applied to extraction it has a real failure mode and is worth running.
 - *Bloat detection* — take a real codebase with a known pattern, map every component to a role, and count the components that map to none. Compare against a human pass over the same code. This is the primary V1 metric, because "code with no home in the pattern" is the operational definition of slop.
 - *Duplication detection* — count roles filled by more components than their cardinality allows. Verify against known duplication.
 - *Repeatability* — the same description run N times yields the same pinned decisions. This measures the willy-nilly problem directly.
@@ -265,9 +300,16 @@ Verification: `git status` clean on all five at the end. This is a precondition,
 
 ## Human approval
 
-The proposal waits for a human. The reviewer is a developer — the repository owner — so the summary must be **short**, not jargon-free. Stripping the terminology needed to evaluate an architectural trade-off produces a rubber stamp, which is worse than no gate because it manufactures a record of consent.
+The proposal waits for a human, and that human is a developer who may not be an architect. This cuts against the obvious instinct in both directions.
 
-`kb-compact` applies as brevity and ranked structure, not as vocabulary removal.
+Stripping all terminology produces a summary that cannot support a real trade-off judgement, and the reviewer rubber-stamps it. Keeping full architectural vocabulary produces a summary the reviewer cannot evaluate, and the reviewer rubber-stamps it. Both failures manufacture a record of consent.
+
+The resolution is that the approval question is not "is this the right architecture." It is:
+
+1. **Are these facts about your project correct?** — answerable by anyone who knows what they are building.
+2. **Are these consequences acceptable?** — stated as concrete restrictions on the resulting code, not as pattern names.
+
+Architectural terms may appear as labels for the reader's benefit, but no approval question may *require* understanding one in order to answer. `kb-compact` applies as brevity and ranked structure.
 
 ## Slices
 
@@ -522,8 +564,8 @@ Against the pre-repo plan:
 - **Ops repos reclassified** from blinded evaluation cases to source material. The blinding was not mechanised, the catalog was to be extended from the same repos used to evaluate it, and leave-one-out cannot control a shared-author confound.
 - **Four metrics dropped, four demoted.** Replaced with detection rate, repeatability, and drift, which are countable in V1.
 - **Seven slices to three.** Portability, release contract, and broad cross-validation deferred behind evidence.
-- **Approval summary redefined** as short-for-a-developer rather than jargon-free-for-a-layperson.
-- **Repo-visibility gate removed.** Invitation accepted 2026-08-10; `Irtechie/ArchPatternsForAgents` is live, private, and now seeded.
+- **Approval summary redefined** again: not jargon-free-for-a-layperson, and not short-for-an-architect either. No approval question may *require* understanding an architectural term to answer, because harness users are developers who are not necessarily architects.
+- **Selector seam resolved**: non-determinism sits entirely before the human checkpoint. The human confirms extracted facts; code makes the selection.
 
 ## Decisions needed before `kb-plan`
 
@@ -531,13 +573,13 @@ Against the pre-repo plan:
 
 - *Ownership split* — agreed 2026-08-10. Catalog in this repository, small generic additions to the harness, decision-record data only in consumer projects. Slices 1 and 2 require no harness change.
 - *Family checker* — implementation lives in this repository and is invoked as a planning-time call-out, not run ad hoc. The harness never crawls sibling repositories itself, so `kb-map`'s single-root rule stays absolute; it passes an explicitly declared family to the companion tool and consumes the report.
+- *Selector architecture* — agreed 2026-08-10. Hybrid, with the seam at the human checkpoint: LLM extracts structured facts from prose, the human confirms the **facts**, deterministic code selects, an LLM writes the explanation, and the human accepts or sends it back. Reviewers are not assumed to be architects, so no approval question may require architectural vocabulary to answer, and catalog entries whose applicability cannot be stated in project-observable terms are rejected.
 
 **Open**
 
-1. Is the selector deterministic code, an LLM, or the hybrid proposed above?
-2. Which repository is mined first for role inventories, and at which pinned revision?
-3. Size budget for `index.json` — the always-loaded artifact.
-4. Which real task is used for the slice-3 drift measurement.
-5. How the skill repo resolves the companion: submodule, pinned clone, or configured path. This decides whether pattern versions can be pinned per project.
-6. Whether selection is a new skill or a phase of `kb-brainstorm`/`kb-plan`. Default to the latter unless it needs its own workflow.
-7. The deviation threshold that forces re-selection, and whether it is counted per module, per pattern, or both.
+1. Which repository is mined first for role inventories, and at which pinned revision?
+2. Size budget for `index.json` — the always-loaded artifact.
+3. Which real task is used for the slice-3 drift measurement.
+4. How the skill repo resolves the companion: submodule, pinned clone, or configured path. This decides whether pattern versions can be pinned per project.
+5. Whether selection is a new skill or a phase of `kb-brainstorm`/`kb-plan`. Default to the latter unless it needs its own workflow.
+6. The deviation threshold that forces re-selection, and whether it is counted per module, per pattern, or both.
