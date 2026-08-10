@@ -32,13 +32,16 @@ The industry-standard pattern schema (context, forces, resulting context, conseq
 
 My first attempt at a fix was to enumerate *violations* per pattern. That was also wrong, for an instructive reason: you cannot enumerate all the ways code can be wrong, so an enumerated list silently licenses everything it forgot to mention.
 
-The correct primitive is the inverse. **Each pattern declares the finite set of roles it admits.** Roles are enumerable; violations are not. Three detectors then fall out mechanically:
+The correct primitive is the inverse. **Each pattern declares the finite set of roles it admits.** Roles are enumerable; violations are not. Four detectors then fall out mechanically:
 
 | Signal | Meaning |
 |---|---|
 | Code filling **no** role in the pattern | Bloat. It has no home. This is the slop detector. |
 | **N components filling one role** | Duplication. "Why do we have four of these?" becomes a query, not an opinion. |
 | A role with **no filler** | Incomplete, or the pattern was the wrong choice. |
+| A **declared** role or contract that **nothing reads** | Ceremonial architecture. The declaration exists, drifts, and costs maintenance while changing no behaviour. Added after observing it in UniversalUI — see "Ceremonial architecture" below. |
+
+The fourth detector was not in the original design. It was added because inspecting the host repository found a schema declared in sixteen files that no code path reads. It is the purest form of the target problem: structure that looks like architecture, is maintained like architecture, and does nothing.
 
 This is why the catalog is worth building even though the model already knows what MVC is. Knowing a pattern is not the same as holding a finite role inventory to diff a repository against. The second is checkable; the first is vibes.
 
@@ -49,10 +52,11 @@ Every entry therefore carries:
 | `roles` | The finite set of responsibilities the pattern admits. The load-bearing field. |
 | `role_signature` | How to recognise a component filling each role — observable, not descriptive. |
 | `cardinality` | Per role: exactly-one, one-per-aggregate, many. This is what makes duplication detectable rather than arguable. |
-| `check` | The query or script that maps code to roles. Tiered: grep heuristic, graph query, or fitness function. |
+| `check` | The query or script that maps code to roles. Tiered: grep heuristic, graph query, or fitness function. Must name the **independent evidence source** it compares against; a check whose expected and observed values share a source is rejected. |
 | `blind_spots` | What the check cannot see, so silence is never read as conformance. |
 | `scope` | Which decision this pattern answers. Same-scope patterns compete; cross-scope compose. |
-| `exemplar` | The canonical implementation of each role, for imitation. See "the codebase is the prompt" below. |
+| `exemplar` | The canonical implementation of each role, for imitation. Versioned and protected: a wrong exemplar replicates into every consumer that copies it. See "the codebase is the prompt" below and the observed instance under "The exemplar defect". |
+| `enforcement` | Per role and per declared field: what code path actually reads it. A role with no reader is ceremonial, and the entry must say so rather than implying enforcement it does not have. |
 
 Descriptive fields retained: context, use/avoid conditions, quality effects (conditional, never scored), costs, failure modes, evidence, licensing.
 
@@ -274,6 +278,66 @@ Note the distinction that makes slice 2 legitimate: "does this contract diverge 
 
 Verification: `git status` clean on all five at the end. This is a precondition, not a finding.
 
+## The host repository, and a correction to slice 2
+
+`Irtechie/UniversalUI` was never inspected until now. It should have been first: it *owns* the contract the Ops repositories contribute to, and a plugin host's roles are defined by the host, not by any contributor. Pinned revision `8a0a5514` (2026-08-10). Inspecting it produced the strongest evidence in this document, and it invalidates part of the plan.
+
+### Ceremonial architecture: a declared contract that nothing reads
+
+`universal_ui.owner_integration.v1` is declared in eight `integration.json` files in the host and one in each contributing owner repository. **No code reads any of them.** This is not my inference; the host's own architecture notes state it, having derived it by `git grep` over `apps/` and `tests/`:
+
+| Field | Host reads | Ruling (host's own words) |
+|---|---|---|
+| `integration.json` (whole file) | **0** | "Documentation only." |
+| `cssRootClass` | **0** | "Inert." |
+| `provider.kind` | **0** | "Keep; inert but true." |
+| `sdkVersion` | **0** | "Drop it; it is inert *and* false." |
+| `legacyRoute` | dead code only | "Inert today." |
+
+The real binding is a different mechanism entirely: `OWNER_ARTIFACT.json` plus `scripts/verify-owner-intake.mjs`, which compares vendored bytes against the owner repository by git blob SHA, with providers resolved from **a hardcoded table in `apps/parity-server/server.py`**.
+
+**This forces a correction.** Slice 2 previously named the observed `integration.json` divergence — `proof` as object versus string, `pythonRoot` versus `packageRoot`, manifest location — as its ground-truth answer key. That was wrong. Those fields are inert, so a checker reporting them loudly would be producing exactly what the host author warns against elsewhere: "a confident but meaningless drift report." Divergence in a field nothing reads has no consequence to detect.
+
+The corrected answer key is better than the original, because it is a fact about behaviour rather than about text:
+
+- **Ground truth:** `integration.json` is documentation-only; the load-bearing contract is `OWNER_ARTIFACT.json` + intake verification + the hardcoded provider table.
+- **The check must discover that**, i.e. distinguish a declared contract from an enforced one, and rank findings by whether anything reads the field.
+- This is verifiable independently, because the host's architecture docs state the answer and were written by someone other than the checker.
+
+`legacyRoute` sharpens the check's required precision. Its only consumer is a component that itself has no call site, so a reference-counting grep finds a reader and wrongly calls it live. The detector needs **reachability, not reference** — a two-hop graph query over `READS_CONFIG`, not a text match.
+
+### The exemplar defect: the strongest evidence for this project
+
+The document previously asserted, as design reasoning, that agents imitate the nearest existing example and therefore divergence is self-amplifying. That assertion is no longer theoretical. From the host's contract document, on why `provider.kind` disagrees across owners:
+
+> "This document previously showed `python-in-process`, which is why the active set disagrees: the owners that followed this example diverged from the six that followed the shipped host copies. **The example was the defect, not those owners.**"
+
+An earlier draft of this document recorded FinanceOps' `python-in-process` as FinanceOps drifting. That reading was wrong, and the host's ruling is the correct one: a single incorrect example propagated silently into every consumer that copied it, splitting the family precisely along which source each owner copied from.
+
+Consequences, all load-bearing:
+
+1. **`exemplar` is confirmed as a required, versioned field.** A wrong exemplar is not a documentation bug; it is a defect that replicates. Exemplars need the same protected-oracle treatment as targets.
+2. **Divergence must be attributed, not just counted.** "Which source did this copy from" is more useful than "these differ," and is recoverable from the divergence split itself.
+3. **Contributor conformance is the wrong default question.** Ask what the contributors copied, and whether *that* was right.
+
+### Check independence
+
+One principle from the host, stated generally enough to adopt verbatim:
+
+> "Verify a gate against an independent command that does not share the gate's code path. A status line and the expression that sets it are not independent evidence."
+
+This binds directly on conformance checks. A role-mapping check that derives its expectations from the same declaration it is checking proves nothing — it will confirm that a file agrees with itself. Every entry's `check` must state what independent evidence it compares against, and admission should reject checks whose expected and observed values share a source.
+
+### Related: fields advertised but never recomputed
+
+Also from the host, an observed instance with a named remedy: HomeOps' `cssRootClass` "was hardcoded and went stale the moment it rescoped its stylesheet, so the envelope advertised a root class no selector used." Remedy: "Derive such fields from source, and fail the build when the source and the claim disagree." This is a reusable entry in the catalog's failure-mode vocabulary — *asserted-but-not-derived* — and it is distinct from ceremonial architecture, because here something does read the field; it is simply not recomputed.
+
+### What this repository is not
+
+Worth stating plainly, because the evidence invites the wrong conclusion: UniversalUI is a well-run repository. It found these problems itself, documented them honestly with the technique that caught each one, and ruled on them. The gap is not diligence.
+
+The gap is that the knowledge lives in prose, in `docs/context/architecture/`, at a length no agent will load mid-session — and nothing prevents the next agent from carefully maintaining `integration.json` in the belief that it matters. That is precisely the case for a machine-checkable catalog, and it is a stronger case than a badly-run repository would have made.
+
 ## Test plan
 
 **Entry admission (blocking)**
@@ -290,6 +354,8 @@ Verification: `git status` clean on all five at the end. This is a precondition,
 - *Counterfactual sensitivity* — a materially changed requirement changes the recommendation.
 - *Paraphrase invariance* — reworded requirements do not. This applies to the **extraction** step, not the filter: reworded prose must yield the same structured facts. Under the resolved seam the filter is deterministic and this test would be vacuous applied to it, but applied to extraction it has a real failure mode and is worth running.
 - *Bloat detection* — take a real codebase with a known pattern, map every component to a role, and count the components that map to none. Compare against a human pass over the same code. This is the primary V1 metric, because "code with no home in the pattern" is the operational definition of slop.
+- *Dead-declaration detection* — for each declared contract field, determine whether any code path reaches it. Must distinguish inert from live, and must not be fooled by a reference from unreachable code (`legacyRoute` is the trap case). Scored against the host's own published rulings.
+- *Exemplar attribution* — where family members disagree, identify which exemplar each copied from. Scored against the known `provider.kind` split.
 - *Duplication detection* — count roles filled by more components than their cardinality allows. Verify against known duplication.
 - *Repeatability* — the same description run N times yields the same pinned decisions. This measures the willy-nilly problem directly.
 - *Drift* — give an agent a decision record and a real task; count violations of its own record in the resulting code.
@@ -313,8 +379,8 @@ Architectural terms may appear as labels for the reader's benefit, but no approv
 
 ## Slices
 
-1. **Minimal catalog + schema + layout** — seed with **Plugin Host with Owner Contributions**, whose role inventory is lifted directly from the observed `universal_ui.owner_integration.v1` contract, plus 6–10 further entries across at least three scopes. Each carries roles, cardinalities, role signatures, a check, blind spots, and an exemplar. One file per pattern plus a small workload-keyed `index.json`. Schema and admission tests.
-2. **Family conformance pass** — declare the five Ops repositories as a family, map each member's contribution to the role inventory, and report divergence. The already-observed drift (manifest location, `pythonRoot`/`packageRoot`, `proof` object-vs-string, missing tests, vendored HealthOps inside LifeOps) is the ground-truth answer key. If the check does not find these, the approach does not work and the project stops here.
+1. **Minimal catalog + schema + layout** — seed with **Plugin Host with Owner Contributions**, whose role inventory is lifted from the host's *enforced* mechanism (`OWNER_ARTIFACT.json`, `scripts/verify-owner-intake.mjs`, the provider resolution table), not from the inert `integration.json`. Plus 6–10 further entries across at least three scopes. Each carries roles, cardinalities, role signatures, a check with a declared independent evidence source, blind spots, and a versioned exemplar. One file per pattern plus a small workload-keyed `index.json`. Schema and admission tests.
+2. **Enforcement-vs-declaration pass** — over UniversalUI at `8a0a5514` and the five Ops repositories. Report, for each declared contract field, whether any code path reaches it. Ground-truth answer key, stated in the host's own architecture docs and therefore independent of this checker: `integration.json`, `cssRootClass`, `provider.kind`, `sdkVersion` and the release envelope are inert; `legacyRoute` is transitively dead behind a component with no call site; `OWNER_ARTIFACT.json` and the provider table are load-bearing. The check must also attribute the `provider.kind` split to the exemplar that caused it. If the check cannot reproduce these rulings, the approach does not work and the project stops here.
 3. **Companion integration** — resolve the catalog from `working-skill-repo`, emit a pinned decision record to `docs/context/decisions/architecture.md`, point `PROJECT.md` at it, register it as a protected oracle, and verify conformance through a `kbcheck` check on a real task. Measure drift and repeatability. Prove the graceful-degradation path when the companion is absent.
 
 Deferred until 1–3 produce results:
@@ -566,6 +632,12 @@ Against the pre-repo plan:
 - **Seven slices to three.** Portability, release contract, and broad cross-validation deferred behind evidence.
 - **Approval summary redefined** again: not jargon-free-for-a-layperson, and not short-for-an-architect either. No approval question may *require* understanding an architectural term to answer, because harness users are developers who are not necessarily architects.
 - **Selector seam resolved**: non-determinism sits entirely before the human checkpoint. The human confirms extracted facts; code makes the selection.
+- **Host repository inspected** at `8a0a5514`, having been skipped until now. It should have been first — a plugin host's roles are defined by the host, not by a contributor.
+- **Fourth detector added — ceremonial architecture.** A declared contract that nothing reads. Found empirically: `universal_ui.owner_integration.v1` is declared in sixteen files and read by zero code paths, per the host's own `git grep` audit.
+- **Slice 2 corrected, second time.** Its answer key was the observed `integration.json` divergence. That field set is inert, so reporting it would be a confident but meaningless drift report. Re-aimed at enforcement-versus-declaration, whose answer key is published by the host and independent of this checker.
+- **"Codebase is the prompt" upgraded from assertion to observation.** The host documents a doc example that was wrong, propagating into every owner that copied it, splitting the family by copy source: "The example was the defect, not those owners." An earlier draft of this document misread that same split as contributor drift.
+- **`exemplar` promoted** to versioned and protected, and **`enforcement` added** to the entry schema.
+- **Check independence required.** A check whose expected and observed values share a code path confirms only that a file agrees with itself.
 
 ## Decisions needed before `kb-plan`
 
@@ -574,12 +646,12 @@ Against the pre-repo plan:
 - *Ownership split* — agreed 2026-08-10. Catalog in this repository, small generic additions to the harness, decision-record data only in consumer projects. Slices 1 and 2 require no harness change.
 - *Family checker* — implementation lives in this repository and is invoked as a planning-time call-out, not run ad hoc. The harness never crawls sibling repositories itself, so `kb-map`'s single-root rule stays absolute; it passes an explicitly declared family to the companion tool and consumes the report.
 - *Selector architecture* — agreed 2026-08-10. Hybrid, with the seam at the human checkpoint: LLM extracts structured facts from prose, the human confirms the **facts**, deterministic code selects, an LLM writes the explanation, and the human accepts or sends it back. Reviewers are not assumed to be architects, so no approval question may require architectural vocabulary to answer, and catalog entries whose applicability cannot be stated in project-observable terms are rejected.
+- *First repository mined, and revision* — `Irtechie/UniversalUI` at `8a0a5514`, not FinanceOps. The seed pattern is a plugin host, and the host defines the roles; a contributor only shows one instance of conforming to them. FinanceOps at `974ee76c` remains the first *contributor* mined, and that revision is independently corroborated by the host's recorded intake binding.
 
 **Open**
 
-1. Which repository is mined first for role inventories, and at which pinned revision?
-2. Size budget for `index.json` — the always-loaded artifact.
-3. Which real task is used for the slice-3 drift measurement.
-4. How the skill repo resolves the companion: submodule, pinned clone, or configured path. This decides whether pattern versions can be pinned per project.
-5. Whether selection is a new skill or a phase of `kb-brainstorm`/`kb-plan`. Default to the latter unless it needs its own workflow.
-6. The deviation threshold that forces re-selection, and whether it is counted per module, per pattern, or both.
+1. Size budget for `index.json` — the always-loaded artifact.
+2. Which real task is used for the slice-3 drift measurement.
+3. How the skill repo resolves the companion: submodule, pinned clone, or configured path. This decides whether pattern versions can be pinned per project.
+4. Whether selection is a new skill or a phase of `kb-brainstorm`/`kb-plan`. Default to the latter unless it needs its own workflow.
+5. The deviation threshold that forces re-selection, and whether it is counted per module, per pattern, or both.
