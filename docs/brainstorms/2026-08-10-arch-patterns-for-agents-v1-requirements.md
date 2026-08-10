@@ -383,6 +383,41 @@ Individual deviations are cheap and fine. Their *distribution* is the signal.
 
 This converts the escape hatch into the catalog's primary growth input. `no-pattern-covers-this` deviations are the queue of candidate entries, and they arrive with real usage behind them rather than being invented from the literature.
 
+## When the architecture check runs
+
+The catalog is consulted at planning time, not on demand. Three distinct moments, asking three different questions.
+
+| Moment | Question | Outcome |
+|---|---|---|
+| **Initial planning**, greenfield | Which composition fits this workload? | Pin a decision record. No scaffold until it exists. |
+| **Planning on existing work** | Is the pinned architecture still right for what we are about to add? | Proceed, or trigger re-selection. |
+| **Adding a member to a family** | Does this new member match the family contract? | Conform, or record a typed deviation. |
+
+The second and third are new here, and the third is the one that matters most for the observed drift. Every divergence in `universal_ui.owner_integration.v1` entered the system at the moment a new Ops repository was created or extended. There was no point in the workflow that asked "does this match the contract the other members already implement." The check has to fire *when a member joins or changes*, because that is the only moment the answer is cheap.
+
+### Two questions that get conflated
+
+Planning against an existing codebase must separate them:
+
+- **Conformance** — does the code still match the pinned record? A drift question, answered by a check, with structural evidence.
+- **Fitness** — is the pinned record still the right choice given the new requirement? A judgment question, answered by re-selection.
+
+Conflating them produces the worst outcome: code drifts, the drift is noticed, and the architecture is quietly amended to match whatever was built. That is drift with paperwork. Conformance failures are fixed in the code by default; amending the record is a separate, deliberate act.
+
+### Re-selection must be possible but not free
+
+If planning can silently re-pick the architecture on every run, the pin means nothing and the whole mechanism is theatre.
+
+So changing a pinned record uses the deviation machinery already defined: a typed reason code, evidence proportional to the pattern's evidence tier, and a resulting change to the protected-oracle SHA, which makes it visible in review. Re-selection is a normal, expected event — it just cannot be a quiet one.
+
+### Proportionality
+
+A heavyweight architecture ritual on every plan will be skipped, and a skipped gate is worse than no gate because it still implies coverage. This follows the harness's existing principle that normal lookup stays cheap.
+
+Default path is cheap: does a decision record exist, does the `PROJECT.md` pointer resolve, does the fast conformance check pass. That is it.
+
+Escalate to full re-selection only on a trigger: no record exists, the requirement crosses a scope the record does not cover, conformance failures exceed the deviation threshold, or a new family member is being added. Everything else proceeds without loading the catalog at all.
+
 ## Ownership split: what changes where
 
 Three repositories, three different kinds of change. Keeping them straight is what stops this leaking into the harness.
@@ -461,10 +496,17 @@ Against the pre-repo plan:
 
 ## Decisions needed before `kb-plan`
 
+**Resolved**
+
+- *Ownership split* — agreed 2026-08-10. Catalog in this repository, small generic additions to the harness, decision-record data only in consumer projects. Slices 1 and 2 require no harness change.
+- *Family checker* — implementation lives in this repository and is invoked as a planning-time call-out, not run ad hoc. The harness never crawls sibling repositories itself, so `kb-map`'s single-root rule stays absolute; it passes an explicitly declared family to the companion tool and consumes the report.
+
+**Open**
+
 1. Is the selector deterministic code, an LLM, or the hybrid proposed above?
 2. Which repository is mined first for role inventories, and at which pinned revision?
 3. Size budget for `index.json` — the always-loaded artifact.
 4. Which real task is used for the slice-3 drift measurement.
 5. How the skill repo resolves the companion: submodule, pinned clone, or configured path. This decides whether pattern versions can be pinned per project.
-6. Where the family checker lives — this repository, an opt-in harness mode, or the contract owner. See "Ownership split."
-7. Whether selection is a new skill or a phase of `kb-brainstorm`/`kb-plan`. Default to the latter unless it needs its own workflow.
+6. Whether selection is a new skill or a phase of `kb-brainstorm`/`kb-plan`. Default to the latter unless it needs its own workflow.
+7. The deviation threshold that forces re-selection, and whether it is counted per module, per pattern, or both.
