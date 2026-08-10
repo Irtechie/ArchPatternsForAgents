@@ -392,8 +392,38 @@ The catalog is consulted at planning time, not on demand. Three distinct moments
 | **Initial planning**, greenfield | Which composition fits this workload? | Pin a decision record. No scaffold until it exists. |
 | **Planning on existing work** | Is the pinned architecture still right for what we are about to add? | Proceed, or trigger re-selection. |
 | **Adding a member to a family** | Does this new member match the family contract? | Conform, or record a typed deviation. |
+| **Remediation** — "this is spaghetti, get it onto a pattern" | What is this code closest to, and what is the cheapest route there? | Pin a target, baseline the gap, ratchet it down. |
 
 The second and third are new here, and the third is the one that matters most for the observed drift. Every divergence in `universal_ui.owner_integration.v1` entered the system at the moment a new Ops repository was created or extended. There was no point in the workflow that asked "does this match the contract the other members already implement." The check has to fire *when a member joins or changes*, because that is the only moment the answer is cheap.
+
+### Remediation mode
+
+The most common real case: the code exists, it is a mess, and it needs to get onto a pattern. This mode is where the role inventory pays off hardest, because mapping components to roles turns "this is spaghetti" into a concrete list of things with no home.
+
+**Selection criteria invert.** In greenfield, candidates are ranked by fit. In remediation, they are ranked primarily by **migration distance** — map the existing components against each candidate's role inventory and count what already lands. The pattern with the smallest unmapped residue that still fixes the actual pain wins. The theoretically superior pattern that requires rewriting everything is the wrong answer, because it will not be finished, and an unfinished migration leaves the codebase in two architectures at once, which is worse than the one mess it started with.
+
+Migration distance is computable, not a judgment call. That makes it the one genuinely new capability this mode needs.
+
+**Three outcomes per unmapped component, not one.** "Fills no role" is the slop signal, but it does not always mean migrate:
+
+| Residue | Test | Action |
+|---|---|---|
+| Unmapped and unreachable | No inbound references or calls | **Delete.** Not a migration target. |
+| Unmapped and duplicated | Another component fills the same role | **Consolidate** onto the canonical exemplar. |
+| Unmapped and load-bearing | Reachable, unique, no role fits | **Migrate**, or record `no-pattern-covers-this` |
+
+The first row matters more than it looks. A large share of spaghetti is not badly-patterned code, it is *excess* code — and migrating it is worse than deleting it, because migration makes excess permanent by giving it a home.
+
+**Execution belongs to `kb-simplify`, not here.** That skill already ranks simplification targets by change frequency and code health and executes one at a time in a confirm loop. This mode produces the target pattern, the migration distance, and the ranked residue; `kb-simplify` burns it down. No new execution machinery.
+
+**The ratchet.** Big-bang migration does not land. So the mechanism is:
+
+1. Pin the target pattern in the decision record.
+2. Baseline the current gap as a recorded deviation count, per module.
+3. Require the count to move in one direction only. New code conforms; existing code migrates opportunistically as it is touched.
+4. The baseline is a protected oracle, so lowering the bar is a visible amendment rather than a quiet edit.
+
+**Guard against the ratchet becoming a filing cabinet.** If the count never falls, the exercise has documented the spaghetti rather than fixing it. A remediation record therefore carries either a burn-down expectation or an explicit, dated decision to accept the gap as permanent. "Accepted" is a legitimate answer. "Still baselined, untouched, eighteen months later, nobody decided anything" is not, and should be surfaced as staleness rather than silently persisting.
 
 ### Two questions that get conflated
 
@@ -481,6 +511,7 @@ Against the pre-repo plan:
 - **Ordering gate reinstated.** "No scaffold before the architecture gate" was in the original plan; an earlier review of mine wrongly called it vacuous. It is the constraint the approach rests on.
 - **Placement specified** — `docs/context/decisions/architecture.md`, pointed to from `PROJECT.md`, so the pattern rides `kb-map`'s existing retrieval path instead of requiring repo rediscovery.
 - **Conformance findings carry an evidence class** from the graph-routing vocabulary already in use, so model opinion cannot masquerade as structural proof.
+- **Remediation mode added** as the fourth call-out. Candidates ranked by computable *migration distance* rather than fit, unmapped residue triaged into delete / consolidate / migrate, execution handed to `kb-simplify`, and progress held by a one-directional ratchet with an anti-staleness guard.
 - **Deviation policy added.** Extending beyond a pattern or declining the library is allowed but recorded, with typed reason codes rather than free prose, a justification burden that scales with evidence tier, deviation counting with forced re-selection past a threshold, and `no-pattern-covers-this` as the catalog's growth queue.
 - **Monolith default withdrawn.** Inspecting the Ops repos showed the segmentation follows bounded contexts, with each repository a coherent product and valid `kb-map` root. The earlier recommendation was aimed at the wrong target.
 - **Family scope added.** Observed drift across `universal_ui.owner_integration.v1` in three repositories — including `proof` typed as an object in two and a string in a third — is invisible to every single-repo check by construction. Role cardinality must be checkable across a declared repository family.
