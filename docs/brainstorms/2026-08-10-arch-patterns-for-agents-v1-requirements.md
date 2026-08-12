@@ -247,6 +247,54 @@ Two design points carry over from findings already recorded here rather than fro
 
 The four-way memory split is the load-bearing part. Collapsing memory into one store is the characteristic slop generator for this workload: it grows without bound, is injected wholesale into every request, and mixes model guesses with facts so that no later question about provenance can be answered.
 
+### Validation against the Ops family (2026-08-11)
+
+The draft above was written from first principles, then tested against all five Ops repositories — the first time a proposed entry has been checked against real code before authoring. Revisions: FinanceOps `d4da31c4`, HealthOps `1f0ea769`, HomeOps `d76a4187`, LearnOps `19422d61`, LifeOps `d27a765e`.
+
+**The pattern is largely already implemented, and one role was wrong.**
+
+FinanceOps' `research_brief.py` → `wiki_promotion.py` path is proposal → effect gate → system of record, built independently of this document. Confirmed present: `prompt_template_version` (prompts are versioned assets), `route_receipt` carrying provider/model/`network_scope`, exact field-set equality rather than subset checks, and a promotion gate refusing anything not `state=draft` / `validation_status=passed` / `wiki_promoted=false`, plus an `order_capability: false` capability flag. `route_receipt` is asserted *absent* from the rendered projection, so provenance is retained internally without being exposed.
+
+**Correction to the role inventory: `model_adapter` is not in-repo.** A search for model clients across all five repositories returns zero calls. Every hit is either a test fixture describing a receipt, or a redaction regex — `litellm` appears in application code as a token to *scrub*, never as a client to invoke. What crosses the boundary is `model.route_receipt.v1`, a receipt of a call made out-of-process.
+
+This is a stronger arrangement than the draft, and the entry should record it as the preferred variant:
+
+| Draft role | Corrected |
+|---|---|
+| `model_adapter` — exactly-one per provider, in-repo | `route_receipt` — an out-of-process receipt crossing the boundary. The application never links a model client. |
+
+The forbidden edge `handler --CALLS_STATIC--> model_provider` is then trivially satisfied by construction rather than by discipline, which is the better way to satisfy it.
+
+**Detectors fired on real code.** Confining measurement to LearnOps (49,604 source lines, 60 modules, versus 1,952 for HealthOps):
+
+| Helper | Defined in | Distinct implementations |
+|---|---|---|
+| `_timestamp` | 36 files | 36 |
+| `_text` | 35 files | — nine different length caps: 240, 260, 280, 300, 360, 500, 600, 700, 1000 |
+| `_mapping` | 30 files | — |
+| `_exact` | 20 files | — |
+
+Thirty-six copies with thirty-six distinct bodies is worse than copy-paste, because each drifts independently. The proximate cause is visible and sympathetic: each module raises its own error class, so a shared validator appeared impossible and each module grew its own.
+
+**A negative result, recorded because it disciplines the check.** The first hypothesis was that these validators diverge behaviourally — `intake.py` normalises a `Z` suffix and `glossary.py` does not. Executing all three against a shared case set showed **identical** accept/reject behaviour on Python 3.11, where `fromisoformat` handles `Z` natively. The hypothesis was wrong. A checker that reported "36 divergent implementations" as a defect would have been overclaiming, which is the same failure as a confident but meaningless drift report. Duplication is a maintenance fact; behavioural divergence must be demonstrated, not inferred from textual difference.
+
+**Where divergence is real, it is security-relevant.** Six different secret-redaction regexes exist across the projection modules, each defining "what is a secret" differently. Executed against a shared sample set:
+
+| Sample | Caught by |
+|---|---|
+| `api_key = sk-live-1` | 6 of 6 |
+| `bearer eyJhbGciOi` | 4 of 6 |
+| `my token is abc123` | 3 of 6 |
+| `routed via litellm` | 3 of 6 |
+| `passwd hunter2` | 0 of 6 |
+| `the secret sauce` | 0 of 6 |
+
+Whether a secret is redacted depends on which projection renders it. `learning_page_projection.py` omits `token`; `preview_policy.py` omits `token` and `bearer`; `knowledge_publication.py` requires a following `:` or `=`, so a bare mention passes. Only one of the six covers `passwd` or `secret`.
+
+Blind spot, stated per the entry rules: these regexes sit behind strict field allowlists, so a leak may be unreachable in practice. The inconsistency is a fact; exploitability is not established here and must not be claimed. The finding stands as *one role, six incompatible implementations, no declared policy* — which is the cardinality detector working as designed.
+
+**The real defect is not the duplication. It is that intent was never recorded.** Nine `_text` caps may be nine deliberate field-specific limits or eight accidents. Nothing in the codebase distinguishes them, so neither a reviewer nor an agent can tell drift from design — and an agent adding a tenth module will copy whichever neighbour it read first. This is the case for a declared role inventory stated as compactly as possible.
+
 ## Selection
 
 **Resolved: hybrid, with all non-determinism placed before the human checkpoint and none after it.**
@@ -688,6 +736,9 @@ Against the pre-repo plan:
 - **Remaining five decisions resolved** without escalation, all being agent-owned with evidence-backed defaults. The two with real blast radius reuse existing precedent rather than inventing: companion resolution copies the `cmd/kbcheck` degradation convention, and selection stays a phase of existing skills. The deviation thresholds are explicitly unvalidated defaults.
 - **`forbidden_edges` added to the schema** (2026-08-11). Roles say what a pattern admits; they cannot say what must never reach what, and for some patterns that prohibition is the whole value. Narrow by design: prohibition only, reusing the existing graph-routing edge vocabulary, not a general constraint language.
 - **First coverage gap recorded, and closed into V1** (2026-08-11). The seed catalog had no entry for building on an LLM — all 25 patterns predate the workload. Surfaced by the first consumer-authored request, which makes it a legitimate coverage test rather than a synthetic one. Resolving it to the nearest match, Hexagonal, would have dropped memory typing and provenance: the confidently-typed wrong pattern the coverage rule exists to catch.
+- **LLM-Assisted Application validated against real code before authoring** (2026-08-11). Largely already implemented in FinanceOps. One role corrected: `model_adapter` is not in-repo, because no Ops repository calls a model at all — a `route_receipt` crosses the boundary instead, which satisfies the forbidden edge by construction rather than by discipline.
+- **A hypothesis was executed and failed** (2026-08-11). Thirty-six `_timestamp` implementations were predicted to diverge on `Z`-suffix handling; running them showed identical behaviour on Python 3.11. Recorded because it sets the evidentiary bar: duplication is a maintenance fact, behavioural divergence must be demonstrated. The check must not infer the second from the first.
+- **Cardinality detector produced a real finding** (2026-08-11): six incompatible secret-redaction regexes, with `passwd` and `secret` covered by none and `token` by three of six. Exploitability deliberately not claimed — the blind spot is recorded instead.
 
 ## Decisions needed before `kb-plan`
 
