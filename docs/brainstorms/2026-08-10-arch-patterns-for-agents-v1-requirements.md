@@ -57,6 +57,7 @@ Every entry therefore carries:
 | `scope` | Which decision this pattern answers. Same-scope patterns compete; cross-scope compose. |
 | `exemplar` | The canonical implementation of each role, for imitation. Versioned and protected: a wrong exemplar replicates into every consumer that copies it. See "the codebase is the prompt" below and the observed instance under "The exemplar defect". |
 | `enforcement` | Per role and per declared field: what code path actually reads it. A role with no reader is ceremonial, and the entry must say so rather than implying enforcement it does not have. |
+| `forbidden_edges` | Optional. `(from_role, edge_type, to_role)` triples that must not appear. For some patterns the prohibition is the point, and roles alone cannot state it. See "Relationships". |
 
 Descriptive fields retained: context, use/avoid conditions, quality effects (conditional, never scored), costs, failure modes, evidence, licensing.
 
@@ -169,7 +170,19 @@ V1 ships three edge types only:
 - `requires` — selecting A obliges B
 - `conflicts_with` — A and B cannot both hold authority
 
+These are relations *between patterns*. They cannot express a constraint *inside* one, which turned out to be a gap the moment a real request arrived — see `forbidden_edges` below.
+
 Deferred until three real packets demonstrate the need: `precedes`, `composes_with`, `refines`, and the constraint solver (`any-of`, `exactly-one`, cardinality, ordering). At ~25 nodes a constraint solver enforces authoring typos, not architecture. Add edges when a packet cannot be expressed without them.
+
+### `forbidden_edges` — added after the first real request
+
+A role inventory says what parts a pattern admits. It cannot say **which parts must never reach which other parts**, and for several patterns that prohibition is the entire point.
+
+The case that exposed it: an LLM-assisted application, where the two rules that matter most are "the model adapter must never write to the system of record" and "no handler may call a model provider directly, bypassing the adapter." Both are checkable graph queries over existing typed edges. Neither is expressible as a role, a cardinality, or a between-pattern relation.
+
+Entries may therefore declare `forbidden_edges` as `(from_role, edge_type, to_role)` triples, where `edge_type` is one of the existing graph-routing types (`CALLS_STATIC`, `CALLS_OBSERVED`, `REFERENCES`, `READS_CONFIG`, ...). Semantics: presence of a matching edge is a violation. This is deliberately narrow — it adds prohibition, not a general constraint language, and it reuses the edge vocabulary already indexed rather than defining a parallel one.
+
+Findings must carry an evidence class. A `CALLS_OBSERVED` edge proving a forbidden call is strong; an `llm-inferred` one is a prompt to look, not a violation.
 
 ## Scopes
 
@@ -199,6 +212,40 @@ Any decision that does not fall in a scope must be reported as `uncovered`, neve
 Every scope must contain a **do-nothing baseline** — plain current-state CRUD, direct call, no additional structure — so "add no pattern" is always a rankable candidate rather than an omission.
 
 Expansion pack (not V1): microservices, Saga, retry, circuit breaker, backend-for-frontend, quarantine, compensating transaction, scoped capability tokens, health endpoints, SLO/error budgets, behavioural LLM evaluation.
+
+### Coverage gap: LLM-assisted applications
+
+The seed list above contains no entry for building on an LLM. Every pattern in it predates the workload. This surfaced on the first real inbound description — *"website with some memory and some data and LLM as helper"* — which is exactly the coverage test the document asks for, since the description was written by the consumer rather than by the catalog's author.
+
+The composition is expressible from existing entries: Modular Monolith + Hexagonal (at the model boundary) + Materialized Read Model + Human-in-the-Loop Approval + PROV lineage + Separated Presentation. But no single entry answers the question, and resolving it to Hexagonal alone — the nearest match — silently drops memory typing and provenance. That is precisely the confidently-typed wrong pattern the coverage-failure rule exists to prevent, so this is recorded as `uncovered` and added as V1 work rather than deferred to the expansion pack.
+
+**LLM-Assisted Application** (scope: integration and workflow; composes across state, effects, and proof). Draft role inventory, to be validated in slice 1:
+
+| Role | Cardinality | Note |
+|---|---|---|
+| System of record | exactly-one per aggregate | Owns truth. Never written by a model. |
+| Read projection | one per consumer | The only thing a model is allowed to see. |
+| Memory: session | exactly-one | Ephemeral, bounded, discardable without loss. |
+| Memory: durable profile | exactly-one | Small, long-lived, human-correctable. |
+| Memory: corpus | exactly-one | Indexed, read-only, cited on use. |
+| Memory: derived | exactly-one | Model-generated. Carries evidence class permanently. |
+| Model adapter | exactly-one per provider | The only site of a model call. |
+| Prompt asset | one per task, versioned | Canonical and never inlined. |
+| Proposal | many | Model output as candidate, not fact. |
+| Effect gate | exactly-one per effect class | Turns proposals into effects, or rejects them. |
+
+`forbidden_edges`:
+
+- `model_adapter --WRITES--> system_of_record`
+- `handler --CALLS_STATIC--> model_provider` (bypasses the adapter)
+- `memory_derived --WRITES--> system_of_record` without passing `effect_gate`
+
+Two design points carry over from findings already recorded here rather than from the literature:
+
+- **Typed memory reuses the existing evidence classes.** `exact`, `observed`, `structural`, `heuristic`, `llm-inferred`, with the standing rule that LLM-inferred is never exact. Derived memory promoted into the system of record without passing a gate is the same laundering failure the conformance-versus-fitness separation guards against elsewhere.
+- **The prompt asset is an exemplar.** A prompt copied into three call sites is the `provider.kind` defect again: it drifts into three behaviours and the copy gets debugged instead of the original. Prompts inherit the exemplar rule — versioned, single canonical home, protected.
+
+The four-way memory split is the load-bearing part. Collapsing memory into one store is the characteristic slop generator for this workload: it grows without bound, is injected wholesale into every request, and mixes model guesses with facts so that no later question about provenance can be answered.
 
 ## Selection
 
@@ -379,7 +426,7 @@ Architectural terms may appear as labels for the reader's benefit, but no approv
 
 ## Slices
 
-1. **Minimal catalog + schema + layout** — seed with **Plugin Host with Owner Contributions**, whose role inventory is lifted from the host's *enforced* mechanism (`OWNER_ARTIFACT.json`, `scripts/verify-owner-intake.mjs`, the provider resolution table), not from the inert `integration.json`. Plus 6–10 further entries across at least three scopes. Each carries roles, cardinalities, role signatures, a check with a declared independent evidence source, blind spots, and a versioned exemplar. One file per pattern plus a small workload-keyed `index.json`. Schema and admission tests.
+1. **Minimal catalog + schema + layout** — seed with two named entries, chosen because each exercises a different part of the schema. **Plugin Host with Owner Contributions**, whose role inventory is lifted from the host's *enforced* mechanism (`OWNER_ARTIFACT.json`, `scripts/verify-owner-intake.mjs`, the provider resolution table) rather than the inert `integration.json`, and which exercises `enforcement`. **LLM-Assisted Application**, drafted above from the first real inbound request, which exercises `forbidden_edges` and typed memory. Plus 4–8 further entries across at least three scopes. Each carries roles, cardinalities, role signatures, a check with a declared independent evidence source, blind spots, and a versioned exemplar. One file per pattern plus a small workload-keyed `index.json`. Schema and admission tests.
 2. **Enforcement-vs-declaration pass** — over UniversalUI at `8a0a5514` and the five Ops repositories. Report, for each declared contract field, whether any code path reaches it. Ground-truth answer key, stated in the host's own architecture docs and therefore independent of this checker: `integration.json`, `cssRootClass`, `provider.kind`, `sdkVersion` and the release envelope are inert; `legacyRoute` is transitively dead behind a component with no call site; `OWNER_ARTIFACT.json` and the provider table are load-bearing. The check must also attribute the `provider.kind` split to the exemplar that caused it. If the check cannot reproduce these rulings, the approach does not work and the project stops here.
 3. **Companion integration** — resolve the catalog from `working-skill-repo`, emit a pinned decision record to `docs/context/decisions/architecture.md`, point `PROJECT.md` at it, register it as a protected oracle, and verify conformance through a `kbcheck` check on a real task. Measure drift and repeatability. Prove the graceful-degradation path when the companion is absent.
 
@@ -639,6 +686,8 @@ Against the pre-repo plan:
 - **`exemplar` promoted** to versioned and protected, and **`enforcement` added** to the entry schema.
 - **Check independence required.** A check whose expected and observed values share a code path confirms only that a file agrees with itself.
 - **Remaining five decisions resolved** without escalation, all being agent-owned with evidence-backed defaults. The two with real blast radius reuse existing precedent rather than inventing: companion resolution copies the `cmd/kbcheck` degradation convention, and selection stays a phase of existing skills. The deviation thresholds are explicitly unvalidated defaults.
+- **`forbidden_edges` added to the schema** (2026-08-11). Roles say what a pattern admits; they cannot say what must never reach what, and for some patterns that prohibition is the whole value. Narrow by design: prohibition only, reusing the existing graph-routing edge vocabulary, not a general constraint language.
+- **First coverage gap recorded, and closed into V1** (2026-08-11). The seed catalog had no entry for building on an LLM — all 25 patterns predate the workload. Surfaced by the first consumer-authored request, which makes it a legitimate coverage test rather than a synthetic one. Resolving it to the nearest match, Hexagonal, would have dropped memory typing and provenance: the confidently-typed wrong pattern the coverage rule exists to catch.
 
 ## Decisions needed before `kb-plan`
 
