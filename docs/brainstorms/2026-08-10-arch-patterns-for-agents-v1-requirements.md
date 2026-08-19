@@ -32,7 +32,7 @@ The industry-standard pattern schema (context, forces, resulting context, conseq
 
 My first attempt at a fix was to enumerate *violations* per pattern. That was also wrong, for an instructive reason: you cannot enumerate all the ways code can be wrong, so an enumerated list silently licenses everything it forgot to mention.
 
-The correct primitive is the inverse. **Each pattern declares the finite set of roles it admits.** Roles are enumerable; violations are not. Four detectors then fall out mechanically:
+The correct primitive is the inverse. **Each pattern declares the finite set of roles it admits.** Roles are enumerable; violations are not. Five detectors then fall out mechanically — the first three from the role inventory, the last two found by inspecting real repositories:
 
 | Signal | Meaning |
 |---|---|
@@ -40,8 +40,11 @@ The correct primitive is the inverse. **Each pattern declares the finite set of 
 | **N components filling one role** | Duplication. "Why do we have four of these?" becomes a query, not an opinion. |
 | A role with **no filler** | Incomplete, or the pattern was the wrong choice. |
 | A **declared** role or contract that **nothing reads** | Ceremonial architecture. The declaration exists, drifts, and costs maintenance while changing no behaviour. Added after observing it in UniversalUI — see "Ceremonial architecture" below. |
+| A **private** symbol consumed across a module boundary | A role with no declared home. Consolidation is happening anyway and landing wherever it can reach. Added after measuring it in LearnOps — see "Drift has a shape" below. |
 
-The fourth detector was not in the original design. It was added because inspecting the host repository found a schema declared in sixteen files that no code path reads. It is the purest form of the target problem: structure that looks like architecture, is maintained like architecture, and does nothing.
+Neither the fourth nor the fifth detector was in the original design, and the way both arrived is worth recording. The fourth came from inspecting the host repository and finding a schema declared in sixteen files that no code path reads — the purest form of the target problem: structure that looks like architecture, is maintained like architecture, and does nothing. The fifth came from measuring one repository's history rather than its current state.
+
+Both were found by looking at real code, neither was predicted from the design, and both are pattern-independent — they fire on a repository that never adopted a pattern at all. That is the reverse of the expected direction, and it constrains V1: **detectors that need no adopted pattern must ship first**, because every repository in the estate is currently in that condition.
 
 This is why the catalog is worth building even though the model already knows what MVC is. Knowing a pattern is not the same as holding a finite role inventory to diff a repository against. The second is checkable; the first is vibes.
 
@@ -52,7 +55,8 @@ Every entry therefore carries:
 | `roles` | The finite set of responsibilities the pattern admits. The load-bearing field. |
 | `role_signature` | How to recognise a component filling each role — observable, not descriptive. |
 | `cardinality` | Per role: exactly-one, one-per-aggregate, many. This is what makes duplication detectable rather than arguable. |
-| `check` | The query or script that maps code to roles. Tiered: grep heuristic, graph query, or fitness function. Must name the **independent evidence source** it compares against; a check whose expected and observed values share a source is rejected. |
+| `check` | The query or script that maps code to roles. Tiered: grep heuristic, graph query, or fitness function. Must name the **independent evidence source** it compares against; a check whose expected and observed values share a source is rejected. Must declare its **scope** as `diff` or `cumulative` — see "Drift has a shape". |
+| `role_signature` scope rule | A signature that matches only on a **name** is rejected on its own. Measured false-negative rate of 10% on a real corpus; must be paired with a structural or behavioural signature. See "Drift has a shape". |
 | `blind_spots` | What the check cannot see, so silence is never read as conformance. |
 | `scope` | Which decision this pattern answers. Same-scope patterns compete; cross-scope compose. |
 | `exemplar` | The canonical implementation of each role, for imitation. Versioned and protected: a wrong exemplar replicates into every consumer that copies it. See "the codebase is the prompt" below and the observed instance under "The exemplar defect". |
@@ -312,6 +316,53 @@ Measured estate at 2026-08-19, for the record: domain layers are Python (Finance
 
 Note one asymmetry that makes consolidation more feasible here than usual: because no repository calls a model in-process, none carries an ML library dependency, so the customary reason a Python domain layer cannot move is absent.
 
+### Drift has a shape, and the shape decides the check (2026-08-19)
+
+Every test in the plan below is a **snapshot** test: it describes a state, not a trajectory. That is a gap, because drift is a rate. Measured over LearnOps' full history — 196 commits, 2026-07-18 to 2026-08-18, HEAD `1840b081` — the 36 `_timestamp` copies were introduced by **15 commits**, in two distinct modes:
+
+| Introduction mode | Commits | Copies | Visible within the diff? |
+|---|---|---|---|
+| Bulk — 8 and 13 copies in a single commit (`ca47d050`, `3ef828fd`) | 2 | 21 | **Yes.** The diff itself contains the repetition. |
+| Singleton — one or two copies per commit | 13 | 15 | **No.** One short private helper is an entirely reasonable diff. |
+
+**Thirteen of the fifteen introducing commits added one or two copies.** No review scoped to a diff could have flagged them, because at the moment each was written it was one small function. Only a check comparing the diff against *cumulative repository state* sees copy #14 as copy #14.
+
+Consequence for the schema: **every `check` declares its scope as `diff` or `cumulative`.** The two catch different populations and neither subsumes the other. A catalog shipping only diff-scoped checks would have caught 21 of 36 copies here while missing the majority of the commits that caused the problem — and the missed ones are precisely the cheap-to-fix moments.
+
+#### The name-based signature undercounts by 10%
+
+The detector used in the 2026-08-11 pass matched on the function name `def _timestamp`. Re-run against a structural signature instead — files calling `fromisoformat` — the counts diverge:
+
+| Signature | Files |
+|---|---|
+| `def _timestamp` (name-based) | 36 |
+| `fromisoformat` (structural) | 40 |
+| **Parse timestamps but define no such helper** | **4** |
+
+The four are `personal_knowledge_publisher.py`, `production_pilot.py`, `public_paths.py`, and `wiki.py`. The first hand-rolls the validation inline at lines 248–253 rather than copying the helper — substantively copy #37, invisible to the name grep.
+
+Two rules follow. First, **a `role_signature` matching only on a name is rejected**; it must be paired with a structural or behavioural signature. Second, and more damaging: the name-based detector also missed `wiki.py`, which defines `_v2_timestamp` — *the shared version other modules had begun calling*. The detector could not distinguish "36 copies and no shared implementation" from "36 copies plus an emerging consolidation." A detector blind to the fix is worse than one blind to the defect, because it reports no progress when progress is occurring.
+
+#### A corrected reading, recorded
+
+The last copy landed 2026-08-01; HEAD is 2026-08-18. The obvious reading is that the duplication stopped, and 106 commits with 13 new modules and zero new copies looked like strong support. **That reading is wrong.** Seven of the 13 new modules contain no timestamp handling at all, and most of the rest contain one line. The apparent stabilisation is a **composition artifact** — the new modules changed shape — not a behavioural correction. No consolidation of the existing 36 has occurred. Stated as a rule: *a detector's count falling is not evidence of repair unless the population that could exhibit the defect held steady.* Any drift-rate check must report the denominator.
+
+#### A private symbol crossing a module boundary is a role with no home
+
+Partial reuse *did* emerge, in the ugliest available form. `claim_candidate_producer.py` and `claim_review_command.py` both call `wiki._v2_timestamp(...)` — a leading-underscore private, reached across a module boundary. Counting the whole repository:
+
+| Consumed private | External call sites |
+|---|---|
+| `owner_content_store._store_root` | 4 |
+| `wiki._normalize_v2_claim` | 3 |
+| `wiki._v2_timestamp` | 2 |
+| `wiki.` — four further privates (`_normalize_v2_evidence`, `_v2_source_id`, `_v2_text`, `_v2_version_id`) | 4 |
+| `question_bank.` — three privates | 3 |
+
+Sixteen cross-boundary calls into private symbols, six of them into `wiki`. **`wiki.py` has become a shared kernel by accretion without ever being declared one**, and consumers reach past its public surface because it has no public surface for the role they need.
+
+This is the fifth detector, and it is the most useful one found so far, for three reasons. It is pattern-independent, so it fires on repositories that never adopted anything. It has near-zero false positives — cross-module private access is unambiguous by language convention, not inference. And unlike the other four it names the **remedy** as well as the defect: each consumed private is a role that wants declaring, and the module accumulating them is where it belongs. It is the moment a role should have been named, caught in the act.
+
 ## Selection
 
 **Resolved: hybrid, with all non-determinism placed before the human checkpoint and none after it.**
@@ -471,6 +522,10 @@ The gap is that the knowledge lives in prose, in `docs/context/architecture/`, a
 - *Duplication detection* — count roles filled by more components than their cardinality allows. Verify against known duplication.
 - *Repeatability* — the same description run N times yields the same pinned decisions. This measures the willy-nilly problem directly.
 - *Drift* — give an agent a decision record and a real task; count violations of its own record in the resulting code.
+- *Drift rate, not drift state* — replay a repository's history and record when each duplicate was introduced, in how many commits, and at what per-commit size. Scored against the LearnOps measurement: 36 copies from 15 commits, 21 of them from 2 commits and 15 from 13 singleton commits. A check claiming to catch accretion must catch the singletons.
+- *Signature robustness* — run each `role_signature` in both its name-based and structural forms and report the delta. Known answer on LearnOps: 36 versus 40, a 10% miss including the emerging shared implementation itself.
+- *Denominator reporting* — a falling defect count must be accompanied by the size of the population that could exhibit it. Scored against the LearnOps case where zero new copies across 106 commits reflected 13 new modules that mostly do not handle timestamps, not a repair.
+- *Homeless-role detection* — count private symbols consumed across module boundaries. Known answer on LearnOps: 16 call sites, 6 into `wiki`. Precision should be near-perfect; this test exists to confirm the graph query resolves module boundaries correctly, not to discover the answer.
 
 **Dropped as unmeasurable in V1:** calibration (no probabilistic outputs, no observed outcomes), excess-complexity regret (requires building the counterfactual), unsafe-recommendation rate (undefined). Reinstate only with a labelled rubric.
 
@@ -746,6 +801,9 @@ Against the pre-repo plan:
 - **Selector seam resolved**: non-determinism sits entirely before the human checkpoint. The human confirms extracted facts; code makes the selection.
 - **Host repository inspected** at `8a0a5514`, having been skipped until now. It should have been first — a plugin host's roles are defined by the host, not by a contributor.
 - **Fourth detector added — ceremonial architecture.** A declared contract that nothing reads. Found empirically: `universal_ui.owner_integration.v1` is declared in sixteen files and read by zero code paths, per the host's own `git grep` audit.
+- **Fifth detector added — the homeless role.** A private symbol consumed across a module boundary. Found by measuring LearnOps' history rather than its state: 16 such call sites, 6 into `wiki.py`, which had become a shared kernel without ever being declared one. Pattern-independent, near-zero false positives, and it names the remedy rather than only the defect.
+- **Checks now declare `diff` or `cumulative` scope.** 13 of the 15 commits that introduced `_timestamp` copies added only one or two, so diff-scoped review was structurally incapable of catching the majority. Snapshot testing measures state; the problem is a rate.
+- **Name-only `role_signature` rejected.** Measured 10% false negatives, and the misses included the shared implementation that consumers had started adopting — a detector blind to the fix, not merely to the defect.
 - **Slice 2 corrected, second time.** Its answer key was the observed `integration.json` divergence. That field set is inert, so reporting it would be a confident but meaningless drift report. Re-aimed at enforcement-versus-declaration, whose answer key is published by the host and independent of this checker.
 - **"Codebase is the prompt" upgraded from assertion to observation.** The host documents a doc example that was wrong, propagating into every owner that copied it, splitting the family by copy source: "The example was the defect, not those owners." An earlier draft of this document misread that same split as contributor drift.
 - **`exemplar` promoted** to versioned and protected, and **`enforcement` added** to the entry schema.
