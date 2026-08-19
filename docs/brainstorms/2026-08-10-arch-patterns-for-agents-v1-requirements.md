@@ -295,6 +295,23 @@ Blind spot, stated per the entry rules: these regexes sit behind strict field al
 
 **The real defect is not the duplication. It is that intent was never recorded.** Nine `_text` caps may be nine deliberate field-specific limits or eight accidents. Nothing in the codebase distinguishes them, so neither a reviewer nor an agent can tell drift from design — and an agent adding a tenth module will copy whichever neighbour it read first. This is the case for a declared role inventory stated as compactly as possible.
 
+### Language choice does not substitute for checks
+
+Recorded because remediation mode will otherwise generate "rewrite in a stricter language" as a candidate, and the evidence forecloses it.
+
+Tested against the three findings above: a static type checker catches **none** of them. `_timestamp` was already annotated `(value: Any, field: str) -> str` in all 36 copies, and 36 correctly-typed identical signatures are 36 clean type-checks. The nine `_text` caps are all valid `int` defaults. The six redaction regexes are all `re.Pattern`. Duplication and undeclared intent are invisible to every type system in every language, which is precisely why the role inventory and its cardinalities are the primitive rather than a type signature.
+
+Stronger claim, in the other direction: for this specific failure mode Rust would likely be worse. The proximate cause of the 36 copies is that each module defines its own error class, so a shared validator appeared impossible. Per-module error enums are idiomatic Rust, so the pressure to duplicate a validator per module is higher there, not lower.
+
+Consequences for the catalog:
+
+- Entries are language-neutral, and a language migration is never a valid remediation candidate for a duplication or ceremonial-architecture finding. Migration distance is computed over roles, not over runtimes.
+- Where static types genuinely help this family is at **cross-repository JSON boundaries** — the `proof` object-versus-string split is the observed case — and even there the mechanism is runtime schema validation at the boundary, not compile-time types. A language with strong types and no boundary validation catches nothing.
+
+Measured estate at 2026-08-19, for the record: domain layers are Python (FinanceOps 70%, HealthOps 76%, HomeOps 60%, LearnOps 78%, LifeOps 72%, PersonalWiki 70%, jobfinder 82%), the host is TypeScript (UniversalUI 51%), and Agent127 is Rust (86%). Three runtimes with an existing boundary-drift problem; adding a fourth is contraindicated independently of that runtime's merits.
+
+Note one asymmetry that makes consolidation more feasible here than usual: because no repository calls a model in-process, none carries an ML library dependency, so the customary reason a Python domain layer cannot move is absent.
+
 ## Selection
 
 **Resolved: hybrid, with all non-determinism placed before the human checkpoint and none after it.**
