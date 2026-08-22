@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Architecture Conformance Console — Pristine Hyper-Minimalism</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;400;600;800&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --mesh-aurora: oklch(63% 0.31 248);
+        --mesh-orchid: oklch(61% 0.34 274);
+        --mesh-violet: oklch(57% 0.33 288);
+        --mesh-rose: oklch(64% 0.30 308);
+        --ink: rgba(255, 255, 255, 0.94);
+        --muted: rgba(255, 255, 255, 0.58);
+        --faint: rgba(255, 255, 255, 0.34);
+        --line: rgba(255, 255, 255, 0.10);
+        --line-bright: rgba(255, 255, 255, 0.22);
+        --glass: rgba(255, 255, 255, 0.055);
+        --glass-top: rgba(255, 255, 255, 0.14);
+        --shadow: rgba(3, 5, 24, 0.42);
+        --accent: oklch(88% 0.16 238);
+        --accent-warm: oklch(86% 0.18 318);
+        --radius: clamp(1.5rem, 3vw, 2.6rem);
+        --page-pad: clamp(1.1rem, 2.7vw, 2.4rem);
+        --section-gap: clamp(0.8rem, 1.7vw, 1.35rem);
+        --spring: 700ms cubic-bezier(0.19, 1, 0.22, 1);
+        --tilt-x: 0deg;
+        --tilt-y: 0deg;
+        --lift: 0rem;
+        color-scheme: dark;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { min-height: 100%; background: #070817; }
+
+    body {
+        position: relative;
+        display: grid;
+        grid-template-rows: minmax(100vh, auto);
+        margin: 0;
+        min-height: 100vh;
+        overflow-x: hidden;
+        color: var(--ink);
+        background: #070817;
+        font: 400 clamp(0.95rem, 1.1vw, 1.06rem)/1.65 "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body::before {
+        content: "";
+        position: fixed;
+        inset: -24vmax;
+        z-index: 0;
+        pointer-events: none;
+        background:
+            radial-gradient(ellipse at 28% 18%, oklch(63% 0.31 248 / 0.98) 0 9rem, transparent 32rem),
+            radial-gradient(ellipse at 72% 28%, oklch(61% 0.34 274 / 0.95) 0 11rem, transparent 35rem),
+            radial-gradient(ellipse at 36% 62%, oklch(57% 0.33 288 / 0.92) 0 12rem, transparent 36rem),
+            radial-gradient(ellipse at 82% 78%, oklch(64% 0.30 308 / 0.90) 0 10rem, transparent 34rem);
+        filter: blur(34px) saturate(170%);
+        animation: mesh-breathe 34s ease-in-out infinite alternate;
+        transform-origin: center;
+    }
+
+    body::after {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        pointer-events: none;
+        background:
+            linear-gradient(120deg, rgba(255, 255, 255, 0.10), transparent 32%, rgba(255, 255, 255, 0.06)),
+            linear-gradient(180deg, rgba(7, 8, 23, 0), rgba(7, 8, 23, 0.24));
+    }
+
+    @keyframes mesh-breathe {
+        0% { transform: translate3d(-1.5%, -1%, 0) scale(1); }
+        50% { transform: translate3d(1.8%, 1.2%, 0) scale(1.035) rotate(2deg); }
+        100% { transform: translate3d(-0.8%, 1.6%, 0) scale(1.01) rotate(-1deg); }
+    }
+
+    .pristine-console {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        grid-template-rows: auto auto auto auto auto auto;
+        gap: var(--section-gap);
+        width: min(100%, 72rem);
+        margin: 0 auto;
+        padding: var(--page-pad);
+    }
+
+    .console-head {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(14rem, 0.42fr);
+        gap: clamp(1.25rem, 3.2vw, 3.6rem);
+        align-items: end;
+        min-height: clamp(10rem, 18vw, 16rem);
+    }
+
+    .title-group {
+        display: grid;
+        grid-template-rows: auto auto auto;
+        gap: clamp(0.9rem, 2vw, 1.6rem);
+        max-width: 62rem;
+    }
+
+    h1 {
+        max-width: 11ch;
+        margin: 0;
+        font-size: clamp(3rem, 10.5vw, 9.5rem);
+        font-weight: 100;
+        letter-spacing: -0.075em;
+        line-height: 0.88;
+        text-wrap: balance;
+    }
+
+    .eyebrow,
+    .label,
+    caption,
+    legend,
+    summary,
+    th {
+        color: var(--muted);
+        font-size: clamp(0.62rem, 0.75vw, 0.72rem);
+        font-weight: 800;
+        letter-spacing: 0.32em;
+        text-transform: uppercase;
+    }
+
+    .lede {
+        max-width: 58ch;
+        margin: 0;
+        color: var(--muted);
+    }
+
+    .glass-pane {
+        --tilt-x: 0deg;
+        --tilt-y: 0deg;
+        --lift: 0rem;
+        position: relative;
+        display: grid;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: linear-gradient(135deg, var(--glass-top), var(--glass));
+        backdrop-filter: blur(30px) saturate(150%);
+        -webkit-backdrop-filter: blur(30px) saturate(150%);
+        box-shadow:
+            0 3rem 7rem var(--shadow),
+            inset 0 1px 0 rgba(255, 255, 255, 0.30),
+            inset 1px 0 0 rgba(255, 255, 255, 0.08);
+        transform: perspective(1000px) rotateX(var(--tilt-x)) rotateY(var(--tilt-y)) translateY(var(--lift));
+        transform-style: preserve-3d;
+        transition: transform var(--spring), box-shadow var(--spring), border-color var(--spring);
+        will-change: transform;
+    }
+
+    .glass-pane::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        pointer-events: none;
+        background: radial-gradient(circle at var(--glare-x, 50%) var(--glare-y, 0%), rgba(255, 255, 255, 0.16), transparent 42%);
+        opacity: var(--glare, 0);
+        transition: opacity 420ms ease;
+    }
+
+    .glass-pane:hover,
+    .glass-pane:focus-within {
+        --lift: -0.22rem;
+        border-color: var(--line-bright);
+        box-shadow:
+            0 3.5rem 8rem rgba(3, 5, 24, 0.50),
+            inset 0 1px 0 rgba(255, 255, 255, 0.36),
+            inset 1px 0 0 rgba(255, 255, 255, 0.10);
+    }
+
+    .hero-pane {
+        grid-template-columns: minmax(0, 1fr) minmax(11rem, 0.28fr);
+        gap: clamp(1.5rem, 5vw, 4rem);
+        align-items: end;
+        min-height: clamp(23rem, 48vw, 38rem);
+        padding: clamp(1.8rem, 5vw, 5rem);
+    }
+
+    .hero-metric {
+        display: grid;
+        grid-template-rows: auto auto;
+        gap: clamp(0.6rem, 1.5vw, 1.2rem);
+    }
+
+    .hero-value {
+        font-size: clamp(8rem, 24vw, 20rem);
+        font-weight: 100;
+        letter-spacing: -0.11em;
+        line-height: 0.76;
+        text-shadow: 0 2rem 4rem rgba(0, 0, 0, 0.28);
+    }
+
+    .hero-note {
+        justify-self: end;
+        max-width: 18ch;
+        color: var(--faint);
+        font-size: clamp(0.85rem, 1vw, 1rem);
+    }
+
+    .stamp-list {
+        display: grid;
+        grid-template-columns: max-content minmax(0, 1fr);
+        gap: 0.65rem 1.2rem;
+        align-self: end;
+        margin: 0;
+    }
+
+    dt { color: var(--faint); }
+    dd { margin: 0; color: var(--ink); }
+    code { font: 600 0.92em/1.4 "Inter", ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace; }
+    time, code, td { font-variant-numeric: tabular-nums; }
+
+    .metric-strip {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(11rem, 1fr));
+        gap: clamp(0.9rem, 2vw, 1.5rem);
+    }
+
+    .metric-card {
+        grid-template-rows: auto auto auto;
+        gap: clamp(1rem, 2vw, 1.6rem);
+        min-height: 12rem;
+        padding: clamp(1.15rem, 2.3vw, 2rem);
+    }
+
+    .metric-card dd {
+        display: grid;
+        grid-template-rows: auto auto;
+        gap: 1.2rem;
+    }
+
+    .secondary-value {
+        font-size: clamp(2rem, 5vw, 4rem);
+        font-weight: 200;
+        letter-spacing: -0.06em;
+        line-height: 1;
+    }
+
+    meter {
+        width: 100%;
+        height: 2px;
+        appearance: none;
+        -webkit-appearance: none;
+        background: transparent;
+    }
+
+    meter::-webkit-meter-bar {
+        height: 2px;
+        border: 0;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.16);
+    }
+
+    meter::-webkit-meter-optimum-value,
+    meter::-webkit-meter-suboptimum-value,
+    meter::-webkit-meter-even-less-good-value {
+        border-radius: 999px;
+        background: linear-gradient(90deg, var(--accent), var(--accent-warm));
+    }
+
+    meter::-moz-meter-bar {
+        border-radius: 999px;
+        background: linear-gradient(90deg, var(--accent), var(--accent-warm));
+    }
+
+    .controls-pane {
+        grid-template-columns: minmax(14rem, 0.75fr) minmax(14rem, 1fr);
+        gap: clamp(1rem, 4vw, 4rem);
+        align-items: center;
+        padding: clamp(1.05rem, 2.2vw, 1.8rem);
+    }
+
+    .console-form {
+        display: grid;
+        grid-template-columns: minmax(12rem, 0.82fr) minmax(12rem, 1fr);
+        gap: clamp(1rem, 3vw, 2rem);
+        align-items: end;
+        margin: 0;
+    }
+
+    fieldset {
+        display: grid;
+        grid-template-rows: auto auto;
+        gap: 0.9rem;
+        min-width: 0;
+        margin: 0;
+        padding: 0;
+        border: 0;
+    }
+
+    label {
+        display: grid;
+        grid-template-rows: auto auto;
+        gap: 0.85rem;
+        min-width: 0;
+    }
+
+    select,
+    input[type="range"] {
+        width: 100%;
+        color: var(--ink);
+        font: inherit;
+        accent-color: var(--accent);
+    }
+
+    select {
+        appearance: none;
+        border: 0;
+        border-bottom: 1px solid var(--line-bright);
+        border-radius: 0;
+        padding: 0.3rem 1.8rem 0.65rem 0;
+        background:
+            linear-gradient(45deg, transparent 50%, var(--ink) 50%) right 0.35rem top 0.95rem / 0.45rem 0.45rem no-repeat,
+            linear-gradient(135deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.018));
+    }
+
+    select:focus-visible,
+    input[type="range"]:focus-visible {
+        outline: 1px solid var(--accent);
+        outline-offset: 0.45rem;
+    }
+
+    input[type="range"] {
+        appearance: none;
+        -webkit-appearance: none;
+        height: 1.6rem;
+        background: transparent;
+    }
+
+    input[type="range"]::-webkit-slider-runnable-track {
+        height: 2px;
+        border-radius: 999px;
+        background: linear-gradient(90deg, var(--accent), rgba(255, 255, 255, 0.16));
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 0.9rem;
+        height: 0.9rem;
+        margin-top: -0.4rem;
+        border: 1px solid rgba(255, 255, 255, 0.42);
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.72);
+        box-shadow: 0 0 1.4rem rgba(255, 255, 255, 0.38);
+    }
+
+    input[type="range"]::-moz-range-track {
+        height: 2px;
+        border-radius: 999px;
+        background: linear-gradient(90deg, var(--accent), rgba(255, 255, 255, 0.16));
+    }
+
+    input[type="range"]::-moz-range-thumb {
+        width: 0.9rem;
+        height: 0.9rem;
+        border: 1px solid rgba(255, 255, 255, 0.42);
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.72);
+    }
+
+    output {
+        color: var(--ink);
+        font-weight: 600;
+    }
+
+    .range-readout {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 1rem;
+        align-items: baseline;
+    }
+
+    .table-pane {
+        grid-template-rows: auto auto;
+        gap: clamp(0.7rem, 1.4vw, 1.25rem);
+        padding: clamp(1rem, 2vw, 1.75rem);
+        overflow-x: auto;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 44rem;
+    }
+
+    caption {
+        margin-bottom: clamp(1.2rem, 3vw, 2.3rem);
+        text-align: left;
+    }
+
+    th,
+    td {
+        padding: 0.6rem 1rem;
+        text-align: left;
+        border-bottom: 1px solid var(--line);
+        white-space: nowrap;
+    }
+
+    th:last-child,
+    td:last-child { text-align: right; }
+    tbody tr:last-child th,
+    tbody tr:last-child td { border-bottom: 0; }
+    td strong { font-weight: 800; color: var(--accent-warm); }
+
+    .drift-pane {
+        grid-template-columns: minmax(0, 1fr) minmax(13rem, 0.35fr);
+        gap: clamp(0.9rem, 2vw, 1.8rem);
+        align-items: center;
+        padding: clamp(1rem, 2vw, 1.75rem);
+    }
+
+    figure {
+        display: grid;
+        grid-template-rows: auto auto;
+        gap: 1rem;
+        margin: 0;
+    }
+
+    svg {
+        width: 100%;
+        height: auto;
+        max-height: 10.5rem;
+        overflow: visible;
+    }
+
+    figcaption,
+    .quiet-copy {
+        color: var(--muted);
+        max-width: 56ch;
+    }
+
+    .activity-pane {
+        grid-template-columns: minmax(0, 1.1fr) minmax(19rem, 0.65fr);
+        grid-template-rows: auto auto;
+        gap: clamp(0.8rem, 1.8vw, 1.5rem) clamp(1.2rem, 3vw, 3rem);
+        align-items: start;
+        padding: clamp(1rem, 2vw, 1.75rem);
+    }
+
+    .activity-pane > header {
+        grid-column: 1 / -1;
+    }
+
+    ol {
+        display: grid;
+        grid-template-rows: repeat(3, auto);
+        gap: 0.75rem;
+        grid-column: 1;
+        grid-row: 2;
+        margin: 0;
+        padding-left: 1.35rem;
+    }
+
+    li::marker { color: var(--faint); }
+
+    details {
+        align-self: start;
+        color: var(--muted);
+    }
+
+    summary {
+        cursor: pointer;
+        list-style-position: outside;
+    }
+
+    details p { max-width: 36ch; margin: 1rem 0 0; }
+
+    blockquote {
+        grid-column: 2;
+        grid-row: 2;
+        margin: 0;
+        max-width: 30ch;
+        font-size: clamp(1.35rem, 2.5vw, 2.25rem);
+        font-weight: 100;
+        letter-spacing: -0.055em;
+        line-height: 1.02;
+    }
+
+    cite {
+        grid-column: 2;
+        grid-row: 2;
+        align-self: end;
+        color: var(--muted);
+        font-style: normal;
+        padding-top: clamp(5rem, 9vw, 7rem);
+    }
+
+    @media (max-width: 760px) {
+        .console-head,
+        .hero-pane,
+        .metric-strip,
+        .controls-pane,
+        .console-form,
+        .drift-pane,
+        .activity-pane {
+            grid-template-columns: 1fr;
+        }
+
+        .console-head { min-height: auto; }
+        .hero-note { justify-self: start; }
+        ol, blockquote, cite { grid-column: auto; grid-row: auto; }
+        cite { padding-top: 0; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        body::before {
+            animation: none;
+            transform: none;
+        }
+
+        .glass-pane,
+        .glass-pane::before {
+            transition: none;
+        }
+
+        .glass-pane {
+            transform: none !important;
+        }
+    }
+</style>
+</head>
+<body>
+<main class="pristine-console">
+    <header class="console-head">
+        <section class="title-group" aria-labelledby="console-title">
+            <p class="eyebrow">Irtechie / ArchPatternsForAgents</p>
+            <h1 id="console-title">Architecture Conformance Console</h1>
+            <p class="lede">A sparse reading of the same substrate: one dominant signal, quiet bounds, and semantic data left intact.</p>
+        </section>
+
+        <dl class="stamp-list" aria-label="Run metadata">
+            <dt>Commit</dt>
+            <dd><code>ce75e79</code></dd>
+            <dt>Run</dt>
+            <dd>12</dd>
+            <dt>Time</dt>
+            <dd><time datetime="2026-08-21T21:40">2026-08-21T21:40</time></dd>
+            <dt>Owner</dt>
+            <dd>Irtechie / ArchPatternsForAgents</dd>
+        </dl>
+    </header>
+
+    <section class="glass-pane hero-pane" aria-labelledby="coverage-label">
+        <dl class="hero-metric">
+            <dt class="label" id="coverage-label">Detector coverage</dt>
+            <dd><strong class="hero-value">82%</strong></dd>
+        </dl>
+        <p class="hero-note">% of tree</p>
+    </section>
+
+    <section class="metric-strip" aria-label="Secondary metrics">
+        <dl class="glass-pane metric-card">
+            <dt class="label">Declared conformance</dt>
+            <dd><strong class="secondary-value">7</strong><meter min="0" max="9" value="7">7 of 9 repos</meter></dd>
+            <dd class="quiet-copy">of 9 repos</dd>
+        </dl>
+        <dl class="glass-pane metric-card">
+            <dt class="label">Undeclared drift</dt>
+            <dd><strong class="secondary-value">14</strong><meter min="0" max="40" value="14">14 findings of 40 budget</meter></dd>
+            <dd class="quiet-copy">findings, of 40 budget</dd>
+        </dl>
+        <dl class="glass-pane metric-card">
+            <dt class="label">Generic markup</dt>
+            <dd><strong class="secondary-value">15%</strong><meter min="0" max="100" value="15">15% div/span</meter></dd>
+            <dd class="quiet-copy">% div/span</dd>
+        </dl>
+    </section>
+
+    <section class="glass-pane controls-pane" aria-labelledby="review-tools">
+        <header>
+            <p class="eyebrow" id="review-tools">Review profile</p>
+            <p class="quiet-copy">Two native controls, skinned without replacing their substrate.</p>
+        </header>
+        <form class="console-form">
+            <fieldset>
+                <legend>Profile</legend>
+                <label>
+                    <span class="label">Lens</span>
+                    <select id="profile" name="profile">
+                        <option>Declared conformance</option>
+                        <option>Detector coverage</option>
+                        <option>Undeclared drift</option>
+                        <option>Generic markup</option>
+                    </select>
+                </label>
+            </fieldset>
+            <fieldset>
+                <legend>Generic-markup ceiling</legend>
+                <!-- Explicit for=, because <output> is itself a labelable
+                     element and appears first in this label's subtree; without
+                     it the label binds to the output and the slider is left
+                     with no accessible name at all. -->
+                <label for="ceiling">
+                    <span class="range-readout"><span class="label">Ceiling</span><output id="ceilingOutput" for="ceiling" aria-live="polite">25%</output></span>
+                    <input id="ceiling" name="ceiling" type="range" min="0" max="45" value="25" aria-describedby="ceilingHelp">
+                </label>
+                <p class="quiet-copy" id="ceilingHelp">Current shared value remains 15%.</p>
+            </fieldset>
+        </form>
+    </section>
+
+    <section class="glass-pane table-pane" aria-labelledby="estate-heading">
+        <header>
+            <p class="eyebrow" id="estate-heading">Estate</p>
+        </header>
+        <table>
+            <caption>Repository conformance table</caption>
+            <thead>
+                <tr>
+                    <th scope="col">Repository</th>
+                    <th scope="col">Pattern</th>
+                    <th scope="col">div/span</th>
+                    <th scope="col">Elements</th>
+                    <th scope="col">Checked</th>
+                    <th scope="col">State</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <th scope="row"><code>financeops</code></th>
+                    <td>plugin-host</td>
+                    <td>22%</td>
+                    <td>45</td>
+                    <td><time datetime="2026-08-21">2026-08-21</time></td>
+                    <td>pass</td>
+                </tr>
+                <tr>
+                    <th scope="row"><code>agent127</code></th>
+                    <td>llm-assisted</td>
+                    <td>24%</td>
+                    <td>31</td>
+                    <td><time datetime="2026-08-21">2026-08-21</time></td>
+                    <td>pass</td>
+                </tr>
+                <tr>
+                    <th scope="row"><code>healthops</code></th>
+                    <td>plugin-host</td>
+                    <td>29%</td>
+                    <td>18</td>
+                    <td><time datetime="2026-08-20">2026-08-20</time></td>
+                    <td>thin</td>
+                </tr>
+                <tr>
+                    <th scope="row"><code>learnops</code></th>
+                    <td>plugin-host</td>
+                    <td>33%</td>
+                    <td>16</td>
+                    <td><time datetime="2026-08-20">2026-08-20</time></td>
+                    <td>thin</td>
+                </tr>
+                <tr>
+                    <th scope="row"><code>fleetcontroller</code></th>
+                    <td>undeclared</td>
+                    <td>46%</td>
+                    <td>12</td>
+                    <td><time datetime="2026-08-21">2026-08-21</time></td>
+                    <td><strong>fail</strong></td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section class="glass-pane drift-pane" aria-labelledby="drift-heading">
+        <figure>
+            <figcaption id="drift-heading">Drift per run, twelve runs, 2026-06-14 → 2026-08-21: <code>38, 33, 30, 26, 24, 21, 34, 19, 17, 16, 15, 14</code></figcaption>
+            <svg viewBox="0 0 660 220" role="img" aria-labelledby="drift-title drift-desc">
+                <title id="drift-title">Undeclared drift trend</title>
+                <desc id="drift-desc">Values descend from 38 to 14 across twelve runs, with a spike to 34 at run 7.</desc>
+                <polyline points="0,16 60,54 120,77 180,108 240,123 300,146 360,47 420,162 480,177 540,185 600,193 660,200" fill="none" stroke="rgba(255,255,255,0.78)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <polyline points="0,16 60,54 120,77 180,108 240,123 300,146 360,47 420,162 480,177 540,185 600,193 660,200 660,220 0,220" fill="rgba(255,255,255,0.08)"/>
+                <circle cx="360" cy="47" r="5" fill="rgba(255,255,255,0.9)"/>
+            </svg>
+        </figure>
+        <p class="quiet-copy">The spike at run 7 is <code>fleetcontroller</code> landing before its pattern entry did.</p>
+    </section>
+
+    <section class="glass-pane activity-pane" aria-labelledby="activity-heading">
+        <header>
+            <p class="eyebrow" id="activity-heading">Activity</p>
+        </header>
+        <ol>
+            <li><time datetime="2026-08-21T21:40">21:40</time> — Run 12 complete. 14 findings across 9 repositories. <code>exit 0</code>. <meter min="0" max="100" value="100">100%</meter> <strong>100%</strong></li>
+            <li><time datetime="2026-08-21T20:05">20:05</time> — Blind spot declared: accessible-name quality is unchecked, found by human comparison rather than by the detector. <meter min="0" max="100" value="62">62%</meter> <strong>62%</strong></li>
+            <li><time datetime="2026-08-21T17:22">17:22</time> — False positive retired: word-boundary match on <code>.icon-button</code> corrected to <code>(?&lt;![\w-])</code>. <meter min="0" max="100" value="100">100%</meter> <strong>100%</strong></li>
+        </ol>
+        <blockquote>
+            <p>The element is the substrate. The theme is the finish.</p>
+        </blockquote>
+        <cite>Creed</cite>
+    </section>
+</main>
+<script>
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const panes = document.querySelectorAll('.glass-pane');
+    const ceiling = document.getElementById('ceiling');
+    const ceilingOutput = document.getElementById('ceilingOutput');
+
+    ceiling.addEventListener('input', () => {
+        ceilingOutput.value = `${ceiling.value}%`;
+        ceilingOutput.textContent = `${ceiling.value}%`;
+    });
+
+    panes.forEach((pane) => {
+        pane.addEventListener('pointermove', (event) => {
+            if (reduceMotion.matches) return;
+            const rect = pane.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+            const rotateY = ((x / rect.width) - 0.5) * 3.2;
+            const rotateX = ((y / rect.height) - 0.5) * -3.2;
+            pane.style.setProperty('--tilt-x', `${rotateX.toFixed(2)}deg`);
+            pane.style.setProperty('--tilt-y', `${rotateY.toFixed(2)}deg`);
+            pane.style.setProperty('--glare-x', `${x}px`);
+            pane.style.setProperty('--glare-y', `${y}px`);
+            pane.style.setProperty('--glare', '1');
+        });
+
+        pane.addEventListener('pointerleave', () => {
+            pane.style.setProperty('--tilt-x', '0deg');
+            pane.style.setProperty('--tilt-y', '0deg');
+            pane.style.setProperty('--glare', '0');
+        });
+    });
+
+    reduceMotion.addEventListener('change', () => {
+        if (!reduceMotion.matches) return;
+        panes.forEach((pane) => {
+            pane.style.setProperty('--tilt-x', '0deg');
+            pane.style.setProperty('--tilt-y', '0deg');
+            pane.style.setProperty('--glare', '0');
+        });
+    });
+</script>
+</body>
+</html>

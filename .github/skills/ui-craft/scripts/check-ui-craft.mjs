@@ -92,10 +92,16 @@ function elementRegexes(text, ext) {
 /** A file that creates elements but yielded none was not read, only skimmed. */
 const CREATES_ELEMENTS = /jsx-runtime|createElement|<[a-z][a-z0-9]*[\s/>]/;
 
-function walk(dir) {
+// Accepts a directory or a single file, so one page can be graded on its own
+// without inheriting the findings of its neighbours.
+function walk(target) {
+  let root;
+  try { root = statSync(target); } catch { return []; }
+  if (!root.isDirectory()) return [target];
+
   const out = [];
-  for (const entry of readdirSync(dir)) {
-    const full = join(dir, entry);
+  for (const entry of readdirSync(target)) {
+    const full = join(target, entry);
     let st;
     try { st = statSync(full); } catch { continue; }
     if (st.isDirectory()) {

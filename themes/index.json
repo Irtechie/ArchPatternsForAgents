@@ -4,11 +4,13 @@
   "updated": "2026-08-21",
   "consume": {
     "how": "Pick one theme id. Apply its tokens and technique. Author markup from the ui-craft element rules, NOT by copying a component whose conformance is visual-reference.",
-    "check": "node .github/skills/ui-craft/scripts/check-ui-craft.mjs <your-artifact-dir>",
+    "check": "node .github/skills/ui-craft/scripts/check-ui-craft.mjs <your-artifact-dir-or-file>",
     "conformance_levels": {
-      "conformant": "Markup and operability pass the checker. Safe to copy structure and style.",
+      "conformant": "Markup and operability pass the checker, and every control announces its purpose. Safe to copy structure and style.",
       "visual-reference": "Aesthetic direction is correct; markup or operability does not pass. Copy the look, not the DOM."
-    }
+    },
+    "pick_a_look": "Every theme ships a full page and a rendered image. Open themes/GALLERY.md, choose by eye, then read that theme's page.html for the finish and themes/_shared/substrate-contract.md for the rules it obeys.",
+    "check_names": "node scripts/audit-a11y-names.mjs <your-page.html>"
   },
   "themes": [
     {
@@ -17,15 +19,30 @@
       "world": "A decker's rig in a neon-soaked dystopia. High contrast, slightly degraded, hyper-responsive.",
       "use_when": "High-stakes or destructive actions, live system state, anything where the operator should feel the weight of a decision.",
       "ground": "#050505 abyssal black, repeating-linear-gradient scanlines at 1px/2px",
-      "accents": ["oklch(75% 0.25 150) toxic green", "oklch(70% 0.35 340) magenta", "oklch(85% 0.2 90) amber"],
+      "accents": [
+        "oklch(75% 0.25 150) toxic green",
+        "oklch(70% 0.35 340) magenta",
+        "oklch(85% 0.2 90) amber"
+      ],
       "type": "rigid monospace, uppercase, letter-spacing 0.1em",
-      "technique": ["layered box-shadow insets for extruded polymer and metal ledges", "drop-shadow and text-shadow bloom on activation", "brief chromatic-aberration glitch on commit", "corner brackets via ::before/::after"],
+      "technique": [
+        "layered box-shadow insets for extruded polymer and metal ledges",
+        "drop-shadow and text-shadow bloom on activation",
+        "brief chromatic-aberration glitch on commit",
+        "corner brackets via ::before/::after"
+      ],
       "components": [
         {
           "file": "gritty-cyberpunk/override-toggle.html",
           "role": "destructive-action-toggle",
           "conformance": "visual-reference",
-          "measured": { "elements": 18, "distinct": 5, "genericPercent": 83, "richElements": 0, "customProperties": 7 },
+          "measured": {
+            "elements": 18,
+            "distinct": 5,
+            "genericPercent": 83,
+            "richElements": 0,
+            "customProperties": 7
+          },
           "defects": [
             "input is display:none — the control is unreachable by Tab and absent from the accessibility tree",
             "glitch keyframes with no prefers-reduced-motion branch",
@@ -38,11 +55,30 @@
           "file": "gritty-cyberpunk/override-toggle-conformant.html",
           "role": "destructive-action-toggle",
           "conformance": "conformant",
-          "measured": { "elements": 27, "distinct": 15, "genericPercent": 15, "richElements": 5, "customProperties": 8 },
+          "measured": {
+            "elements": 27,
+            "distinct": 15,
+            "genericPercent": 15,
+            "richElements": 5,
+            "customProperties": 8
+          },
           "defects": [],
           "note": "Same visuals as override-toggle.html on a real substrate. Clipped checkbox rather than display:none; :checked, :focus-visible and :disabled drive every themed state; visual layer is aria-hidden so the accessible name comes from clipped label text; <output> announces state as a live region; prefers-reduced-motion guards the glitch and the spring travel. Telemetry is <dl>/<output>/<code>/<time>, brackets are ::before/::after."
         }
-      ]
+      ],
+      "page": "gritty-cyberpunk/page.html",
+      "preview": "gritty-cyberpunk/preview.png",
+      "preview_bytes": 690451,
+      "composition": "High-stakes terminal. One large arm/disarm override switch gating the page accent, a command entry line, a register-dump table and a log feed.",
+      "page_measured": {
+        "elements": 158,
+        "distinct": 45,
+        "genericPercent": 3,
+        "richElements": 18,
+        "gridTemplates": 23,
+        "customProperties": 20
+      },
+      "page_conformance": "conformant"
     },
     {
       "id": "pristine-minimalism",
@@ -50,22 +86,51 @@
       "world": "A private orbital command deck. Stark, flawless, focused on spatial depth and fluid motion.",
       "use_when": "Headline metrics, telemetry summaries, any surface whose job is one number read at a glance.",
       "ground": "slow fluid mesh of four analogous oklch radial gradients over #050510",
-      "accents": ["oklch(35% 0.15 250)", "oklch(45% 0.20 280)", "oklch(55% 0.18 210)", "oklch(25% 0.10 300)"],
+      "accents": [
+        "oklch(35% 0.15 250)",
+        "oklch(45% 0.20 280)",
+        "oklch(55% 0.18 210)",
+        "oklch(25% 0.10 300)"
+      ],
       "type": "geometric sans; massive thin display numeral against tiny tracked uppercase label",
-      "technique": ["backdrop-filter: blur(30px) saturate(150%)", "1px white border at 10% opacity plus inner top-edge highlight", "no hard borders inside the pane", "pointer-tracked rotateX/rotateY with cubic-bezier spring return"],
+      "technique": [
+        "backdrop-filter: blur(30px) saturate(150%)",
+        "1px white border at 10% opacity plus inner top-edge highlight",
+        "no hard borders inside the pane",
+        "pointer-tracked rotateX/rotateY with cubic-bezier spring return"
+      ],
       "components": [
         {
           "file": "pristine-minimalism/orbital-pane.html",
           "role": "metric-readout",
           "conformance": "visual-reference",
-          "measured": { "elements": 14, "distinct": 3, "genericPercent": 86, "richElements": 0, "customProperties": 6 },
+          "measured": {
+            "elements": 14,
+            "distinct": 3,
+            "genericPercent": 86,
+            "richElements": 0,
+            "customProperties": 6
+          },
           "defects": [
             "3D tilt transform with no prefers-reduced-motion branch",
             "86% div/span; a metric with a label is <dl> or <output>, and any timestamp is <time datetime>",
             "6 custom properties; a named palette wants 7-11"
           ]
         }
-      ]
+      ],
+      "page": "pristine-minimalism/page.html",
+      "preview": "pristine-minimalism/preview.png",
+      "preview_bytes": 1942098,
+      "composition": "The restraint theme. One enormous hero metric, three quiet secondary figures, exactly two controls, and an airy table with no gridlines.",
+      "page_measured": {
+        "elements": 154,
+        "distinct": 35,
+        "genericPercent": 2,
+        "richElements": 14,
+        "gridTemplates": 22,
+        "customProperties": 24
+      },
+      "page_conformance": "conformant"
     },
     {
       "id": "deep-lab-tech",
@@ -73,15 +138,29 @@
       "world": "An underground R&D facility. Utilitarian, data-dense, highly structured.",
       "use_when": "Dense readouts, live signals, comparison matrices, anything an operator scans rather than reads.",
       "ground": "very dark charcoal with a fine millimetre-paper SVG grid",
-      "accents": ["phosphor amber", "terminal green"],
+      "accents": [
+        "phosphor amber",
+        "terminal green"
+      ],
       "type": "monospace throughout, tabular-lining numerals, hard alignment",
-      "technique": ["bento grid of readout zones", "corner brackets via ::before/::after instead of continuous boxes", "inline SVG waveform with feGaussianBlur phosphor bloom", "no charting library"],
+      "technique": [
+        "bento grid of readout zones",
+        "corner brackets via ::before/::after instead of continuous boxes",
+        "inline SVG waveform with feGaussianBlur phosphor bloom",
+        "no charting library"
+      ],
       "components": [
         {
           "file": "deep-lab-tech/oscilloscope-matrix.html",
           "role": "live-signal-matrix",
           "conformance": "visual-reference",
-          "measured": { "elements": 19, "distinct": 3, "genericPercent": 95, "richElements": 0, "customProperties": 7 },
+          "measured": {
+            "elements": 19,
+            "distinct": 3,
+            "genericPercent": 95,
+            "richElements": 0,
+            "customProperties": 7
+          },
           "defects": [
             "95% div/span from a vocabulary of exactly div, span, svg — the worst substrate of the three generated themes, in the theme whose entire premise is dense scientific data",
             "a frequency matrix is <table> with <caption> and <th scope>; a bounded reading is <meter>; a sample instant is <time datetime>",
@@ -90,7 +169,20 @@
             "flat ground despite the theme calling for a millimetre-paper grid"
           ]
         }
-      ]
+      ],
+      "page": "deep-lab-tech/page.html",
+      "preview": "deep-lab-tech/preview.png",
+      "preview_bytes": 1608808,
+      "composition": "Densest in the registry. A bento rack of readouts: full estate table, nine meters, a four-fader detector channel bank, radio profile selection, expandable notes.",
+      "page_measured": {
+        "elements": 246,
+        "distinct": 49,
+        "genericPercent": 0,
+        "richElements": 24,
+        "gridTemplates": 28,
+        "customProperties": 23
+      },
+      "page_conformance": "conformant"
     },
     {
       "id": "nocturnal-forge",
@@ -98,15 +190,29 @@
       "world": "A late-night workshop bridging compute, hardware and physical space.",
       "use_when": "Home lab telemetry, machine control, long dark-room sessions.",
       "ground": "deep charcoal, warm and low-blue-light",
-      "accents": ["subdued tungsten", "burnt orange oklch"],
+      "accents": [
+        "subdued tungsten",
+        "burnt orange oklch"
+      ],
       "type": "sturdy sans with monospace numerals",
-      "technique": ["feTurbulence noise overlay for powder-coated metal", "complex inset+outset box-shadow arrays to carve controls out of the ground", "conic-gradient value track", "drag interaction with resistance, never free-spinning"],
+      "technique": [
+        "feTurbulence noise overlay for powder-coated metal",
+        "complex inset+outset box-shadow arrays to carve controls out of the ground",
+        "conic-gradient value track",
+        "drag interaction with resistance, never free-spinning"
+      ],
       "components": [
         {
           "file": "nocturnal-forge/allocation-dial.html",
           "role": "hardware-allocation-dial",
           "conformance": "visual-reference",
-          "measured": { "elements": 11, "distinct": 3, "genericPercent": 91, "richElements": 0, "customProperties": 8 },
+          "measured": {
+            "elements": 11,
+            "distinct": 3,
+            "genericPercent": 91,
+            "richElements": 0,
+            "customProperties": 8
+          },
           "defects": [
             "the dial is div drag handlers with no native control — no keyboard, no value, no role; it must be <input type=range> under the skin",
             "91% div/span from a vocabulary of div, span, svg",
@@ -114,7 +220,20 @@
             "flat ground despite the theme calling for a noise-textured surface"
           ]
         }
-      ]
+      ],
+      "page": "nocturnal-forge/page.html",
+      "preview": "nocturnal-forge/preview.png",
+      "preview_bytes": 964816,
+      "composition": "Machine console. One hero rotary dial carrying the whole primary value, three heavy latch switches, and a small number of large supporting readouts.",
+      "page_measured": {
+        "elements": 164,
+        "distinct": 41,
+        "genericPercent": 0,
+        "richElements": 17,
+        "gridTemplates": 23,
+        "customProperties": 21
+      },
+      "page_conformance": "conformant"
     }
   ]
 }

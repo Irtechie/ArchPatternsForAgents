@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deep Lab Tech — Architecture Conformance Console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --lab-ground: oklch(10% 0.012 76);
+  --lab-deep: oklch(13% 0.018 76);
+  --lab-panel: oklch(16% 0.025 76 / 0.78);
+  --lab-panel-hot: oklch(20% 0.045 76 / 0.58);
+  --lab-line: oklch(71% 0.14 76 / 0.52);
+  --lab-line-dim: oklch(55% 0.1 76 / 0.24);
+  --lab-grid: oklch(62% 0.11 76 / 0.11);
+  --lab-grid-heavy: oklch(70% 0.14 76 / 0.18);
+  --lab-ink: oklch(86% 0.12 76);
+  --lab-ink-soft: oklch(72% 0.1 76);
+  --lab-ink-dim: oklch(58% 0.08 76);
+  --lab-bright: oklch(92% 0.17 76);
+  --lab-shadow: oklch(7% 0.012 76 / 0.88);
+  --lab-glow: oklch(80% 0.17 76 / 0.34);
+  --lab-focus: oklch(96% 0.15 76);
+  --lab-gap: clamp(0.7rem, 1.1vw, 1.25rem);
+  --lab-pad: clamp(0.82rem, 1.45vw, 1.35rem);
+  --lab-type: clamp(0.72rem, 0.64rem + 0.28vw, 0.92rem);
+  --lab-title: clamp(1.35rem, 0.95rem + 1.7vw, 2.7rem);
+  --corner-long: clamp(1.05rem, 2vw, 1.7rem);
+  --corner-short: clamp(0.72rem, 1.4vw, 1.2rem);
+  --corner-thick: 1px;
+  --font-stack: "JetBrains Mono", "Cascadia Mono", "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+}
+
+* { box-sizing: border-box; }
+
+html { min-height: 100%; }
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  padding: clamp(0.65rem, 1.8vw, 1.6rem);
+  color: var(--lab-ink);
+  background:
+    linear-gradient(var(--lab-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--lab-grid) 1px, transparent 1px),
+    linear-gradient(var(--lab-grid-heavy) 1px, transparent 1px),
+    linear-gradient(90deg, var(--lab-grid-heavy) 1px, transparent 1px),
+    radial-gradient(circle at 78% 8%, var(--lab-glow), transparent 24rem),
+    radial-gradient(circle at 10% 90%, oklch(62% 0.14 76 / 0.12), transparent 18rem),
+    var(--lab-ground);
+  background-size: 10px 10px, 10px 10px, 50px 50px, 50px 50px, auto, auto, auto;
+  font: 500 var(--lab-type) / 1.42 var(--font-stack);
+  font-variant-numeric: tabular-nums lining-nums;
+  letter-spacing: 0.01em;
+}
+
+button,
+input,
+select,
+textarea { font: inherit; }
+
+.instrument {
+  display: grid;
+  grid-template-columns: minmax(18rem, 0.82fr) minmax(26rem, 1.34fr) minmax(17rem, 0.74fr);
+  grid-template-areas:
+    "header header header"
+    "metrics trace controls"
+    "estate estate controls"
+    "activity diagnostics diagnostics"
+    "creed creed creed";
+  gap: var(--lab-gap);
+  width: min(100%, 96rem);
+  max-width: 96rem;
+  margin: 0 auto;
+}
+
+.zone {
+  position: relative;
+  display: grid;
+  gap: clamp(0.55rem, 0.95vw, 0.95rem);
+  padding: var(--lab-pad);
+  background:
+    linear-gradient(135deg, var(--lab-panel), transparent 72%),
+    linear-gradient(180deg, var(--lab-panel-hot), transparent 100%);
+  box-shadow: 0 0 2rem var(--lab-shadow), inset 0 0 2rem oklch(72% 0.12 76 / 0.045);
+  overflow: clip;
+}
+
+.zone::before,
+.zone::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-repeat: no-repeat;
+  filter: drop-shadow(0 0 0.35rem var(--lab-glow));
+}
+
+.zone::before {
+  background-image:
+    linear-gradient(var(--lab-line), var(--lab-line)),
+    linear-gradient(var(--lab-line), var(--lab-line)),
+    linear-gradient(var(--lab-line), var(--lab-line)),
+    linear-gradient(var(--lab-line), var(--lab-line));
+  background-size:
+    var(--corner-long) var(--corner-thick),
+    var(--corner-thick) var(--corner-short),
+    var(--corner-long) var(--corner-thick),
+    var(--corner-thick) var(--corner-short);
+  background-position:
+    top left,
+    top left,
+    bottom right,
+    bottom right;
+}
+
+.zone::after {
+  background-image:
+    linear-gradient(var(--lab-line-dim), var(--lab-line-dim)),
+    linear-gradient(var(--lab-line-dim), var(--lab-line-dim)),
+    linear-gradient(var(--lab-line-dim), var(--lab-line-dim)),
+    linear-gradient(var(--lab-line-dim), var(--lab-line-dim));
+  background-size:
+    var(--corner-long) var(--corner-thick),
+    var(--corner-thick) var(--corner-short),
+    var(--corner-long) var(--corner-thick),
+    var(--corner-thick) var(--corner-short);
+  background-position:
+    top right,
+    top right,
+    bottom left,
+    bottom left;
+}
+
+h1,
+h2,
+h3,
+p,
+dl,
+ol,
+ul,
+figure,
+fieldset,
+table,
+blockquote,
+pre { margin: 0; }
+
+h1 {
+  max-width: 24ch;
+  font-size: var(--lab-title);
+  line-height: 0.96;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  text-shadow: 0 0 0.85rem var(--lab-glow);
+}
+
+h2,
+legend,
+caption,
+summary {
+  color: var(--lab-bright);
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+p { max-width: 66rem; }
+
+code,
+kbd,
+samp,
+var,
+time,
+output { font: inherit; font-variant-numeric: tabular-nums lining-nums; }
+
+code,
+kbd,
+samp,
+var {
+  color: var(--lab-bright);
+  text-shadow: 0 0 0.45rem var(--lab-glow);
+}
+
+kbd {
+  padding: 0.05rem 0.32rem;
+  background: oklch(22% 0.04 76 / 0.72);
+  box-shadow: inset 0 -1px 0 var(--lab-line-dim);
+}
+
+.header {
+  grid-area: header;
+  grid-template-columns: minmax(18rem, 1fr) minmax(26rem, 1.55fr) minmax(20rem, 1.05fr);
+  align-items: end;
+}
+
+.eyebrow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  color: var(--lab-ink-soft);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.stamps {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 0.22rem 1rem;
+  align-items: baseline;
+}
+
+.stamps dt,
+.meta dt,
+.trace-stats dt {
+  color: var(--lab-ink-dim);
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.stamps dd,
+.meta dd,
+.trace-stats dd { margin: 0; text-align: right; }
+
+.metrics {
+  grid-area: metrics;
+  grid-template-rows: auto 1fr auto;
+}
+
+.metric-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.62rem;
+  padding: 0;
+  list-style: none;
+}
+
+.metric-list li {
+  display: grid;
+  grid-template-columns: minmax(12ch, 1fr) minmax(7rem, 0.72fr) minmax(9ch, max-content);
+  gap: 0.55rem;
+  align-items: center;
+}
+
+meter,
+progress {
+  width: 100%;
+  height: 0.7rem;
+  accent-color: var(--lab-bright);
+  background: oklch(13% 0.02 76);
+}
+
+meter::-webkit-meter-bar,
+progress::-webkit-progress-bar {
+  background: oklch(13% 0.02 76);
+  box-shadow: inset 0 0 0 1px var(--lab-line-dim);
+}
+
+meter::-webkit-meter-optimum-value,
+meter::-webkit-meter-suboptimum-value,
+meter::-webkit-meter-even-less-good-value,
+progress::-webkit-progress-value {
+  background: linear-gradient(90deg, var(--lab-line-dim), var(--lab-bright));
+  filter: drop-shadow(0 0 0.35rem var(--lab-glow));
+}
+
+meter::-moz-meter-bar,
+progress::-moz-progress-bar {
+  background: linear-gradient(90deg, var(--lab-line-dim), var(--lab-bright));
+}
+
+.trace {
+  grid-area: trace;
+  grid-template-rows: auto minmax(12rem, 1fr) auto;
+  min-height: 20rem;
+}
+
+.trace figcaption {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) max-content;
+  gap: 1rem;
+}
+
+.trace svg {
+  width: 100%;
+  min-height: 14rem;
+  background-image:
+    linear-gradient(var(--lab-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--lab-grid) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+.trace text { fill: var(--lab-ink-dim); font-family: var(--font-stack); font-size: 10px; }
+.trace .plot-line { fill: none; stroke: var(--lab-bright); stroke-width: 2.2; filter: url(#phosphor-bloom); }
+.trace .plot-ghost { fill: none; stroke: var(--lab-line-dim); stroke-width: 7; opacity: 0.72; }
+.trace .plot-point { fill: var(--lab-bright); filter: url(#point-bloom); }
+
+.trace-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.45rem 0.8rem;
+}
+
+.trace-stats dd { text-align: left; }
+
+.estate {
+  grid-area: estate;
+  grid-template-rows: auto minmax(0, 1fr);
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 44rem;
+}
+
+caption {
+  caption-side: top;
+  margin-bottom: 0.5rem;
+  text-align: left;
+}
+
+th,
+td {
+  padding: 0.43rem 0.55rem;
+  border-block-end: 1px solid var(--lab-line-dim);
+  text-align: right;
+  white-space: nowrap;
+}
+
+th:first-child,
+td:first-child,
+caption { text-align: left; }
+
+thead th {
+  color: var(--lab-ink-soft);
+  font-size: 0.78em;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+tbody th { font-weight: 700; }
+
+tfoot th,
+tfoot td { color: var(--lab-bright); border-block-end: 0; }
+
+.state-pass,
+.state-thin,
+.state-fail { text-transform: uppercase; }
+
+.controls {
+  grid-area: controls;
+  grid-template-rows: auto auto auto auto;
+}
+
+.control-meta {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.28rem 0.65rem;
+  color: var(--lab-ink-soft);
+}
+
+fieldset {
+  min-inline-size: 0;
+  padding: 0.78rem 0 0;
+  border: 0;
+}
+
+.arm-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(8rem, 1fr));
+  gap: 0.45rem;
+  margin-top: 0.52rem;
+}
+
+.arm-grid label,
+.profile-bank label {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1.15rem 1fr;
+  gap: 0.52rem;
+  align-items: center;
+  min-height: 1.65rem;
+  color: var(--lab-ink-soft);
+  cursor: pointer;
+}
+
+.clip-control {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.arm-grid b,
+.profile-bank b {
+  width: 1rem;
+  height: 1rem;
+  background:
+    linear-gradient(90deg, var(--lab-line-dim) 1px, transparent 1px),
+    linear-gradient(var(--lab-line-dim) 1px, transparent 1px),
+    oklch(12% 0.018 76);
+  background-size: 4px 4px, 4px 4px, auto;
+  box-shadow: inset 0 0 0 1px var(--lab-line-dim), 0 0 0.35rem transparent;
+}
+
+.profile-bank b { border-radius: 50%; }
+
+.clip-control:checked + b {
+  background:
+    linear-gradient(90deg, oklch(93% 0.17 76 / 0.36) 1px, transparent 1px),
+    linear-gradient(oklch(93% 0.17 76 / 0.36) 1px, transparent 1px),
+    oklch(32% 0.08 76 / 0.74);
+  background-size: 4px 4px, 4px 4px, auto;
+  box-shadow: inset 0 0 0 1px var(--lab-bright), 0 0 0.55rem var(--lab-glow);
+}
+
+.clip-control:focus-visible + b,
+input[type="range"]:focus-visible {
+  outline: 2px solid var(--lab-focus);
+  outline-offset: 3px;
+}
+
+.fader-bank {
+  display: grid;
+  grid-template-columns: minmax(7ch, 0.55fr) minmax(6rem, 1fr) minmax(8ch, max-content);
+  gap: 0.45rem 0.62rem;
+  align-items: center;
+  margin-top: 0.55rem;
+}
+
+input[type="range"] {
+  appearance: none;
+  width: 100%;
+  height: 0.55rem;
+  background:
+    linear-gradient(90deg, var(--lab-line-dim) 1px, transparent 1px),
+    oklch(12% 0.018 76);
+  background-size: 10% 100%, auto;
+  box-shadow: inset 0 0 0 1px var(--lab-line-dim);
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  width: 0.68rem;
+  height: 1.35rem;
+  background: var(--lab-bright);
+  box-shadow: 0 0 0.55rem var(--lab-glow);
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 0.68rem;
+  height: 1.35rem;
+  border: 0;
+  border-radius: 0;
+  background: var(--lab-bright);
+  box-shadow: 0 0 0.55rem var(--lab-glow);
+}
+
+.profile-bank {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.35rem;
+  margin-top: 0.55rem;
+}
+
+.live-state {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.4rem 0.65rem;
+  color: var(--lab-ink-soft);
+}
+
+.activity {
+  grid-area: activity;
+  grid-template-rows: auto 1fr;
+}
+
+.activity ol {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.58rem;
+  padding: 0;
+  list-style: none;
+}
+
+.activity li {
+  display: grid;
+  grid-template-columns: 5.2ch minmax(0, 1fr) minmax(5rem, 0.34fr);
+  gap: 0.65rem;
+  align-items: start;
+}
+
+.diagnostics {
+  grid-area: diagnostics;
+  grid-template-columns: minmax(19rem, 1fr) minmax(22rem, 1.25fr);
+}
+
+details {
+  padding-inline-start: 0.2rem;
+}
+
+details p,
+blockquote { margin-top: 0.55rem; }
+
+blockquote {
+  padding-inline-start: 1rem;
+  box-shadow: inset 1px 0 0 var(--lab-line);
+  color: var(--lab-ink-soft);
+}
+
+pre {
+  min-width: 0;
+  overflow-x: auto;
+  padding: 0.72rem;
+  background: oklch(11% 0.018 76 / 0.84);
+  box-shadow: inset 0 0 0 1px var(--lab-line-dim);
+}
+
+.creed {
+  grid-area: creed;
+  grid-template-columns: minmax(0, 1fr) max-content;
+  align-items: center;
+}
+
+.creed p { font-size: clamp(0.92rem, 0.8rem + 0.42vw, 1.18rem); }
+
+small,
+.muted { color: var(--lab-ink-dim); }
+
+@media (max-width: 78rem) {
+  .instrument {
+    grid-template-columns: minmax(0, 1fr) minmax(18rem, 0.82fr);
+    grid-template-areas:
+      "header header"
+      "trace metrics"
+      "estate estate"
+      "controls activity"
+      "diagnostics diagnostics"
+      "creed creed";
+  }
+}
+
+@media (max-width: 54rem) {
+  body { padding: 0.55rem; }
+  .instrument {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "header"
+      "metrics"
+      "trace"
+      "estate"
+      "controls"
+      "activity"
+      "diagnostics"
+      "creed";
+  }
+  .header,
+  .diagnostics,
+  .trace figcaption,
+  .trace-stats,
+  .metric-list li,
+  .activity li,
+  .creed {
+    grid-template-columns: 1fr;
+  }
+  .stamps dd { text-align: left; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto;
+    transition-duration: 0.01ms;
+  }
+}
+</style>
+</head>
+<body>
+<main class="instrument">
+  <header class="zone header" aria-labelledby="console-title">
+    <p class="eyebrow"><abbr title="Architecture Conformance Console">ACC</abbr> // Deep Lab Tech // rack instrument</p>
+    <h1 id="console-title">Architecture Conformance Console</h1>
+    <dl class="stamps" aria-label="Run stamps">
+      <dt>Owner</dt>
+      <dd>Irtechie / ArchPatternsForAgents</dd>
+      <dt>Commit</dt>
+      <dd><code>ce75e79</code></dd>
+      <dt>Run</dt>
+      <dd><samp>12</samp></dd>
+      <dt>Time</dt>
+      <dd><time datetime="2026-08-21T21:40">2026-08-21T21:40</time></dd>
+    </dl>
+    <p><dfn>Substrate</dfn> is the operative element below the finish; the panel keeps native controls live while the phosphor skin reads like lab equipment.</p>
+  </header>
+
+  <section class="zone metrics" aria-labelledby="metrics-title">
+    <h2 id="metrics-title">Bounded metric array</h2>
+    <ol class="metric-list">
+      <li>
+        <label for="declared-meter">Declared conformance</label>
+        <meter id="declared-meter" min="0" max="9" value="7">7 of 9 repos</meter>
+        <output for="declared-meter">7 / 9 repos</output>
+      </li>
+      <li>
+        <label for="coverage-meter">Detector coverage</label>
+        <meter id="coverage-meter" min="0" max="100" value="82">82%</meter>
+        <output for="coverage-meter">82%</output>
+      </li>
+      <li>
+        <label for="drift-meter">Undeclared drift</label>
+        <meter id="drift-meter" min="0" max="40" value="14">14 findings of 40 budget</meter>
+        <output for="drift-meter">14 / 40 budget</output>
+      </li>
+      <li>
+        <label for="markup-meter">Generic markup</label>
+        <meter id="markup-meter" min="0" max="100" value="15">15% div/span</meter>
+        <output for="markup-meter">15% div/span</output>
+      </li>
+    </ol>
+    <dl class="meta" aria-label="Run completion">
+      <dt>Run completion</dt>
+      <dd><progress max="12" value="12">Run 12 complete</progress></dd>
+    </dl>
+  </section>
+
+  <figure class="zone trace" aria-labelledby="trace-title">
+    <figcaption>
+      <strong id="trace-title">Drift per run // twelve-run trace</strong>
+      <small><time datetime="2026-06-14">2026-06-14</time> → <time datetime="2026-08-21">2026-08-21</time></small>
+    </figcaption>
+    <svg viewBox="0 0 660 180" role="img" aria-labelledby="drift-svg-title drift-svg-desc">
+      <title id="drift-svg-title">Undeclared drift findings over twelve runs</title>
+      <desc id="drift-svg-desc">The drift series is 38, 33, 30, 26, 24, 21, 34, 19, 17, 16, 15, 14. Run 7 spikes because fleetcontroller landed before its pattern entry did.</desc>
+      <defs>
+        <filter id="phosphor-bloom" x="-20%" y="-40%" width="140%" height="180%">
+          <feGaussianBlur stdDeviation="4" result="blur"></feGaussianBlur>
+          <feMerge>
+            <feMergeNode in="blur"></feMergeNode>
+            <feMergeNode in="blur"></feMergeNode>
+            <feMergeNode in="SourceGraphic"></feMergeNode>
+          </feMerge>
+        </filter>
+        <filter id="point-bloom" x="-80%" y="-80%" width="260%" height="260%">
+          <feGaussianBlur stdDeviation="2.2" result="pointBlur"></feGaussianBlur>
+          <feMerge>
+            <feMergeNode in="pointBlur"></feMergeNode>
+            <feMergeNode in="SourceGraphic"></feMergeNode>
+          </feMerge>
+        </filter>
+      </defs>
+      <g aria-hidden="true">
+        <path d="M20 27 L76 45 L132 55 L188 69 L244 76 L300 87 L356 41 L412 94 L468 101 L524 104 L580 108 L636 111" class="plot-ghost"></path>
+        <path d="M20 27 L76 45 L132 55 L188 69 L244 76 L300 87 L356 41 L412 94 L468 101 L524 104 L580 108 L636 111" class="plot-line"></path>
+        <circle class="plot-point" cx="20" cy="27" r="3"></circle>
+        <circle class="plot-point" cx="76" cy="45" r="3"></circle>
+        <circle class="plot-point" cx="132" cy="55" r="3"></circle>
+        <circle class="plot-point" cx="188" cy="69" r="3"></circle>
+        <circle class="plot-point" cx="244" cy="76" r="3"></circle>
+        <circle class="plot-point" cx="300" cy="87" r="3"></circle>
+        <circle class="plot-point" cx="356" cy="41" r="4"></circle>
+        <circle class="plot-point" cx="412" cy="94" r="3"></circle>
+        <circle class="plot-point" cx="468" cy="101" r="3"></circle>
+        <circle class="plot-point" cx="524" cy="104" r="3"></circle>
+        <circle class="plot-point" cx="580" cy="108" r="3"></circle>
+        <circle class="plot-point" cx="636" cy="111" r="3"></circle>
+        <text x="20" y="166">01</text><text x="76" y="166">02</text><text x="132" y="166">03</text><text x="188" y="166">04</text><text x="244" y="166">05</text><text x="300" y="166">06</text><text x="356" y="166">07</text><text x="412" y="166">08</text><text x="468" y="166">09</text><text x="524" y="166">10</text><text x="580" y="166">11</text><text x="636" y="166">12</text>
+      </g>
+    </svg>
+    <dl class="trace-stats">
+      <dt>Series</dt><dd><code>38, 33, 30, 26, 24, 21, 34, 19, 17, 16, 15, 14</code></dd>
+      <dt>Spike</dt><dd>run <var>7</var></dd>
+      <dt>Cause</dt><dd><code>fleetcontroller</code> landed before its pattern entry did.</dd>
+    </dl>
+  </figure>
+
+  <section class="zone estate" aria-labelledby="estate-title">
+    <h2 id="estate-title">Estate conformance table</h2>
+    <table>
+      <caption>Repository estate from the shared substrate payload</caption>
+      <colgroup><col><col><col><col><col><col></colgroup>
+      <thead>
+        <tr>
+          <th scope="col">Repository</th>
+          <th scope="col">Pattern</th>
+          <th scope="col">div/span</th>
+          <th scope="col">Elements</th>
+          <th scope="col">Checked</th>
+          <th scope="col">State</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row"><code>financeops</code></th>
+          <td>plugin-host</td>
+          <td><meter min="0" max="100" value="22">22%</meter> 22%</td>
+          <td>45</td>
+          <td><time datetime="2026-08-21">2026-08-21</time></td>
+          <td class="state-pass">pass</td>
+        </tr>
+        <tr>
+          <th scope="row"><code>agent127</code></th>
+          <td>llm-assisted</td>
+          <td><meter min="0" max="100" value="24">24%</meter> 24%</td>
+          <td>31</td>
+          <td><time datetime="2026-08-21">2026-08-21</time></td>
+          <td class="state-pass">pass</td>
+        </tr>
+        <tr>
+          <th scope="row"><code>healthops</code></th>
+          <td>plugin-host</td>
+          <td><meter min="0" max="100" value="29">29%</meter> 29%</td>
+          <td>18</td>
+          <td><time datetime="2026-08-20">2026-08-20</time></td>
+          <td class="state-thin">thin</td>
+        </tr>
+        <tr>
+          <th scope="row"><code>learnops</code></th>
+          <td>plugin-host</td>
+          <td><meter min="0" max="100" value="33">33%</meter> 33%</td>
+          <td>16</td>
+          <td><time datetime="2026-08-20">2026-08-20</time></td>
+          <td class="state-thin">thin</td>
+        </tr>
+        <tr>
+          <th scope="row"><code>fleetcontroller</code></th>
+          <td>undeclared</td>
+          <td><meter min="0" max="100" value="46">46%</meter> 46%</td>
+          <td>12</td>
+          <td><time datetime="2026-08-21">2026-08-21</time></td>
+          <td class="state-fail"><strong>fail</strong></td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr>
+          <th scope="row">Payload lock</th>
+          <td colspan="5">Declared conformance: 7 of 9 repos; undeclared drift: 14 findings of 40 budget.</td>
+        </tr>
+      </tfoot>
+    </table>
+  </section>
+
+  <form class="zone controls" aria-labelledby="controls-title">
+    <h2 id="controls-title">Detector channel bank</h2>
+    <dl class="control-meta">
+      <dt><abbr title="Architecture Conformance Console">ACC</abbr></dt><dd><output id="arm-state" for="arm-declared arm-coverage arm-drift arm-markup">4 / 4 armed</output></dd>
+      <dt>Profile</dt><dd><output id="profile-state" for="profile-strict profile-balanced profile-observe">strict substrate</output></dd>
+    </dl>
+    <fieldset>
+      <legend>Channel arms</legend>
+      <menu class="arm-grid">
+        <li><label><input class="clip-control" id="arm-declared" type="checkbox" checked><b aria-hidden="true"></b><code>CNF</code> declared conformance</label></li>
+        <li><label><input class="clip-control" id="arm-coverage" type="checkbox" checked><b aria-hidden="true"></b><code>COV</code> detector coverage</label></li>
+        <li><label><input class="clip-control" id="arm-drift" type="checkbox" checked><b aria-hidden="true"></b><code>DRF</code> undeclared drift</label></li>
+        <li><label><input class="clip-control" id="arm-markup" type="checkbox" checked><b aria-hidden="true"></b><code>MRK</code> generic markup</label></li>
+      </menu>
+    </fieldset>
+    <fieldset>
+      <legend>Detector sensitivity faders</legend>
+      <menu class="fader-bank">
+        <li><label for="fader-declared"><abbr title="Declared conformance">CNF</abbr></label></li>
+        <li><input id="fader-declared" type="range" min="0" max="9" value="7" step="1"></li>
+        <li><output id="out-declared" for="fader-declared">7 / 9</output></li>
+        <li><label for="fader-coverage"><abbr title="Detector coverage">COV</abbr></label></li>
+        <li><input id="fader-coverage" type="range" min="0" max="100" value="82" step="1"></li>
+        <li><output id="out-coverage" for="fader-coverage">82%</output></li>
+        <li><label for="fader-drift"><abbr title="Undeclared drift">DRF</abbr></label></li>
+        <li><input id="fader-drift" type="range" min="0" max="40" value="14" step="1"></li>
+        <li><output id="out-drift" for="fader-drift">14 / 40</output></li>
+        <li><label for="fader-markup"><abbr title="Generic markup">MRK</abbr></label></li>
+        <li><input id="fader-markup" type="range" min="0" max="100" value="15" step="1"></li>
+        <li><output id="out-markup" for="fader-markup">15%</output></li>
+      </menu>
+    </fieldset>
+    <fieldset>
+      <legend>Profile selection</legend>
+      <menu class="profile-bank">
+        <li><label><input class="clip-control" id="profile-strict" type="radio" name="profile" value="strict substrate" checked><b aria-hidden="true"></b>strict substrate</label></li>
+        <li><label><input class="clip-control" id="profile-balanced" type="radio" name="profile" value="balanced scan"><b aria-hidden="true"></b>balanced scan</label></li>
+        <li><label><input class="clip-control" id="profile-observe" type="radio" name="profile" value="observe only"><b aria-hidden="true"></b>observe only</label></li>
+      </menu>
+    </fieldset>
+  </form>
+
+  <aside class="zone activity" aria-labelledby="activity-title">
+    <h2 id="activity-title">Activity log</h2>
+    <ol>
+      <li>
+        <time datetime="2026-08-21T21:40">21:40</time>
+        <samp>Run 12 complete. 14 findings across 9 repositories. <code>exit 0</code>.</samp>
+        <progress max="100" value="100">100%</progress>
+      </li>
+      <li>
+        <time datetime="2026-08-21T20:05">20:05</time>
+        <samp>Blind spot declared: accessible-name quality is unchecked, found by human comparison rather than by the detector.</samp>
+        <progress max="100" value="62">62%</progress>
+      </li>
+      <li>
+        <time datetime="2026-08-21T17:22">17:22</time>
+        <samp>False positive retired: word-boundary match on <code>.icon-button</code> corrected to <code>(?&lt;![\w-])</code>.</samp>
+        <progress max="100" value="100">100%</progress>
+      </li>
+    </ol>
+  </aside>
+
+  <section class="zone diagnostics" aria-labelledby="diagnostics-title">
+    <article>
+      <h2 id="diagnostics-title">Expandable notes</h2>
+      <details open>
+        <summary>Run 7 anomaly note</summary>
+        <p>The spike at run <var>7</var> is <code>fleetcontroller</code> landing before its pattern entry did.</p>
+      </details>
+      <details>
+        <summary>Keyboard inspection</summary>
+        <p>Use <kbd>Tab</kbd> to reach each native checkbox, radio, and range substrate; each fader writes to an adjacent <code>output</code>.</p>
+      </details>
+      <blockquote>
+        <p>The element is the substrate. The theme is the finish.</p>
+        <cite>Shared substrate creed</cite>
+      </blockquote>
+    </article>
+    <pre><code>owner = "Irtechie / ArchPatternsForAgents"
+commit = "ce75e79"
+run = 12
+time = "2026-08-21T21:40"
+drift = [38, 33, 30, 26, 24, 21, 34, 19, 17, 16, 15, 14]</code></pre>
+  </section>
+
+  <footer class="zone creed">
+    <p><strong>The element is the substrate. The theme is the finish.</strong></p>
+    <small><abbr title="Deep Lab Tech">DLT</abbr> // phosphor amber matrix</small>
+  </footer>
+</main>
+<script>
+const faders = [
+  ["fader-declared", "out-declared", " / 9"],
+  ["fader-coverage", "out-coverage", "%"],
+  ["fader-drift", "out-drift", " / 40"],
+  ["fader-markup", "out-markup", "%"]
+];
+
+for (const pair of faders) {
+  const control = document.getElementById(pair[0]);
+  const readout = document.getElementById(pair[1]);
+  control.addEventListener("input", () => {
+    readout.value = control.value + pair[2];
+  });
+}
+
+const arms = ["arm-declared", "arm-coverage", "arm-drift", "arm-markup"].map((id) => document.getElementById(id));
+const armState = document.getElementById("arm-state");
+function syncArms() {
+  armState.value = arms.filter((arm) => arm.checked).length + " / 4 armed";
+}
+for (const arm of arms) arm.addEventListener("change", syncArms);
+
+const profileState = document.getElementById("profile-state");
+for (const profile of document.querySelectorAll('input[name="profile"]')) {
+  profile.addEventListener("change", () => {
+    if (profile.checked) profileState.value = profile.value;
+  });
+}
+</script>
+</body>
+</html>

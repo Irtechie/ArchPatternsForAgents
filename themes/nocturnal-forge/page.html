@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nocturnal Forge — Architecture Conformance Console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=IBM+Plex+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --forge-night: #0b0b0c;
+        --forge-cavity: #111113;
+        --forge-plate: #191817;
+        --forge-raised: #24211f;
+        --forge-cut: #050505;
+        --forge-line: #38302a;
+        --forge-rivet: #6b584b;
+        --forge-text: #f1e4d0;
+        --forge-muted: #a99a88;
+        --forge-dim: #6d6258;
+        --forge-tungsten: oklch(76% 0.18 58);
+        --forge-ember: oklch(65% 0.23 43);
+        --forge-coal: oklch(20% 0.02 60);
+        --forge-danger: oklch(58% 0.18 29);
+        --forge-ok: oklch(71% 0.11 126);
+        --forge-font-display: "Rajdhani", "Arial Narrow", "Segoe UI", sans-serif;
+        --forge-font-mono: "IBM Plex Mono", "Cascadia Mono", Consolas, monospace;
+        --dial-fill: 122.5deg;
+        --dial-angle: -17.5deg;
+        --dial-shadow: 0 2rem 4rem rgba(0, 0, 0, 0.72), inset 0 0.18rem 0.22rem rgba(255, 232, 196, 0.08), inset 0 -1.1rem 1.8rem rgba(0, 0, 0, 0.9);
+    }
+
+    * { box-sizing: border-box; }
+
+    html { min-height: 100%; background: var(--forge-night); }
+
+    body {
+        margin: 0;
+        min-height: 100vh;
+        color: var(--forge-text);
+        font: 500 1rem/1.45 var(--forge-font-display);
+        background:
+            linear-gradient(90deg, rgba(255, 171, 83, 0.055) 1px, transparent 1px),
+            linear-gradient(rgba(255, 171, 83, 0.04) 1px, transparent 1px),
+            radial-gradient(circle at 50% -10%, oklch(76% 0.18 58 / 0.18), transparent 34rem),
+            radial-gradient(circle at 88% 86%, rgba(0, 0, 0, 0.7), transparent 30rem),
+            var(--forge-night);
+        background-size: 4rem 4rem, 4rem 4rem, auto, auto, auto;
+    }
+
+    .forge-page {
+        position: relative;
+        isolation: isolate;
+        display: grid;
+        grid-template-rows: auto minmax(0, 1fr) auto;
+        gap: clamp(1.3rem, 3vw, 2.4rem);
+        min-height: 100vh;
+        padding: clamp(1.1rem, 3.8vw, 3.6rem);
+    }
+
+    .forge-page::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        opacity: 0.34;
+        mix-blend-mode: soft-light;
+        filter: url(#powder-coat);
+        background: var(--forge-plate);
+        z-index: -1;
+    }
+
+    .forge-masthead {
+        display: grid;
+        grid-template-columns: minmax(0, 1.15fr) minmax(18rem, 0.85fr);
+        gap: clamp(1rem, 3vw, 2rem);
+        align-items: end;
+        max-width: 86rem;
+        width: 100%;
+        margin-inline: auto;
+    }
+
+    .title-block {
+        display: grid;
+        grid-template-rows: auto auto auto;
+        gap: 0.45rem;
+    }
+
+    .title-block p {
+        max-width: 54rem;
+        margin: 0;
+        color: var(--forge-muted);
+        font-family: var(--forge-font-mono);
+    }
+
+    .eyebrow {
+        color: var(--forge-tungsten);
+        font-family: var(--forge-font-mono);
+        font-size: clamp(0.72rem, 1.4vw, 0.86rem);
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+    }
+
+    h1 {
+        max-width: 13ch;
+        margin: 0;
+        font-size: clamp(3.2rem, 8vw, 7rem);
+        line-height: 0.84;
+        text-transform: uppercase;
+        text-shadow: 0 0.35rem 0.8rem rgba(0, 0, 0, 0.85), 0 0 2rem oklch(65% 0.23 43 / 0.15);
+    }
+
+    h2 {
+        margin: 0;
+        color: var(--forge-tungsten);
+        font-size: clamp(1.05rem, 2vw, 1.4rem);
+        letter-spacing: 0.09em;
+        text-transform: uppercase;
+    }
+
+    .run-stamps {
+        display: grid;
+        grid-template-columns: max-content minmax(0, 1fr);
+        gap: 0.45rem 1rem;
+        margin: 0;
+        padding: clamp(1rem, 2vw, 1.35rem);
+        border: 1px solid var(--forge-line);
+        border-radius: 1.2rem;
+        background: linear-gradient(145deg, rgba(255, 255, 255, 0.035), transparent 44%), var(--forge-cavity);
+        box-shadow: var(--dial-shadow);
+        font-family: var(--forge-font-mono);
+    }
+
+    .run-stamps dt {
+        color: var(--forge-dim);
+        text-transform: uppercase;
+    }
+
+    .run-stamps dd { margin: 0; }
+
+    .console-shell {
+        display: grid;
+        grid-template-columns: minmax(21rem, 1.12fr) minmax(22rem, 0.88fr);
+        gap: clamp(1rem, 3vw, 2rem);
+        max-width: 86rem;
+        width: 100%;
+        margin-inline: auto;
+        align-items: stretch;
+    }
+
+    .hero-panel {
+        display: grid;
+        grid-template-rows: auto minmax(24rem, 1fr) auto;
+        gap: clamp(1rem, 2.6vw, 1.8rem);
+        min-height: 42rem;
+        padding: clamp(1rem, 3vw, 2.2rem);
+        border: 1px solid var(--forge-rivet);
+        border-radius: 2.2rem;
+        background:
+            radial-gradient(circle at 50% 22%, oklch(65% 0.23 43 / 0.13), transparent 23rem),
+            linear-gradient(145deg, rgba(255, 245, 225, 0.06), transparent 26%),
+            var(--forge-plate);
+        box-shadow:
+            0 2.5rem 5rem rgba(0, 0, 0, 0.82),
+            inset 0 0.2rem 0.2rem rgba(255, 240, 214, 0.09),
+            inset 0 -1.5rem 2rem rgba(0, 0, 0, 0.82),
+            inset 0 0 0 0.25rem rgba(0, 0, 0, 0.46);
+    }
+
+    .hero-label {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) max-content;
+        gap: 1rem;
+        align-items: baseline;
+        border-bottom: 1px solid var(--forge-line);
+        padding-bottom: 0.8rem;
+    }
+
+    .dial-station {
+        --dial-size: clamp(18rem, 42vw, 31rem);
+        position: relative;
+        display: grid;
+        grid-template-areas: "dial";
+        place-items: center;
+        min-height: var(--dial-size);
+        margin: auto;
+    }
+
+    .dial-range {
+        position: absolute;
+        z-index: 10;
+        width: var(--dial-size);
+        height: var(--dial-size);
+        opacity: 0;
+        cursor: ew-resize;
+        appearance: none;
+        -webkit-appearance: none;
+    }
+
+    .dial-range:focus-visible ~ .dial-bezel {
+        outline: 0.25rem solid var(--forge-tungsten);
+        outline-offset: 0.45rem;
+        box-shadow:
+            0 0 0 0.45rem oklch(76% 0.18 58 / 0.18),
+            0 2.2rem 4rem rgba(0, 0, 0, 0.9),
+            inset 0 0.25rem 0.3rem rgba(255, 237, 210, 0.12),
+            inset 0 -1.2rem 1.8rem rgba(0, 0, 0, 0.9);
+    }
+
+    .dial-bezel {
+        grid-area: dial;
+        position: relative;
+        display: grid;
+        grid-template-rows: 1fr;
+        place-items: center;
+        width: var(--dial-size);
+        aspect-ratio: 1;
+        border-radius: 50%;
+        background:
+            conic-gradient(from 220deg, var(--forge-ember) 0deg, var(--forge-tungsten) var(--dial-fill), var(--forge-coal) var(--dial-fill), var(--forge-coal) 280deg, transparent 280deg),
+            radial-gradient(circle, transparent 57%, rgba(255, 237, 204, 0.08) 58%, transparent 61%),
+            var(--forge-cut);
+        box-shadow:
+            0 2.2rem 4rem rgba(0, 0, 0, 0.9),
+            inset 0 0.25rem 0.3rem rgba(255, 237, 210, 0.12),
+            inset 0 -1.2rem 1.8rem rgba(0, 0, 0, 0.9),
+            inset 0 0 0 0.55rem #070707,
+            inset 0 0 0 1rem rgba(255, 202, 127, 0.08);
+        filter: url(#powder-coat);
+    }
+
+    .dial-needle {
+        position: absolute;
+        width: 0.62rem;
+        height: 45%;
+        top: 7%;
+        border-radius: 999px;
+        transform-origin: 50% 96%;
+        transform: rotate(var(--dial-angle));
+        background: linear-gradient(var(--forge-tungsten), var(--forge-ember) 55%, #2b1710);
+        box-shadow: 0 0 1rem oklch(65% 0.23 43 / 0.74), inset 0 0.15rem 0.12rem rgba(255, 255, 255, 0.42);
+    }
+
+    .dial-hub {
+        grid-area: dial;
+        position: relative;
+        z-index: 2;
+        display: grid;
+        grid-template-rows: auto auto auto;
+        place-items: center;
+        width: 57%;
+        aspect-ratio: 1;
+        border-radius: 50%;
+        background:
+            radial-gradient(circle at 45% 25%, rgba(255, 239, 217, 0.08), transparent 32%),
+            linear-gradient(155deg, #25211f, #121110 58%, #070707);
+        box-shadow:
+            0 1.1rem 2.2rem rgba(0, 0, 0, 0.92),
+            inset 0 0.22rem 0.18rem rgba(255, 243, 222, 0.09),
+            inset 0 -1.2rem 1.8rem rgba(0, 0, 0, 0.86),
+            inset 0 0 0 0.2rem rgba(255, 197, 118, 0.08);
+    }
+
+    .dial-readout {
+        display: block;
+        color: var(--forge-text);
+        font: 700 clamp(2.5rem, 6.5vw, 5.8rem)/0.82 var(--forge-font-display);
+        letter-spacing: -0.03em;
+        text-shadow: 0 0.25rem 0.8rem #000, 0 0 1.6rem oklch(65% 0.23 43 / 0.35);
+    }
+
+    .dial-units {
+        color: var(--forge-muted);
+        font-family: var(--forge-font-mono);
+        font-size: clamp(0.72rem, 1.2vw, 0.95rem);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+    }
+
+    .dial-caption {
+        max-width: 36rem;
+        margin: 0;
+        color: var(--forge-muted);
+        font-family: var(--forge-font-mono);
+        text-align: center;
+    }
+
+    .toggle-bank {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: clamp(0.75rem, 2vw, 1.2rem);
+        padding: 0;
+        border: 0;
+    }
+
+    .toggle-bank legend {
+        margin-bottom: 0.8rem;
+        color: var(--forge-tungsten);
+        font-family: var(--forge-font-mono);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+    }
+
+    .throw-switch {
+        position: relative;
+        display: grid;
+        grid-template-rows: 8rem auto auto;
+        gap: 0.6rem;
+        min-width: 0;
+        cursor: pointer;
+    }
+
+    .throw-switch input {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        margin: -1px;
+        padding: 0;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+        border: 0;
+    }
+
+    .switch-skin {
+        position: relative;
+        border: 1px solid var(--forge-line);
+        border-radius: 1rem;
+        background: linear-gradient(#161413, #080808);
+        box-shadow: inset 0 0.8rem 1.2rem rgba(0, 0, 0, 0.86), inset 0 -0.45rem 0.8rem rgba(255, 214, 167, 0.05), 0 0.8rem 1.2rem rgba(0, 0, 0, 0.55);
+    }
+
+    .switch-skin i {
+        position: absolute;
+        left: 14%;
+        right: 14%;
+        bottom: 11%;
+        height: 43%;
+        border-radius: 0.72rem;
+        background: linear-gradient(180deg, #39322c, #171311);
+        box-shadow: 0 0.75rem 1.1rem rgba(0, 0, 0, 0.8), inset 0 0.18rem 0.12rem rgba(255, 244, 220, 0.14);
+        transition: bottom 180ms ease, box-shadow 180ms ease, background 180ms ease;
+    }
+
+    .throw-switch input:checked + .switch-skin i {
+        bottom: 46%;
+        background: linear-gradient(180deg, #5b3a20, #25140d);
+        box-shadow: 0 0.9rem 1.2rem rgba(0, 0, 0, 0.86), 0 0 1.4rem oklch(65% 0.23 43 / 0.44), inset 0 0.18rem 0.12rem rgba(255, 244, 220, 0.2);
+    }
+
+    .throw-switch input:focus-visible + .switch-skin {
+        outline: 0.2rem solid var(--forge-tungsten);
+        outline-offset: 0.3rem;
+    }
+
+    .throw-switch strong {
+        font-size: clamp(1rem, 2vw, 1.2rem);
+        text-transform: uppercase;
+    }
+
+    .throw-switch small {
+        color: var(--forge-muted);
+        font-family: var(--forge-font-mono);
+    }
+
+    .instrument-rack {
+        display: grid;
+        grid-template-rows: auto auto auto auto;
+        gap: clamp(1rem, 2.4vw, 1.4rem);
+    }
+
+    .meter-panel,
+    .estate-panel,
+    .drift-panel,
+    .activity-panel {
+        border: 1px solid var(--forge-line);
+        border-radius: 1.35rem;
+        background:
+            linear-gradient(145deg, rgba(255, 255, 255, 0.045), transparent 30%),
+            var(--forge-cavity);
+        box-shadow: 0 1.2rem 2.4rem rgba(0, 0, 0, 0.62), inset 0 0.12rem 0.18rem rgba(255, 232, 198, 0.07), inset 0 -0.8rem 1rem rgba(0, 0, 0, 0.55);
+        padding: clamp(1rem, 2.5vw, 1.35rem);
+    }
+
+    .meter-panel {
+        display: grid;
+        grid-template-rows: auto auto;
+        gap: 1rem;
+    }
+
+    .metric-board {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 0.85rem;
+        margin: 0;
+    }
+
+    .metric-board dt {
+        color: var(--forge-muted);
+        font-family: var(--forge-font-mono);
+        font-size: 0.86rem;
+        text-transform: uppercase;
+    }
+
+    .metric-board dd {
+        display: grid;
+        grid-template-columns: minmax(8rem, 1fr) max-content;
+        gap: 0.75rem;
+        align-items: center;
+        margin: 0 0 0.3rem;
+    }
+
+    meter,
+    progress {
+        width: 100%;
+        height: 1rem;
+        border: 1px solid #090909;
+        border-radius: 999px;
+        background: #080808;
+        box-shadow: inset 0 0.3rem 0.45rem rgba(0, 0, 0, 0.9), 0 0.2rem 0.4rem rgba(0, 0, 0, 0.5);
+    }
+
+    meter::-webkit-meter-bar {
+        border: 0;
+        border-radius: 999px;
+        background: #080808;
+    }
+
+    meter::-webkit-meter-optimum-value,
+    progress::-webkit-progress-value {
+        border-radius: 999px;
+        background: linear-gradient(90deg, var(--forge-ember), var(--forge-tungsten));
+        box-shadow: 0 0 1rem oklch(65% 0.23 43 / 0.35);
+    }
+
+    progress::-webkit-progress-bar {
+        border-radius: 999px;
+        background: #080808;
+    }
+
+    .estate-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: var(--forge-font-mono);
+        font-size: clamp(0.74rem, 1.25vw, 0.9rem);
+    }
+
+    .estate-table caption {
+        margin-bottom: 0.8rem;
+        color: var(--forge-tungsten);
+        font-family: var(--forge-font-display);
+        font-size: 1.2rem;
+        font-weight: 700;
+        text-align: left;
+        text-transform: uppercase;
+    }
+
+    .estate-table th,
+    .estate-table td {
+        padding: 0.45rem 0.5rem;
+        border-bottom: 1px solid rgba(107, 88, 75, 0.42);
+        text-align: left;
+        white-space: nowrap;
+    }
+
+    .estate-table th {
+        color: var(--forge-muted);
+        font-size: 0.72rem;
+        text-transform: uppercase;
+    }
+
+    .estate-table td:last-child { color: var(--forge-tungsten); text-transform: uppercase; }
+
+    .drift-panel {
+        display: grid;
+        grid-template-rows: auto auto;
+        gap: 0.9rem;
+    }
+
+    details summary {
+        cursor: pointer;
+        color: var(--forge-tungsten);
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    .drift-figure {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 0.8rem;
+        margin: 1rem 0 0;
+    }
+
+    .drift-figure svg {
+        width: 100%;
+        min-height: 9rem;
+        border-radius: 1rem;
+        background: linear-gradient(180deg, rgba(255, 177, 88, 0.06), rgba(0, 0, 0, 0.24)), #0b0b0b;
+        box-shadow: inset 0 0 0 1px rgba(255, 191, 126, 0.1), inset 0 0.8rem 1.4rem rgba(0, 0, 0, 0.7);
+    }
+
+    .drift-figure figcaption,
+    .activity-list {
+        color: var(--forge-muted);
+        font-family: var(--forge-font-mono);
+    }
+
+    .activity-panel {
+        display: grid;
+        grid-template-rows: auto auto auto;
+        gap: 0.85rem;
+    }
+
+    .activity-list {
+        display: grid;
+        grid-template-rows: repeat(3, auto);
+        gap: 0.65rem;
+        margin: 0;
+        padding-left: 1.25rem;
+    }
+
+    .activity-list li::marker { color: var(--forge-tungsten); }
+
+    .action-row {
+        display: grid;
+        grid-template-columns: max-content minmax(0, 1fr);
+        gap: 1rem;
+        align-items: center;
+    }
+
+    .forge-button {
+        border: 1px solid #21120b;
+        border-radius: 0.9rem;
+        padding: 0.9rem 1.25rem;
+        color: #170c05;
+        background: linear-gradient(180deg, var(--forge-tungsten), var(--forge-ember));
+        box-shadow: 0 0.85rem 1.3rem rgba(0, 0, 0, 0.68), inset 0 0.18rem 0.1rem rgba(255, 255, 255, 0.32), inset 0 -0.45rem 0.55rem rgba(87, 36, 8, 0.42);
+        font: 700 1rem/1 var(--forge-font-mono);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+    }
+
+    .forge-button:focus-visible {
+        outline: 0.22rem solid var(--forge-text);
+        outline-offset: 0.25rem;
+    }
+
+    .forge-button:active {
+        transform: translateY(0.12rem);
+        box-shadow: 0 0.35rem 0.75rem rgba(0, 0, 0, 0.76), inset 0 0.2rem 0.2rem rgba(73, 26, 5, 0.55);
+    }
+
+    .action-result {
+        color: var(--forge-muted);
+        font-family: var(--forge-font-mono);
+    }
+
+    .creed {
+        max-width: 86rem;
+        width: 100%;
+        margin: 0 auto;
+        padding: clamp(1rem, 2vw, 1.35rem);
+        border-left: 0.35rem solid var(--forge-ember);
+        background: linear-gradient(90deg, oklch(65% 0.23 43 / 0.12), transparent), rgba(0, 0, 0, 0.18);
+        color: var(--forge-text);
+        font-size: clamp(1.2rem, 2.6vw, 1.8rem);
+        font-weight: 700;
+    }
+
+    .creed cite {
+        display: block;
+        margin-top: 0.35rem;
+        color: var(--forge-muted);
+        font-family: var(--forge-font-mono);
+        font-size: 0.78rem;
+        font-style: normal;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+    }
+
+    code,
+    time,
+    output {
+        font-family: var(--forge-font-mono);
+        font-variant-numeric: tabular-nums;
+    }
+
+    @media (max-width: 58rem) {
+        .forge-masthead,
+        .console-shell,
+        .hero-label,
+        .action-row {
+            grid-template-columns: 1fr;
+        }
+
+        .toggle-bank { grid-template-columns: 1fr; }
+        .hero-panel { min-height: auto; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+            transition-duration: 0.01ms !important;
+            scroll-behavior: auto !important;
+        }
+    }
+</style>
+</head>
+<body>
+<main class="forge-page">
+    <svg width="0" height="0" aria-hidden="true" focusable="false">
+        <filter id="powder-coat">
+            <feTurbulence type="fractalNoise" baseFrequency="0.82" numOctaves="4" seed="12" result="noise"></feTurbulence>
+            <feColorMatrix in="noise" type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 0.16 0" result="grain"></feColorMatrix>
+            <!-- Clip the grain to the element's own alpha. Without this the
+                 feTurbulence result fills the whole filter region and feBlend
+                 unions it with the source, painting a hard-edged noise
+                 rectangle far outside the dial. -->
+            <feComposite in="grain" in2="SourceAlpha" operator="in" result="grain-clipped"></feComposite>
+            <feBlend in="SourceGraphic" in2="grain-clipped" mode="multiply"></feBlend>
+        </filter>
+    </svg>
+
+    <header class="forge-masthead">
+        <section class="title-block" aria-labelledby="console-title">
+            <p class="eyebrow">Irtechie / ArchPatternsForAgents</p>
+            <h1 id="console-title">Architecture Conformance Console</h1>
+            <p>Commit <code>ce75e79</code> · Run 12 · <time datetime="2026-08-21T21:40">2026-08-21T21:40</time></p>
+        </section>
+
+        <dl class="run-stamps" aria-label="Run identity">
+            <dt>Owner</dt>
+            <dd>Irtechie / ArchPatternsForAgents</dd>
+            <dt>Commit</dt>
+            <dd><code>ce75e79</code></dd>
+            <dt>Run</dt>
+            <dd>12</dd>
+            <dt>Time</dt>
+            <dd><time datetime="2026-08-21T21:40">2026-08-21T21:40</time></dd>
+        </dl>
+    </header>
+
+    <section class="console-shell" aria-label="Nocturnal Forge console">
+        <article class="hero-panel" aria-labelledby="dial-title">
+            <header class="hero-label">
+                <h2 id="dial-title">Undeclared Drift Allocation</h2>
+                <code>14 / 40 budget</code>
+            </header>
+
+            <figure class="dial-station">
+                <label class="dial-units" for="driftDial">Undeclared drift findings</label>
+                <input class="dial-range" id="driftDial" type="range" min="0" max="32" step="0.5" value="14" aria-describedby="dialHelp">
+                <b class="dial-bezel" aria-hidden="true">
+                    <i class="dial-needle"></i>
+                </b>
+                <strong class="dial-hub">
+                    <output class="dial-readout" id="driftOutput" for="driftDial" aria-live="polite">14 findings</output>
+                    <small class="dial-units">of 40 budget</small>
+                </strong>
+                <figcaption class="dial-caption" id="dialHelp">The dial mirrors Undeclared drift: 14 findings, of 40 budget. Arrow keys adjust the real range input.</figcaption>
+            </figure>
+
+            <fieldset class="toggle-bank">
+                <legend>Activity latches</legend>
+                <label class="throw-switch">
+                    <input type="checkbox" checked>
+                    <b class="switch-skin" aria-hidden="true"><i></i></b>
+                    <strong>Run 12 complete</strong>
+                    <small><time datetime="2026-08-21T21:40">21:40</time> — 14 findings across 9 repositories. <code>exit 0</code>. 100%</small>
+                </label>
+                <label class="throw-switch">
+                    <input type="checkbox" checked>
+                    <b class="switch-skin" aria-hidden="true"><i></i></b>
+                    <strong>Blind spot declared</strong>
+                    <small><time datetime="2026-08-21T20:05">20:05</time> — accessible-name quality is unchecked. 62%</small>
+                </label>
+                <label class="throw-switch">
+                    <input type="checkbox" checked>
+                    <b class="switch-skin" aria-hidden="true"><i></i></b>
+                    <strong>False positive retired</strong>
+                    <small><time datetime="2026-08-21T17:22">17:22</time> — <code>(?&lt;![\w-])</code> corrected. 100%</small>
+                </label>
+            </fieldset>
+        </article>
+
+        <aside class="instrument-rack" aria-label="Supporting instrumentation">
+            <section class="meter-panel" aria-labelledby="metrics-title">
+                <h2 id="metrics-title">Metrics</h2>
+                <dl class="metric-board">
+                    <dt>Declared conformance</dt>
+                    <dd><meter min="0" max="9" value="7">7 of 9 repos</meter><output>7 of 9 repos</output></dd>
+                    <dt>Detector coverage</dt>
+                    <dd><meter min="0" max="100" value="82">82%</meter><output>82% of tree</output></dd>
+                    <dt>Undeclared drift</dt>
+                    <dd><meter min="0" max="40" value="14">14 findings</meter><output>14 findings, of 40 budget</output></dd>
+                    <dt>Generic markup</dt>
+                    <dd><meter min="0" max="100" value="15">15%</meter><output>15% div/span</output></dd>
+                </dl>
+            </section>
+
+            <section class="estate-panel" aria-labelledby="estate-title">
+                <table class="estate-table">
+                    <caption id="estate-title">Estate</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Repository</th>
+                            <th scope="col">Pattern</th>
+                            <th scope="col">div/span</th>
+                            <th scope="col">Elements</th>
+                            <th scope="col">Checked</th>
+                            <th scope="col">State</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <th scope="row"><code>financeops</code></th>
+                            <td>plugin-host</td>
+                            <td>22%</td>
+                            <td>45</td>
+                            <td><time datetime="2026-08-21">2026-08-21</time></td>
+                            <td>pass</td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><code>agent127</code></th>
+                            <td>llm-assisted</td>
+                            <td>24%</td>
+                            <td>31</td>
+                            <td><time datetime="2026-08-21">2026-08-21</time></td>
+                            <td>pass</td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><code>healthops</code></th>
+                            <td>plugin-host</td>
+                            <td>29%</td>
+                            <td>18</td>
+                            <td><time datetime="2026-08-20">2026-08-20</time></td>
+                            <td>thin</td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><code>learnops</code></th>
+                            <td>plugin-host</td>
+                            <td>33%</td>
+                            <td>16</td>
+                            <td><time datetime="2026-08-20">2026-08-20</time></td>
+                            <td>thin</td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><code>fleetcontroller</code></th>
+                            <td>undeclared</td>
+                            <td>46%</td>
+                            <td>12</td>
+                            <td><time datetime="2026-08-21">2026-08-21</time></td>
+                            <td><strong>fail</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <details class="drift-panel" open>
+                <summary>Drift per run, twelve runs, 2026-06-14 → 2026-08-21</summary>
+                <figure class="drift-figure">
+                    <svg viewBox="0 0 360 150" role="img" aria-labelledby="drift-chart-title drift-chart-desc">
+                        <title id="drift-chart-title">Drift series</title>
+                        <desc id="drift-chart-desc">38, 33, 30, 26, 24, 21, 34, 19, 17, 16, 15, 14. The spike at run 7 is fleetcontroller landing before its pattern entry did.</desc>
+                        <polyline points="12,18 42,39 72,52 102,69 132,77 162,90 192,35 222,98 252,107 282,111 312,115 342,120" fill="none" stroke="oklch(65% 0.23 43)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"></polyline>
+                        <line x1="12" y1="123" x2="342" y2="123" stroke="rgba(255, 232, 196, 0.18)" stroke-width="2"></line>
+                        <circle cx="192" cy="35" r="7" fill="oklch(76% 0.18 58)"></circle>
+                    </svg>
+                    <figcaption><code>38, 33, 30, 26, 24, 21, 34, 19, 17, 16, 15, 14</code>. The spike at run 7 is <code>fleetcontroller</code> landing before its pattern entry did.</figcaption>
+                </figure>
+            </details>
+
+            <section class="activity-panel" aria-labelledby="activity-title">
+                <h2 id="activity-title">Activity</h2>
+                <ol class="activity-list">
+                    <li><time datetime="2026-08-21T21:40">21:40</time> — Run 12 complete. 14 findings across 9 repositories. <code>exit 0</code>. <progress max="100" value="100">100%</progress> 100%</li>
+                    <li><time datetime="2026-08-21T20:05">20:05</time> — Blind spot declared: accessible-name quality is unchecked, found by human comparison rather than by the detector. <progress max="100" value="62">62%</progress> 62%</li>
+                    <li><time datetime="2026-08-21T17:22">17:22</time> — False positive retired: word-boundary match on <code>.icon-button</code> corrected to <code>(?&lt;![\w-])</code>. <progress max="100" value="100">100%</progress> 100%</li>
+                </ol>
+                <p class="action-row">
+                    <button class="forge-button" type="button" id="sealRun">Seal run 12</button>
+                    <output class="action-result" id="sealOutput" for="sealRun">Run 12 complete. 14 findings across 9 repositories. exit 0. 100%</output>
+                </p>
+            </section>
+        </aside>
+    </section>
+
+    <blockquote class="creed">
+        The element is the substrate. The theme is the finish.
+        <cite>Creed</cite>
+    </blockquote>
+</main>
+
+<script>
+    const driftDial = document.getElementById("driftDial");
+    const driftOutput = document.getElementById("driftOutput");
+    const dialStation = document.querySelector(".dial-station");
+    const sealRun = document.getElementById("sealRun");
+    const sealOutput = document.getElementById("sealOutput");
+
+    function formatFindingValue(value) {
+        return Number.isInteger(value) ? String(value) : value.toFixed(1);
+    }
+
+    function renderDial() {
+        const min = Number(driftDial.min);
+        const max = Number(driftDial.max);
+        const value = Number(driftDial.value);
+        const percentage = (value - min) / (max - min);
+        const sweep = percentage * 280;
+        const angle = -140 + sweep;
+        dialStation.style.setProperty("--dial-fill", `${sweep}deg`);
+        dialStation.style.setProperty("--dial-angle", `${angle}deg`);
+        driftOutput.value = `${formatFindingValue(value)} findings`;
+        driftOutput.textContent = `${formatFindingValue(value)} findings`;
+    }
+
+    driftDial.addEventListener("input", renderDial);
+    sealRun.addEventListener("click", () => {
+        sealOutput.value = "Run 12 complete. 14 findings across 9 repositories. exit 0. 100%";
+        sealOutput.textContent = "Run 12 complete. 14 findings across 9 repositories. exit 0. 100%";
+    });
+    renderDial();
+</script>
+</body>
+</html>

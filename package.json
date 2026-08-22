@@ -1,0 +1,33 @@
+{
+  "name": "archpatterns",
+  "version": "1.0.0",
+  "description": "Machine-checkable architecture patterns and a UI theme registry for coding agents.",
+  "private": true,
+  "scripts": {
+    "shoot": "node scripts/shoot-themes.mjs",
+    "verify": "node scripts/shoot-themes.mjs --verify",
+    "a11y": "node scripts/audit-a11y-names.mjs",
+    "check:pages": "node .github/skills/ui-craft/scripts/check-ui-craft.mjs themes/deep-lab-tech/page.html && node .github/skills/ui-craft/scripts/check-ui-craft.mjs themes/gritty-cyberpunk/page.html && node .github/skills/ui-craft/scripts/check-ui-craft.mjs themes/nocturnal-forge/page.html && node .github/skills/ui-craft/scripts/check-ui-craft.mjs themes/pristine-minimalism/page.html",
+    "test": "npm run check:pages && npm run a11y && npm run verify"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Irtechie/ArchPatternsForAgents.git"
+  },
+  "keywords": [
+    "architecture-patterns",
+    "coding-agents",
+    "ui-craft",
+    "accessibility"
+  ],
+  "author": "Irtechie",
+  "license": "UNLICENSED",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Irtechie/ArchPatternsForAgents/issues"
+  },
+  "homepage": "https://github.com/Irtechie/ArchPatternsForAgents#readme",
+  "devDependencies": {
+    "playwright-core": "^1.62.1"
+  }
+}

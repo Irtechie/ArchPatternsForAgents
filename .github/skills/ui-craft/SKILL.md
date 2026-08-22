@@ -176,25 +176,47 @@ identical visuals, 83% → 15% div/span, three `FAIL`s → zero.
 ## Themes
 
 Aesthetic direction lives in [`themes/`](../../../themes/), not in this skill.
-Read `themes/index.json`, pick an `id` by its `use_when`, apply its `ground`,
-`accents`, `type` and `technique`, then author markup from Rule 1.
 
-**Copy the finish, never the DOM** of a component marked `visual-reference` —
-that label means its markup failed the checker. Every component in the registry
-is currently `visual-reference`.
+Pick a look from [`themes/GALLERY.md`](../../../themes/GALLERY.md) — four full
+pages, the same data, four finishes, each with a rendered image. Then read
+`themes/index.json` for that theme's `ground`, `accents`, `type` and `technique`,
+and author markup from Rule 1.
+
+Each theme's `page.html` is a **conformant** worked example at page scale: copy
+its structure freely. A component marked `visual-reference` is the opposite —
+that label means its markup failed the checker, so **copy the finish, never the
+DOM**.
+
+Three layers, and only the first is fixed. **Substrate** — the semantic element —
+never varies: a dial and a fader are both `<input type="range">`. **Composition**
+— which controls exist, how many, and their hierarchy — varies per theme, because
+interaction character is part of the design, not paint. **Finish** — colour,
+texture, type, motion — varies per theme. Freezing composition to prove the
+substrate point would be freezing the wrong layer.
 
 ## Check it
 
-Do not self-report. Run:
+Do not self-report. Run both:
 
 ```
-node .github/skills/ui-craft/scripts/check-ui-craft.mjs <dir>
+node .github/skills/ui-craft/scripts/check-ui-craft.mjs <file-or-dir>
+node scripts/audit-a11y-names.mjs <page.html>
 ```
 
-It reports element vocabulary, div ratio, rich-element count, layout density,
-token presence and control operability, and exits non-zero on a failing grade.
-Thresholds and the evidence behind them are in
-[references/thresholds.md](references/thresholds.md).
+The first reports element vocabulary, div ratio, rich-element count, layout
+density, token presence and control operability. Thresholds and the evidence
+behind them are in [references/thresholds.md](references/thresholds.md).
+
+The second loads the page in a real browser and reads the **computed accessible
+name** of every control, which the first cannot see. It exists because a page
+that passed the first check shipped a slider with no accessible name at all: its
+wrapping `<label>` held an `<output>` before the `<input>`, and `<output>` is
+itself labelable, so the label bound to the output. The presence of a `<label>`
+is not evidence of a name.
+
+Neither check can see whether the thing looks right, or whether the value shown
+is the real one. **Render it and look at it.** Three real defects in the theme
+pages were found no other way.
 
 ## Scope
 

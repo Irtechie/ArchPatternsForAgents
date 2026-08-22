@@ -4,6 +4,16 @@ Reusable aesthetic profiles for UI work. Another project asks this repo for a
 theme, applies its tokens and technique, and authors its own markup from the
 `ui-craft` element rules.
 
+## Pick a look
+
+**[GALLERY.md](GALLERY.md)** — four full pages, the same data, four finishes,
+each with a rendered image. Choose by eye there, then come back here for the
+rules.
+
+Every theme ships `themes/<id>/page.html`, a complete console demonstrating the
+theme at page scale, and `themes/<id>/preview.png`, its rendered image. All four
+pages pass both checks with zero failures.
+
 ## Use one
 
 1. Read `index.json`. Pick a theme `id` by its `use_when`, not by its looks.
@@ -11,9 +21,10 @@ theme, applies its tokens and technique, and authors its own markup from the
 3. Author markup from
    [`.github/skills/ui-craft/SKILL.md`](../.github/skills/ui-craft/SKILL.md) Rule 1.
    **Do not copy the DOM of a `visual-reference` component.**
-4. Verify:
+4. Verify. Both must exit 0:
    ```
-   node .github/skills/ui-craft/scripts/check-ui-craft.mjs <your-artifact-dir>
+   node .github/skills/ui-craft/scripts/check-ui-craft.mjs <your-dir-or-file>
+   node scripts/audit-a11y-names.mjs <your-page.html>
    ```
 
 ## Conformance levels
@@ -23,8 +34,8 @@ theme, applies its tokens and technique, and authors its own markup from the
 | `conformant` | Markup and operability pass the checker. Copy structure and style. |
 | `visual-reference` | The look is right; the markup is not. Copy the finish, not the DOM. |
 
-Every component currently here is `visual-reference`. That is a finding, not an
-oversight — see below.
+Every **page** here is `conformant`. Every **single component** except one is
+`visual-reference`. Both facts are findings, not oversights — see below.
 
 ## The measured reason this split exists
 
@@ -89,8 +100,39 @@ telemetry is `<dl>`/`<output>`/`<code>`/`<time>`; brackets moved to
 spring travel.
 
 The accessible-name fix came from comparing two independent conformant attempts,
-**not** from the checker — which measured both as passing. That gap is now
-recorded in
-[`references/thresholds.md`](../.github/skills/ui-craft/references/thresholds.md)
-under blind spots. A structurally perfect control can still be announced by the
-wrong name.
+**not** from the checker — which measured both as passing. A structurally perfect
+control can still be announced by the wrong name.
+
+That gap is now a check rather than a note. `scripts/audit-a11y-names.mjs` loads
+each page in a real browser and reads the *computed* accessible name of every
+control, so it sees what a screen reader would. It earned its place on its first
+run by catching a defect the regex checker passed: a slider with no accessible
+name at all, because its wrapping `<label>` contained an `<output>` before the
+`<input>` — and `<output>` is itself a labelable element, so the label bound to
+the output and the slider got nothing. Presence of a `<label>` is not evidence of
+a name.
+
+## Then the pages
+
+The four themes were rebuilt at page scale, each authored against
+[`_shared/substrate-contract.md`](_shared/substrate-contract.md) and required to
+pass the checker before being handed back. Same aesthetic briefs as the
+components above:
+
+| Theme | As a component | As a page |
+|---|---|---|
+| `deep-lab-tech` | 95% div/span, 3 distinct, 0 rich | **0%**, 49 distinct, 24 rich |
+| `nocturnal-forge` | 91%, 3 distinct, 0 rich | **0%**, 41 distinct, 17 rich |
+| `pristine-minimalism` | 86%, 3 distinct, 0 rich | **2%**, 35 distinct, 14 rich |
+| `gritty-cyberpunk` | 83%, 5 distinct, 0 rich | **3%**, 45 distinct, 18 rich |
+
+The variable was the constraint, not the prompt. Nothing was made uglier by
+being semantic, which is the second time the same claim has survived a test.
+
+Three defects in those pages were found only by rendering them and looking, and
+two of the three were mine: a preview script that overwrote real values while
+priming controls, so a dial displayed `22` beside its own caption reading `14`
+— *the screenshot lied*; full-page capture stitching viewport tiles, so
+`position: fixed` textures painted only the first tile; and an `feTurbulence`
+grain that bled outside its element, because `feBlend` unions filter regions.
+None of the three was visible to either checker. **Render it and look at it.**
