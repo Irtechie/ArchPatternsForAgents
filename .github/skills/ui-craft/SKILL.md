@@ -158,6 +158,21 @@ Motion carries the same obligation: any `@keyframes` or transform transition
 needs a `prefers-reduced-motion` branch. Glitch, parallax and spring effects are
 a vestibular hazard, and the guard is one media query.
 
+Concretely:
+
+- Clip a control, never `display: none` it. `position: absolute; width: 1px;
+  height: 1px; clip-path: inset(50%)` keeps it focusable and in the a11y tree.
+- Drive theme state from `:checked`, `:focus-visible` and `:disabled` rather
+  than from a JS class or inline style, so the paint cannot disagree with the
+  real state.
+- Mark the decorative layer `aria-hidden="true"`, or the control is announced by
+  whatever word is painted on it instead of by its label.
+- Style `:focus-visible` deliberately. Never suppress the outline; theme it.
+- Announce state changes with `<output>`, which is a live region by default.
+
+`themes/gritty-cyberpunk/override-toggle-conformant.html` is a worked example:
+identical visuals, 83% → 15% div/span, three `FAIL`s → zero.
+
 ## Themes
 
 Aesthetic direction lives in [`themes/`](../../../themes/), not in this skill.

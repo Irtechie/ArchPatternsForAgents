@@ -70,3 +70,27 @@ reading the file. A component whose numbers were estimated rather than measured
 is worse than one with no entry, because it will be trusted.
 
 Promote a component to `conformant` only when the checker reports no `FAIL`.
+
+## The first conformant component
+
+`gritty-cyberpunk/override-toggle-conformant.html` is the same toggle on a real
+substrate. It scores 15% div/span, 15 distinct elements, 5 rich elements, zero
+`FAIL` — against the original's 83%, 5, 0 and three `FAIL`s. **The visuals are
+unchanged.** That is the point: aesthetic direction and semantic substrate were
+never in tension.
+
+What changed: the checkbox is clipped rather than `display: none`; `:checked`,
+`:focus-visible` and `:disabled` drive every themed state so the visual state
+cannot drift from the real one; the visual layer is `aria-hidden` so the control
+is announced as "Engage cybernetic system override" rather than as the word
+painted on the handle; `<output>` is a live region, so state changes are spoken;
+telemetry is `<dl>`/`<output>`/`<code>`/`<time>`; brackets moved to
+`::before`/`::after`; and `prefers-reduced-motion` guards the glitch and the
+spring travel.
+
+The accessible-name fix came from comparing two independent conformant attempts,
+**not** from the checker — which measured both as passing. That gap is now
+recorded in
+[`references/thresholds.md`](../.github/skills/ui-craft/references/thresholds.md)
+under blind spots. A structurally perfect control can still be announced by the
+wrong name.

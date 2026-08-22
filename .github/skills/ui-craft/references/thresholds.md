@@ -65,11 +65,12 @@ silence read as evidence.
 
 | Not seen | Consequence |
 |---|---|
+| **Accessible name quality** | A label-wrapped control takes its name from the label's text. If that text is the word painted on the skin, the control is announced as "SAFE" instead of "Engage override" — structurally perfect, semantically wrong. Found by comparing two conformant candidates, not by this script. |
 | Runtime DOM | Elements built by string concatenation or `innerHTML` are invisible. |
 | Element *volume* per shape | Ten `<table>`s and one `<table>` score the same. |
 | Whether a `<table>` was the right call | Semantics of the data are not inspected. |
 | Contrast, colour blindness, focus-visible styling | No colour analysis at all. |
-| ARIA attributes | A correct `role`/`aria-*` custom control still trips the drag-driven FAIL. |
+| ARIA attributes | A correct `role`/`aria-*` custom control still trips the drag-driven FAIL, and a missing `aria-hidden` on a decorative layer is not flagged. |
 | Non-CSS styling | Inline `style=` and CSS-in-JS are not counted. |
 
 ## Corrections already applied

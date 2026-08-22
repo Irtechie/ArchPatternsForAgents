@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cyberpunk System Override Toggle — conformant</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --bg-panel: #050505;
+        --neon-safe: oklch(75% 0.25 150);
+        --neon-activate: oklch(70% 0.35 340);
+        --neon-amber: oklch(85% 0.2 90);
+        --text-color: #f0f0f0;
+        --text-dim: #888;
+        --border-color: #222;
+        --font-stack: 'Fira Code', ui-monospace, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+        display: grid;
+        place-items: center;
+        min-height: 100vh;
+        background-color: var(--bg-panel);
+        font-family: var(--font-stack);
+        color: var(--text-color);
+        padding: clamp(1rem, 4vw, 3rem);
+        background-image:
+            repeating-linear-gradient(0deg,
+                rgba(0, 255, 255, 0.03), rgba(0, 255, 255, 0.03) 1px,
+                transparent 1px, transparent 2px),
+            linear-gradient(90deg, rgba(0, 255, 255, 0.02) 1px, transparent 1px),
+            radial-gradient(circle at 85% 10%, rgba(0, 255, 200, 0.06), transparent 24rem);
+        background-size: auto, 3rem 3rem, auto;
+    }
+
+    /*
+     * The substrate mandate. The checkbox stays in the DOM, in the tab order
+     * and in the accessibility tree; only its pixels are removed. display:none
+     * would have taken all three.
+     */
+    .visually-hidden {
+        position: absolute;
+        width: 1px; height: 1px;
+        margin: -1px; padding: 0;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+        border: 0;
+    }
+
+    .interface-container {
+        display: grid;
+        grid-template-rows: auto 1fr;
+        gap: 1.5rem;
+        padding: clamp(1.25rem, 4vw, 2rem);
+        border: 2px solid var(--border-color);
+        border-radius: 4px;
+        max-width: 26rem;
+        width: 100%;
+        position: relative;
+        background: radial-gradient(circle at top left, rgba(20, 20, 20, 0.8), rgba(5, 5, 5, 1));
+        box-shadow: 0 0 50px rgba(0, 0, 0, 0.8), 0 0 10px rgba(255, 255, 255, 0.05);
+    }
+
+    .interface-container::before,
+    .interface-container::after {
+        content: '';
+        position: absolute;
+        width: 15px; height: 15px;
+        border: 1px solid var(--border-color);
+    }
+    .interface-container::before { top: 5px; left: 5px; border-right: 0; border-bottom: 0; }
+    .interface-container::after { bottom: 5px; right: 5px; border-left: 0; border-top: 0; }
+
+    .system-title {
+        display: grid;
+        grid-template-rows: auto auto;
+        gap: 0.15rem;
+        text-align: center;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 0.5rem;
+    }
+    .system-title h1 { font-size: clamp(1rem, 4vw, 1.3rem); font-weight: 700; max-width: 22ch; justify-self: center; }
+    .system-title small { font-size: 0.7rem; opacity: 0.7; font-weight: 400; }
+
+    .override-component {
+        display: grid;
+        grid-template-rows: auto auto auto;
+        justify-items: center;
+        gap: 1.5rem;
+        border: 0;
+    }
+    .override-component > legend { font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-dim); }
+
+    /* Name/value telemetry is a definition list, not two divs. */
+    .data-readouts {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.35rem 1rem;
+        width: 100%;
+        font-size: 0.7rem;
+        color: var(--text-dim);
+    }
+    .data-readouts dt {
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+    }
+    .data-readouts dd { text-align: right; color: #aaa; }
+
+    /* Brackets are decoration, so they live in CSS rather than in the content. */
+    .data-readouts dt::before { content: '[ '; }
+    .data-readouts dd::after  { content: ' ]'; }
+
+    .data-readouts output { color: var(--text-dim); transition: color 0.3s ease; }
+    .data-readouts code { font: inherit; }
+    .data-readouts time { font-variant-numeric: tabular-nums; }
+
+    .switch-wrapper {
+        position: relative;
+        display: block;
+        width: 120px; height: 180px;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .switch-track {
+        position: absolute;
+        inset: 0;
+        background-color: #111;
+        border-radius: 10px;
+        border: 1px solid #000;
+        box-shadow:
+            inset 0 10px 15px rgba(0, 0, 0, 0.7),
+            inset 0 -10px 15px rgba(0, 0, 0, 0.7),
+            inset 2px 2px 2px rgba(255, 255, 255, 0.03),
+            inset -2px -2px 2px rgba(0, 0, 0, 0.4),
+            0 5px 10px rgba(0, 0, 0, 0.5);
+        transition: box-shadow 0.4s;
+    }
+
+    .switch-handle {
+        position: absolute;
+        height: 80px; width: 100px;
+        left: 10px; top: 90px;
+        display: grid;
+        place-items: center;
+        background-color: #222;
+        border-radius: 8px;
+        border: 1px solid #111;
+        box-shadow:
+            0 8px 15px rgba(0, 0, 0, 0.8),
+            inset 0 1px 1px rgba(255, 255, 255, 0.1);
+        transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+    }
+
+    .switch-handle::after {
+        content: '';
+        position: absolute;
+        top: 5px; left: 10px; right: 10px; height: 10px;
+        background: linear-gradient(180deg, #333, #111);
+        border-radius: 4px;
+        box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1);
+    }
+
+    .handle-label {
+        font-size: 1.1rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: #555;
+        transition: color 0.3s ease, text-shadow 0.3s ease;
+        text-shadow: 0 0 1px rgba(0, 0, 0, 0.5);
+    }
+
+    /*
+     * Native pseudo-classes drive every themed state. No JS class toggling and
+     * no inline styles, so the visual state cannot drift from the real one.
+     * The visual layer is aria-hidden, so the control's accessible name comes
+     * from the clipped label text rather than from the word painted on the
+     * handle. State changes are announced by <output>, which is a live region.
+     */
+    #overrideSwitch:checked + .switch-track {
+        box-shadow:
+            inset 0 10px 15px rgba(0, 0, 0, 0.7),
+            inset 0 -10px 15px rgba(0, 0, 0, 0.7),
+            inset 2px 2px 2px rgba(255, 255, 255, 0.03),
+            0 0 15px oklch(75% 0.25 150 / 0.4);
+    }
+    #overrideSwitch:checked + .switch-track .switch-handle {
+        transform: translateY(-80px);
+        box-shadow: 0 12px 20px rgba(0, 0, 0, 0.9), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+    }
+    #overrideSwitch:checked + .switch-track .handle-label {
+        color: var(--neon-safe);
+        text-shadow:
+            0 0 3px oklch(75% 0.25 150 / 0.8),
+            0 0 10px oklch(75% 0.25 150 / 0.6),
+            0 0 20px oklch(75% 0.25 150 / 0.4);
+    }
+
+    /* Keyboard focus is visible and themed, never suppressed. */
+    #overrideSwitch:focus-visible + .switch-track {
+        outline: 2px solid var(--neon-amber);
+        outline-offset: 5px;
+    }
+
+    #overrideSwitch:disabled + .switch-track { opacity: 0.4; cursor: not-allowed; }
+
+    #overrideSwitch:active + .switch-track .handle-label {
+        animation: glitch 0.3s cubic-bezier(.36,.07,.19,.97) both;
+    }
+
+    .switch-wrapper:hover .switch-handle {
+        background-color: #252525;
+        box-shadow: 0 10px 18px rgba(0, 0, 0, 0.85), inset 0 1px 1px rgba(255, 255, 255, 0.12);
+    }
+
+    @keyframes glitch {
+        0%   { transform: translate(0); text-shadow: 0 0 1px rgba(0,0,0,0.5); }
+        10%  { transform: translate(-2px, 1px); text-shadow: 1px 0 red, -1px 0 blue; }
+        20%  { transform: translate(2px, -1px); text-shadow: -1px 0 blue, 1px 0 red; }
+        30%  { transform: translate(-1px, -1px); opacity: 0.8; }
+        40%  { transform: translate(1px, 1px); opacity: 1; }
+        100% { transform: translate(0); }
+    }
+
+    /* Chromatic aberration and spring travel are a vestibular hazard. */
+    @media (prefers-reduced-motion: reduce) {
+        .switch-track, .switch-handle, .handle-label, .data-readouts output {
+            transition-duration: 0.01ms;
+        }
+        #overrideSwitch:active + .switch-track .handle-label { animation: none; }
+    }
+</style>
+</head>
+<body>
+
+    <main class="interface-container">
+        <header class="system-title">
+            <h1>System Override</h1>
+            <small>CYBERNETIC_INTERFACE_v4.1</small>
+        </header>
+
+        <fieldset class="override-component">
+            <legend>Engage override</legend>
+
+            <dl class="data-readouts">
+                <dt>Status</dt>
+                <dd><output id="status" for="overrideSwitch">SAFE</output></dd>
+                <dt>Ovr_Volt</dt>
+                <dd><output id="voltage" for="overrideSwitch">0.0V</output></dd>
+            </dl>
+
+            <label class="switch-wrapper">
+                <span class="visually-hidden">Engage cybernetic system override</span>
+                <input type="checkbox" id="overrideSwitch" class="visually-hidden">
+                <span class="switch-track" aria-hidden="true">
+                    <span class="switch-handle">
+                        <span class="handle-label" id="handleLabel">SAFE</span>
+                    </span>
+                </span>
+            </label>
+
+            <dl class="data-readouts">
+                <dt>Link</dt>
+                <dd><code id="link">N/A</code></dd>
+                <dt>Engaged</dt>
+                <dd><time id="engaged" datetime="">never</time></dd>
+            </dl>
+        </fieldset>
+    </main>
+
+    <script>
+        const sw = document.getElementById('overrideSwitch');
+        const handleLabel = document.getElementById('handleLabel');
+        const status = document.getElementById('status');
+        const voltage = document.getElementById('voltage');
+        const link = document.getElementById('link');
+        const engaged = document.getElementById('engaged');
+        const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+        let flicker;
+
+        // Text content only. Every colour and transform state is driven by
+        // :checked in CSS, so there is one source of truth for the visual state.
+        sw.addEventListener('change', () => {
+            clearInterval(flicker);
+            if (!sw.checked) {
+                handleLabel.textContent = status.value = 'SAFE';
+                voltage.value = '0.0V';
+                link.textContent = 'N/A';
+                return;
+            }
+            handleLabel.textContent = status.value = 'ACTIVE';
+            link.textContent = 'OVR_LINK_v7.x';
+
+            const now = new Date();
+            engaged.dateTime = now.toISOString();
+            engaged.textContent = now.toLocaleTimeString();
+
+            if (reduced.matches) { voltage.value = '120.0V'; return; }
+            let n = 0;
+            flicker = setInterval(() => {
+                voltage.value = `${(118.5 + Math.random() * 3).toFixed(1)}V`;
+                if (++n > 6) { clearInterval(flicker); voltage.value = '120.0V'; }
+            }, 80);
+        });
+    </script>
+</body>
+</html>

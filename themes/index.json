@@ -33,6 +33,14 @@
             "bracket glyphs are text content rather than ::before/::after",
             "content:\"\" set on .switch-handle, a real element, where it is a no-op"
           ]
+        },
+        {
+          "file": "gritty-cyberpunk/override-toggle-conformant.html",
+          "role": "destructive-action-toggle",
+          "conformance": "conformant",
+          "measured": { "elements": 27, "distinct": 15, "genericPercent": 15, "richElements": 5, "customProperties": 8 },
+          "defects": [],
+          "note": "Same visuals as override-toggle.html on a real substrate. Clipped checkbox rather than display:none; :checked, :focus-visible and :disabled drive every themed state; visual layer is aria-hidden so the accessible name comes from clipped label text; <output> announces state as a live region; prefers-reduced-motion guards the glitch and the spring travel. Telemetry is <dl>/<output>/<code>/<time>, brackets are ::before/::after."
         }
       ]
     },
