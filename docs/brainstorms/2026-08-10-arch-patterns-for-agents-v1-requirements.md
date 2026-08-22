@@ -363,6 +363,71 @@ Sixteen cross-boundary calls into private symbols, six of them into `wiki`. **`w
 
 This is the fifth detector, and it is the most useful one found so far, for three reasons. It is pattern-independent, so it fires on repositories that never adopted anything. It has near-zero false positives — cross-module private access is unambiguous by language convention, not inference. And unlike the other four it names the **remedy** as well as the defect: each consumed private is a role that wants declaring, and the module accumulating them is where it belongs. It is the moment a role should have been named, caught in the act.
 
+## The estate already has an architecture. It was never declared. (2026-08-21)
+
+Prompted by the question "how do I get one permanent architecture for HTML + memory + data + LLM helper across every app." I went looking for what to design and found most of it already built, which changes the task from design to declaration.
+
+Surveyed at 2026-08-21: LearnOps `1840b08`, FinanceOps `87fbef9`, HealthOps `b82cb79`, HomeOps `9b467ed`, LifeOps `ec7b0b7`, PersonalWiki `9915d0c`, UniversalUI `ce75e79`.
+
+### The spine exists and is enforced
+
+Extracting every versioned contract identifier (`name.thing.vN`) across all seven repositories and intersecting them, one identifier appears in **all seven**: `universal_ui.contribution.v1`. It is not documentation — UniversalUI carries 25 source files and **8 test files** for it, and the runtime validator rejects a non-conforming contribution outright at load.
+
+| Tier the user described | What actually exists | State |
+|---|---|---|
+| Beautiful HTML | UniversalUI host + per-owner site packages (TypeScript) | **Live and enforced** |
+| LLM helper | Fleet controller: 7 models, leases, reservations, gang allocation | **Live**, out-of-process, crosses as `model.route_receipt.v1` |
+| Data store | Per-app Python domain emitting JSON artifacts | **Live** |
+| Memory graph | cognee / graphiti | **Never adopted** — see below |
+
+The second live shared surface is `universal_ui.owner_integration.v1`, in five repositories — and it is the ceremonial one already recorded above, with zero readers. **Two contracts occupy the same conceptual slot, one enforced and one inert.** An agent reading the estate cannot tell which is authoritative, and six owners have already guessed wrong.
+
+### Correction: no application has a memory graph
+
+The stated premise was that nearly every app needs a memory graph. The measurement says otherwise:
+
+| Signal | Result |
+|---|---|
+| `import cognee` / `import graphiti` in any repo | **0** |
+| Repos mentioning either at all | 4 of 7 — HealthOps, HomeOps, PersonalWiki have none |
+| LearnOps files mentioning them | 143 — of which **75 are docs**, 0 are imports |
+| LifeOps | 37 doc mentions, **0 source files** |
+
+The mentions are an *evaluation that never concluded*. `src/learnops/external_backend_decision.py` holds cognee and graphiti as scored `_CANDIDATES` and declares three artifact paths — a receipts root, a scorecard, and an ADR at `docs/context/decisions/agent127-memory-backend.md`. **All three are absent from the repository.** The module is referenced only by plans, eval scripts, and its own test; no `src` module calls it.
+
+This is a fourth-detector hit of an unrecorded kind: not a declaration nothing reads, but a **decision procedure that never produced a decision**, while five applications shipped without it. The catalog must be able to say *"this role is deliberately empty"*, because the honest reading is that these apps do not need a memory graph — they need durable typed state, which they already have. Adopting a graph library per-application would add a dependency to seven repositories to fill a role none of them currently has.
+
+### The drift cause, finally located: the contract is copied, not depended on
+
+**No Ops repository has a dependency manifest at all** — no `requirements.txt`, no `pyproject.toml`, no `package.json`. There is therefore no mechanism by which any repository can *depend* on the contract. It can only copy it.
+
+The host's own vendored mirror records what that costs, in a comment worth quoting because it is the thesis of this project stated by the code it describes:
+
+> *"This mirror originally hand-copied that vocabulary into both fields... wrong in both directions at once. It permitted `degraded` and `unavailable`, which the host rejects, and it omitted `unknown` and `unhealthy`, which the host accepts. `status` was corrected first; `projection` seventeen lines up was missed, because a report names a field and a field is what gets fixed. **Two copies of one vocabulary can only ever detect the two copies disagreeing — and here they did not even do that, because nothing compared them.**"*
+
+Note the failure occurred **in TypeScript, in fully typed code**. This is the third independent refutation of the language hypothesis, and the strongest, because here the types were present and correct on both sides of a disagreement they could not see.
+
+The justification given for vendoring is that the contract package is *"`private: true` and unpublished, so a clean checkout cannot resolve it."* **The first half is false.** `packages/ui-contract/package.json` at `ce75e79` contains no `private` field. It is MIT-licensed, version `0.1.0`, and carries a working `publishConfig` targeting GitHub Packages with `access: restricted`, plus a `prepack` build script. It is *publishable and unpublished*, which is a materially different condition from *private*, because the remedy is one command rather than a policy change.
+
+Recorded as a distinct detector variant — **a stale justification**. A comment explaining why a shortcut was necessary, whose stated reason no longer holds, is more durable than the shortcut itself: it survives review because it looks like diligence. It requires the same treatment as ceremonial architecture — check the claim against the artifact it names.
+
+### Consequence: the permanent architecture is a package boundary, not a diagram
+
+The four tiers are already correct. What is missing is that exactly one of them is shared as *code*:
+
+| Tier | Cardinality | Shared as | Language |
+|---|---|---|---|
+| Host — presentation, routing, shell | exactly-one | the application | TypeScript |
+| **Contract — types plus runtime validators** | **exactly-one** | **a published package** | TypeScript |
+| Contributor — domain logic, artifacts | many | nothing; validated, not linked | free |
+| Capability — models, and memory if ever adopted | many | reserved out-of-process, crosses as a receipt | n/a |
+
+Two properties make this checkable rather than aspirational. Contributors share **no code**, so they cannot drift from each other — only from the contract, which is a version comparison. And capabilities are never imported, so the forbidden edges hold by construction: the zero-model-imports finding and the zero-graph-imports finding are the same result twice, and both are correct rather than incomplete.
+
+The single highest-value change to the estate is therefore **publish `@irtechie/universal-ui-contract` and replace the four vendored mirror files with a dependency**. That converts a copy into a version number, which converts silent drift into a resolvable conflict. It is one command plus four deletions, needs no new runtime, and no language migration substitutes for it.
+
+This also supplies the first catalog entry's `enforcement` evidence directly: the host's validator is the reader, the published version is the independent evidence source, and the vendored mirror is the observed defect.
+
 ## Selection
 
 **Resolved: hybrid, with all non-determinism placed before the human checkpoint and none after it.**
