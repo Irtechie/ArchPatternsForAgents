@@ -399,15 +399,24 @@ This is a fourth-detector hit of an unrecorded kind: not a declaration nothing r
 
 ### The drift cause, finally located: the contract is copied, not depended on
 
-**No Ops repository has a dependency manifest at all** — no `requirements.txt`, no `pyproject.toml`, no `package.json`. There is therefore no mechanism by which any repository can *depend* on the contract. It can only copy it.
+**Correction, 2026-08-21, to a claim committed earlier the same day.** I first reported that no Ops repository has a dependency manifest. That is false, and the error is instructive: `git grep -- "package.json"` matches only a root-level file, so nested manifests were invisible. FinanceOps has `packages/financeops-universal-ui/package.json`. This is the second pathspec error of the session in the same direction — a narrow pathspec reported an absence that was really a blind spot — which is precisely the failure mode the `blind_spots` field exists to force authors to declare. **A check that cannot see a location must say so, or its silence will be read as evidence.**
 
-The host's own vendored mirror records what that costs, in a comment worth quoting because it is the thesis of this project stated by the code it describes:
+The corrected finding is narrower and considerably stronger. The manifests exist, the build tooling exists, and **zero of the nine owner packages depend on `@irtechie/universal-ui-contract`**:
+
+| Owner packages surveyed | 9 |
+|---|---|
+| Declaring the contract in any dependency field | **0** |
+| Marked `"private": true` themselves | **9** |
+
+The last row identifies the mechanism behind the false justification recorded below: the *owner* packages are private, and the vendoring comment attributed that property to the *contract* package, which does not have it.
+
+The host's own vendored mirror records what copying costs, in a comment worth quoting because it is the thesis of this project stated by the code it describes:
 
 > *"This mirror originally hand-copied that vocabulary into both fields... wrong in both directions at once. It permitted `degraded` and `unavailable`, which the host rejects, and it omitted `unknown` and `unhealthy`, which the host accepts. `status` was corrected first; `projection` seventeen lines up was missed, because a report names a field and a field is what gets fixed. **Two copies of one vocabulary can only ever detect the two copies disagreeing — and here they did not even do that, because nothing compared them.**"*
 
-Note the failure occurred **in TypeScript, in fully typed code**. This is the third independent refutation of the language hypothesis, and the strongest, because here the types were present and correct on both sides of a disagreement they could not see.
+Note the failure occurred **in TypeScript, in fully typed code**. This is the third independent refutation of the language hypothesis, and the strongest so far, because here the types were present and correct on both sides of a disagreement they could not see. The host has since collapsed the two lists into one (`HealthVocabularyV1 = HealthProjectionV1`), which is the structural fix rather than another test.
 
-The justification given for vendoring is that the contract package is *"`private: true` and unpublished, so a clean checkout cannot resolve it."* **The first half is false.** `packages/ui-contract/package.json` at `ce75e79` contains no `private` field. It is MIT-licensed, version `0.1.0`, and carries a working `publishConfig` targeting GitHub Packages with `access: restricted`, plus a `prepack` build script. It is *publishable and unpublished*, which is a materially different condition from *private*, because the remedy is one command rather than a policy change.
+The justification given for vendoring is that the contract package is *"`private: true` and unpublished, so a clean checkout cannot resolve it."* **The first half is false.** `packages/ui-contract/package.json` at `ce75e79` contains no `private` field. It is MIT-licensed, version `0.1.0`, and carries a working `publishConfig` targeting GitHub Packages with `access: restricted`, plus a `prepack` build script.
 
 Recorded as a distinct detector variant — **a stale justification**. A comment explaining why a shortcut was necessary, whose stated reason no longer holds, is more durable than the shortcut itself: it survives review because it looks like diligence. It requires the same treatment as ceremonial architecture — check the claim against the artifact it names.
 
@@ -424,9 +433,82 @@ The four tiers are already correct. What is missing is that exactly one of them 
 
 Two properties make this checkable rather than aspirational. Contributors share **no code**, so they cannot drift from each other — only from the contract, which is a version comparison. And capabilities are never imported, so the forbidden edges hold by construction: the zero-model-imports finding and the zero-graph-imports finding are the same result twice, and both are correct rather than incomplete.
 
-The single highest-value change to the estate is therefore **publish `@irtechie/universal-ui-contract` and replace the four vendored mirror files with a dependency**. That converts a copy into a version number, which converts silent drift into a resolvable conflict. It is one command plus four deletions, needs no new runtime, and no language migration substitutes for it.
+**Correction to my own recommendation.** I first proposed publishing the contract package and making every owner depend on it. The host has already considered and *deliberately rejected* that, and its reasoning is stronger than mine. The authoring contract places "whether you use `@irtechie/universal-ui-contract`" in the **loose** column — the author's business — and states plainly: *"An owner written in Rust, Go, or anything else that emits a conforming ES module and a valid `contribution` is a first-class owner."*
 
-This also supplies the first catalog entry's `enforcement` evidence directly: the host's validator is the reader, the published version is the independent evidence source, and the vendored mirror is the observed defect.
+The host previously enforced the dependency by typing the owner module as `ComponentType<{ route?: RouteDescriptorV1; context?: ShellContextV1 }>`. Because `ComponentType` props are **invariant**, assignability became *nominal*: an owner whose declaration was structurally identical under different type names was rejected anyway. It blocked **three of eight owners — Agent127, HealthOps, LearnOps — none for a defect in their release**, and permanently excluded any owner with no TypeScript declaration to import. Measured against what it caught, it only ever flagged owners who *declared* required props without dereferencing them, which has no runtime consequence.
+
+The replacement is **behavioural**: a recording `Proxy` traps any access to a prop the shell does not deliver, and a render assertion requires exactly one `data-owner-site` element. Both hold whatever produced the bytes.
+
+This is the fourth refutation of the language hypothesis, and the only one produced by someone other than me. It is also the sharpest, because the host did not merely find types insufficient — it found a type constraint **actively harmful**, rejecting three correct owners while catching zero real defects, and replaced it with a runtime observation that is both stricter and language-agnostic.
+
+The corrected recommendation, therefore, is not "publish and depend." It is:
+
+- **Enforce by running the artifact, never by shared types.** This is settled in the host and should be copied into the catalog as a general rule, not restated per entry.
+- **A vendored mirror is permitted but must name its source and be diffed against it.** The host states the rule already: *"Read the host's spec, never a copied table."* The defect was never that a copy existed; it was that nothing compared the copy to its source. This is the same conclusion the duplication findings reached from the opposite direction.
+- **Publishing remains worthwhile** as an ergonomic improvement for the TypeScript owners specifically, because it makes the diff automatic rather than diligent. It is no longer the highest-value change, and it must not become a requirement.
+
+## Seed entry 1, derived: Plugin Host with Owner Contributions (2026-08-21)
+
+Extracted from UniversalUI `ce75e79` by reading what is *enforced*, not what is described. This is the first entry whose role inventory was derived from a working host rather than drafted and then checked, and the difference shows: the host's own `## What Is Actually Enforced` table is already a tight/loose split, which is the `enforcement` field in prose form.
+
+### The tight/loose split is the entry
+
+The host states it directly, and the catalog should copy rather than paraphrase it:
+
+| Tight — blocks intake | Loose — the author's business |
+|---|---|
+| Provenance digests match the owner repo at the recorded commit | Implementation language and toolchain |
+| Byte inventory matches what was declared | Type declarations, or having none |
+| `contribution` parses at `universal_ui.contribution.v1` | Internal structure, state, styling approach |
+| `routeViews` keys are exactly the declared route ids | Framework choices inside the view |
+| Each view is a function rendering one marker on the spec-selected element | Build tooling, test runner, repo layout |
+| Views render without `route`, and read no prop the host does not send | How the bundle is generated |
+| No session ids, absolute paths, or timestamps in the artifact | Whether `@irtechie/universal-ui-contract` is used |
+| Removing the pointer plus the package fully removes the owner | |
+
+Every tight row is a **behavioural** check on a built artifact. Not one inspects source or types. That is what makes the pattern language-neutral in fact rather than in aspiration, and it is why this entry can be authored once and used by a Python, TypeScript, or Rust contributor without variation.
+
+### Roles
+
+| Role | Cardinality | Signature (observable) |
+|---|---|---|
+| Host shell | exactly-one | Imports owner packages, resolves a route id to a view |
+| Contract | exactly-one | Declares `CONTRIBUTION_SCHEMA_VERSION` and the runtime validators |
+| Enforced vocabulary | exactly-one per closed field | Member of `CONTRIBUTION_VOCABULARIES_V1`; the same operand the validator tests |
+| Owner package | many | Ships a built artifact plus `OWNER_ARTIFACT.json` |
+| Route view | one per declared route id | Key in `routeViews`; renders exactly one `data-owner-site="<routeId>"` |
+| Self-description | exactly-one per owner | `contribution` object at `universal_ui.contribution.v1` |
+| Provenance record | exactly-one per owner | `OWNER_ARTIFACT.json` with `sourceCommit`, `sourceTree`, per-file git blob SHAs |
+| Intake verifier | exactly-one | `scripts/verify-owner-intake.mjs` — compares declared blobs to the owner repo |
+| Removability surface | exactly-one per owner | `integration.json` `artifacts`, which must be exhaustive |
+
+Cardinalities are enforced, not advisory. **Exactly one element may carry `data-owner-site`** — the host records that marking both a wrapper and an inner root doubles every count-based assertion on otherwise-correct output, and the rule is mutation-tested.
+
+### The vocabulary construction is worth stealing wholesale
+
+`CONTRIBUTION_VOCABULARIES_V1` is a machine-readable list of every closed literal field the validator enforces, where each `members` array *is the operand the validator tests against*, not a restatement of it. It is proved by mutation in both directions: a non-member is refused, and every declared member is admitted.
+
+The second direction is the subtle one, and the host explains why it matters: *"a list that is narrower than declared makes a true statement unrepresentable, which is a correctness loss rather than an ergonomic one."* Catalog checks must adopt this. A conformance check that only proves rejection of bad input cannot distinguish a correct rule from one that rejects everything.
+
+The host also scopes the list precisely, pre-empting the exact misreadings an agent would make: `SHELL_VISIBILITY_VOCABULARY_V1` belongs to a different entry point and is deliberately excluded; `supportedHostRange` is a semver range test with no enumeration; five of eight entries are single-member **constants, not vocabularies**, and "an owner modelling them as extensible lists is modelling something this contract does not offer." That last sentence is a role-mapping error caught in advance, and it is the clearest evidence yet that a role inventory can be stated precisely enough to be checkable.
+
+### Two findings that confirm existing detectors
+
+**`mount<Name>Site` is a maintained surface the host never calls.** The host's own audit: `git grep "mount[A-Z][A-Za-z]*Site"` across `apps/` and `tests/` returns **zero**. It is a required export that no host path exercises — the ceremonial detector again, in a fourth independent instance.
+
+It has already cost something real. HomeOps' `mountHomeOpsSite` rendered its app component directly, bypassing the route wrapper, so `data-owner-site` and the CSS root class existed only on the host path. No test caught it because every test went through `routeViews`. The host's remedy is the right one and belongs in the catalog as a general rule: **the fix is structural, not another test** — have both paths call one shared wrapper so they cannot drift. Generalised: *any surface maintained but never exercised by its consumer is where this class of divergence hides.*
+
+**A stale doc sentence caused a privacy regression.** The enforced table previously read "views read nothing from `route` or `context`". At least one owner deleted a working visibility gate on that reading and shipped a site that rendered its most disclosing view regardless of the mode the user selected. Nothing failed, because the host was not sending `context` at the time either.
+
+This is the exemplar defect in a second form, and it sharpens the rule. The earlier instance was a wrong *example* replicating into owners that copied it. This one is a wrong *prohibition* — and prohibitions are more dangerous than examples, because acting on a false prohibition means **deleting** working code, which leaves no artifact to inspect afterwards. The catalog's `forbidden_edges` field is therefore held to a higher evidence bar than any other: a wrongly-declared forbidden edge instructs an agent to remove a correct safeguard, and neither the agent nor a reviewer will see what is missing.
+
+### The onboarding cost is already measured
+
+`scripts/new-owner-site.mjs` exists and states the measured baseline: *"a 3,654-line authoring contract, no generator, and 19-33% of every existing owner package spent on boilerplate the author had to hand-write."*
+
+It emits "deliberately the *floor*, not a demo: the smallest package the host will dispatch." It derives the React version from the host's own manifest rather than writing a literal, for the stated reason that *"a copy that nothing compares to its source drifts, and a scaffold emits its copy once per owner"* — the vendoring lesson applied reflexively to the generator.
+
+This settles the "a beginner should be able to start a new app" requirement, and settles it against a design instinct I would otherwise have got wrong. A generator is not a shortcut around the architecture; it is the mechanism by which the floor is **non-negotiable**, because a floor nobody can accidentally fall below does not need to be policed. The catalog should record the generator as part of the pattern's `exemplar`, not as tooling adjacent to it. **A pattern with a scaffold and a pattern without one are different patterns**, because only one of them survives contact with an author who has not read 3,654 lines — and no agent mid-session has.
 
 ## Selection
 
