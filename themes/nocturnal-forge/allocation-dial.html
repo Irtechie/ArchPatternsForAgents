@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nocturnal Forge Allocation Dial</title>
+<!-- Google Fonts: A clean, highly legible technical sans -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+<style>
+    :root {
+        /* Tungsten & Charcoal Palette */
+        --bg-forge: #101012;
+        --dial-surface: #1a1a1c;
+        --tungsten-glow: oklch(70% 0.18 45); /* Burning Orange */
+        --tungsten-dim: oklch(40% 0.1 45);
+        --text-muted: #666;
+        --text-bright: #eee;
+        
+        --font-stack: 'Rajdhani', sans-serif;
+    }
+
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+
+    body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background-color: var(--bg-forge);
+        font-family: var(--font-stack);
+        /* Very faint ambient light from the top */
+        background-image: radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.03) 0%, transparent 60%);
+        user-select: none; /* Prevent text selection while dragging */
+    }
+
+    /* Container */
+    .telemetry-panel {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 3rem;
+        background: #141416;
+        border-radius: 16px;
+        box-shadow: 
+            0 20px 40px rgba(0, 0, 0, 0.8), 
+            inset 0 1px 1px rgba(255, 255, 255, 0.05);
+        border: 1px solid #222;
+    }
+
+    .node-label {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+
+    .node-label span {
+        color: var(--tungsten-glow);
+        font-weight: 700;
+        text-shadow: 0 0 10px rgba(255, 120, 0, 0.3);
+    }
+
+    /* The Dial Component */
+    .dial-wrapper {
+        position: relative;
+        width: 240px;
+        height: 240px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    /* The Glowing Track (Conic Gradient updated via CSS variable) */
+    .dial-track {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        /* Starting angle is -140deg (220deg in conic terms). The JS updates --fill-angle */
+        --fill-angle: 0deg; 
+        background: conic-gradient(
+            from 220deg, 
+            var(--tungsten-glow) 0deg, 
+            var(--tungsten-glow) var(--fill-angle), 
+            #2a2a2c var(--fill-angle), 
+            #2a2a2c 280deg, 
+            transparent 280deg
+        );
+        /* Create the inner cutout for the track */
+        mask: radial-gradient(transparent 65%, black 66%);
+        -webkit-mask: radial-gradient(transparent 65%, black 66%);
+        box-shadow: inset 0 0 20px rgba(0,0,0,1);
+    }
+
+    /* The Physical Knob */
+    .dial-knob {
+        position: absolute;
+        width: 180px;
+        height: 180px;
+        border-radius: 50%;
+        background-color: var(--dial-surface);
+        cursor: grab;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        
+        /* 
+           Heavy box-shadow layering:
+           1. Outset shadow for physical height
+           2. Inner top-light for the machined edge
+           3. Inner bottom-shadow to round out the cylinder
+        */
+        box-shadow: 
+            0 15px 25px rgba(0, 0, 0, 0.9),
+            0 5px 10px rgba(0, 0, 0, 0.6),
+            inset 0 2px 3px rgba(255, 255, 255, 0.1),
+            inset 0 -5px 15px rgba(0, 0, 0, 0.8);
+        
+        /* Apply the SVG powder-coat texture */
+        filter: url(#metal-texture);
+        
+        /* Transition ONLY for the box-shadow on click, not transform, so dragging is instant */
+        transition: box-shadow 0.1s ease;
+    }
+
+    .dial-knob:active {
+        cursor: grabbing;
+        /* Press the button down slightly physically */
+        box-shadow: 
+            0 5px 10px rgba(0, 0, 0, 0.9),
+            inset 0 2px 3px rgba(255, 255, 255, 0.05),
+            inset 0 -2px 10px rgba(0, 0, 0, 0.8);
+    }
+
+    /* The Position Indicator Divot on the Knob */
+    .dial-indicator {
+        position: absolute;
+        width: 6px;
+        height: 20px;
+        background: var(--tungsten-glow);
+        top: 10px;
+        border-radius: 4px;
+        box-shadow: 
+            0 0 10px var(--tungsten-glow),
+            inset 0 2px 2px rgba(255,255,255,0.5);
+    }
+
+    /* Central Digital Readout (Untethered from the knob's rotation) */
+    .readout-container {
+        position: absolute;
+        z-index: 10;
+        pointer-events: none; /* Let clicks pass through to the knob */
+        text-align: center;
+    }
+
+    .vram-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--text-bright);
+        line-height: 1;
+        text-shadow: 0 2px 5px rgba(0,0,0,1);
+        /* Keep characters from jittering */
+        font-variant-numeric: tabular-nums; 
+    }
+
+    .vram-label {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        letter-spacing: 0.1em;
+        margin-top: 4px;
+    }
+
+</style>
+</head>
+<body>
+
+    <!-- SVG Filter for the Tactile Metal Powder-Coating -->
+    <svg width="0" height="0" style="position:absolute;">
+        <filter id="metal-texture">
+            <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" result="noise" />
+            <feColorMatrix type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 0.1 0" in="noise" result="coloredNoise" />
+            <feComposite operator="in" in="coloredNoise" in2="SourceGraphic" result="composite" />
+            <feBlend mode="multiply" in="composite" in2="SourceGraphic" />
+        </filter>
+    </svg>
+
+    <div class="telemetry-panel">
+        <div class="node-label">
+            NODE_ALPHA // <span>RTX 5090</span> VRAM ALLOC
+        </div>
+
+        <div class="dial-wrapper">
+            <div class="dial-track" id="dialTrack"></div>
+            
+            <div class="dial-knob" id="dialKnob">
+                <div class="dial-indicator"></div>
+            </div>
+
+            <div class="readout-container">
+                <div class="vram-value" id="vramValue">0.0</div>
+                <div class="vram-label">/ 32.0 GB</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const knob = document.getElementById('dialKnob');
+        const track = document.getElementById('dialTrack');
+        const vramReadout = document.getElementById('vramValue');
+        
+        let isDragging = false;
+        
+        // The physical sweep of the dial: -140 degrees to +140 degrees (280 degree total sweep)
+        const MIN_ANGLE = -140;
+        const MAX_ANGLE = 140;
+        const MAX_VRAM = 32.0;
+
+        // Start at 0 VRAM
+        let currentAngle = MIN_ANGLE;
+        updateDial(currentAngle);
+
+        knob.addEventListener('mousedown', () => isDragging = true);
+        document.addEventListener('mouseup', () => isDragging = false);
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+
+            // Get the center coordinates of the knob
+            const rect = knob.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+
+            // Calculate the angle of the mouse relative to the center
+            const x = e.clientX - centerX;
+            const y = e.clientY - centerY;
+            
+            // atan2 returns radians from -PI to PI. Convert to degrees.
+            // Add 90 so that 0 degrees is straight UP.
+            let angle = (Math.atan2(y, x) * (180 / Math.PI)) + 90;
+
+            // Handle the wrapping at the bottom of the dial
+            if (angle > 180) angle -= 360;
+
+            // Clamp the mechanical rotation to our physical limits
+            if (angle < MIN_ANGLE) angle = MIN_ANGLE;
+            if (angle > MAX_ANGLE) angle = MAX_ANGLE;
+
+            updateDial(angle);
+        });
+
+        function updateDial(angle) {
+            currentAngle = angle;
+            
+            // 1. Rotate the physical knob
+            knob.style.transform = `rotate(${angle}deg)`;
+
+            // 2. Calculate percentage (0.0 to 1.0)
+            const range = MAX_ANGLE - MIN_ANGLE;
+            const percentage = (angle - MIN_ANGLE) / range;
+
+            // 3. Update the Conic Gradient Track (CSS Variable)
+            // The track sweeps 280 degrees total.
+            const fillAngle = percentage * 280;
+            track.style.setProperty('--fill-angle', `${fillAngle}deg`);
+
+            // 4. Update the digital readout (0.0 to 32.0)
+            const vram = percentage * MAX_VRAM;
+            vramReadout.textContent = vram.toFixed(1);
+        }
+    </script>
+</body>
+</html>

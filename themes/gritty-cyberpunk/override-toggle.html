@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cyberpunk System Override Toggle</title>
+<!-- Google Fonts: A rigid, technical monospace font appropriate for the aesthetic -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&display=swap" rel="stylesheet">
+<style>
+    :root {
+        /* Abyssal Black Base */
+        --bg-panel: #050505;
+        /* Neon Accents: OKLCH for saturated, 'hot' color */
+        --neon-safe: oklch(75% 0.25 150); /* Toxic Green */
+        --neon-activate: oklch(70% 0.35 340); /* Neon Magenta (Alternative Accent) */
+        --neon-amber: oklch(85% 0.2 90);    /* Status Indicators */
+        --text-color: #f0f0f0;
+        --border-color: #222;
+        --font-stack: 'Fira Code', monospace;
+    }
+
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+
+    body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background-color: var(--bg-panel);
+        font-family: var(--font-stack);
+        color: var(--text-color);
+        /* 1. CRT Scanline Overlay: A repeating-linear-gradient */
+        background-image: 
+            repeating-linear-gradient(
+                0deg,
+                rgba(0, 255, 255, 0.03),
+                rgba(0, 255, 255, 0.03) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+        overflow: hidden; /* For atmospheric particles, if added */
+    }
+
+    .interface-container {
+        padding: 2rem;
+        border: 2px solid var(--border-color);
+        box-shadow: 0 0 50px rgba(0, 0, 0, 0.8), 0 0 10px rgba(255, 255, 255, 0.05);
+        background: radial-gradient(circle at top left, rgba(20, 20, 20, 0.8), rgba(5, 5, 5, 1));
+        border-radius: 4px;
+        max-width: 400px;
+        width: 100%;
+        position: relative;
+    }
+
+    /* Decorative Tech Labels (Brackets) */
+    .interface-container::before,
+    .interface-container::after {
+        content: '';
+        position: absolute;
+        width: 15px;
+        height: 15px;
+        border: 1px solid var(--border-color);
+    }
+
+    .interface-container::before { top: 5px; left: 5px; border-right: 0; border-bottom: 0; }
+    .interface-container::after { bottom: 5px; right: 5px; border-left: 0; border-top: 0; }
+
+    .system-title {
+        text-align: center;
+        margin-bottom: 1.5rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        font-weight: 700;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 0.5rem;
+        position: relative;
+    }
+
+    .system-title span { display: block; font-size: 0.7rem; opacity: 0.7; font-weight: 400; }
+
+    /* The Main Component: The Mechanical Toggle */
+    .override-component {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1.5rem;
+    }
+
+    .data-readouts {
+        width: 100%;
+        font-size: 0.7rem;
+        color: #888;
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+    }
+
+    .status-group { text-align: left; }
+    .voltage-group { text-align: right; }
+
+    /* Switch Styling: Heavy, Physical, Multilayer */
+    .switch-wrapper {
+        position: relative;
+        display: inline-block;
+        width: 120px;
+        height: 180px;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .switch-wrapper input { display: none; } /* Hide the actual checkbox */
+
+    /* The Physical Track/Housing: Complex box-shadow Insets */
+    .switch-track {
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background-color: #111;
+        border-radius: 10px;
+        border: 1px solid #000;
+        /* Layered inset shadows for deep polymer and metal ledge effect */
+        box-shadow: 
+            inset 0 10px 15px rgba(0, 0, 0, 0.7), 
+            inset 0 -10px 15px rgba(0, 0, 0, 0.7),
+            inset 2px 2px 2px rgba(255, 255, 255, 0.03), /* Subtle Ledge Highlight */
+            inset -2px -2px 2px rgba(0, 0, 0, 0.4),
+            0 5px 10px rgba(0, 0, 0, 0.5); /* Ambient Occlusion */
+        transition: 0.4s;
+    }
+
+    /* The Physical Handle/Toggle Lever */
+    .switch-handle {
+        position: absolute;
+        content: "";
+        height: 80px;
+        width: 100px;
+        left: 10px;
+        top: 90px; /* Initial OFF position */
+        background-color: #222;
+        border-radius: 8px;
+        border: 1px solid #111;
+        box-shadow: 
+            0 8px 15px rgba(0, 0, 0, 0.8), /* Haptic Weight (Outset Shadow) */
+            inset 0 1px 1px rgba(255, 255, 255, 0.1); /* Subtle top-edge light */
+        transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55); /* Springy Physics */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    /* Machined Metal Ledge on Handle */
+    .switch-handle::after {
+        content: '';
+        position: absolute;
+        top: 5px; left: 10px; right: 10px; height: 10px;
+        background: linear-gradient(180deg, #333, #111);
+        border-radius: 4px;
+        box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1);
+    }
+
+    /* OFF State Label on Handle */
+    .handle-label {
+        font-size: 1.1rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: #555; /* Dormant Color */
+        transition: 0.3s ease;
+        text-shadow: 0 0 1px rgba(0, 0, 0, 0.5);
+    }
+
+    /* --- INTERACTIONS AND ACTIVATION STATES --- */
+
+    /* When Checked (ON State) */
+    .switch-wrapper input:checked + .switch-track {
+        /* Activate Neon Ambient Track Glow */
+        box-shadow: 
+            inset 0 10px 15px rgba(0, 0, 0, 0.7), 
+            inset 0 -10px 15px rgba(0, 0, 0, 0.7),
+            inset 2px 2px 2px rgba(255, 255, 255, 0.03),
+            0 0 15px oklch(75% 0.25 150 / 0.4); /* Subtle Ambient Neon Spill */
+    }
+
+    .switch-wrapper input:checked + .switch-track .switch-handle {
+        transform: translateY(-80px); /* Move UP to ON */
+        box-shadow: 0 12px 20px rgba(0, 0, 0, 0.9), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+    }
+
+    .switch-wrapper input:checked + .switch-track .handle-label {
+        color: var(--neon-safe); /* Activate Toxic Green */
+        font-weight: 700;
+        /* Activate Heavy Bloom Glow: drop-shadow and text-shadow */
+        text-shadow: 
+            0 0 3px oklch(75% 0.25 150 / 0.8),
+            0 0 10px oklch(75% 0.25 150 / 0.6),
+            0 0 20px oklch(75% 0.25 150 / 0.4);
+    }
+
+    /* --- THE MICRO-GLITCH ANIMATION --- */
+    /* Applied briefly to the handle-label upon clicking and transitioning to ON */
+    @keyframes glitch {
+        0% { transform: translate(0); text-shadow: 0 0 1px rgba(0,0,0,0.5); }
+        10% { transform: translate(-2px, 1px); text-shadow: 1px 0 red, -1px 0 blue; }
+        20% { transform: translate(2px, -1px); text-shadow: -1px 0 blue, 1px 0 red; }
+        30% { transform: translate(-1px, -1px); opacity: 0.8; }
+        40% { transform: translate(1px, 1px); opacity: 1; }
+        100% { transform: translate(0); }
+    }
+
+    /* Apply the glitch when the input is clicked (not checked yet) */
+    .switch-wrapper input:active + .switch-track .handle-label {
+        animation: glitch 0.3s cubic-bezier(.36,.07,.19,.97) both;
+    }
+
+    /* Decorative data readouts */
+    .override-component .data-readouts .status { color: var(--neon-safe); text-transform: uppercase;}
+    .override-component .data-readouts .voltage { color: #aaa; }
+
+    /* The physical feel when hovering */
+    .switch-handle:hover {
+        background-color: #252525;
+        box-shadow: 0 10px 18px rgba(0, 0, 0, 0.85), inset 0 1px 1px rgba(255, 255, 255, 0.12);
+    }
+</style>
+</head>
+<body>
+
+    <div class="interface-container">
+        <h1 class="system-title">
+            System Override
+            <span>CYBERNETIC_INTERFACE_v4.1</span>
+        </h1>
+
+        <div class="override-component">
+            <div class="data-readouts">
+                <div class="status-group">[ STATUS: <span class="status">SAFE</span> ]</div>
+                <div class="voltage-group">[ OVR_VOLT: <span class="voltage">0.0V</span> ]</div>
+            </div>
+
+            <!-- The Tactile Toggle Mechanism -->
+            <label class="switch-wrapper">
+                <input type="checkbox" id="overrideSwitch">
+                <span class="switch-track">
+                    <span class="switch-handle">
+                        <span class="handle-label" id="handleLabel">SAFE</span>
+                    </span>
+                </span>
+            </label>
+            
+            <div class="data-readouts">
+                <div class="status-group">[ ENGAGE OVERRIDE ]</div>
+                <div class="voltage-group">[ LINK: <span class="link-status">N/A</span> ]</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // JS just for the micro-labels (Diegetic Feedback)
+        const overrideSwitch = document.getElementById('overrideSwitch');
+        const handleLabel = document.getElementById('handleLabel');
+        const statusReadout = document.querySelector('.status');
+        const voltageReadout = document.querySelector('.voltage');
+        const linkReadout = document.querySelector('.link-status');
+
+        overrideSwitch.addEventListener('change', function() {
+            if (this.checked) {
+                // Update interface for the 'ON' state
+                handleLabel.textContent = 'ACTIVE';
+                statusReadout.textContent = 'ACTIVE';
+                statusReadout.style.color = 'oklch(75% 0.25 150)'; // Match green glow
+                
+                // Simulate "Live" Data Flow
+                linkReadout.textContent = 'OVR_LINK_v7.x';
+                linkReadout.style.color = '#ddd';
+                
+                // Flickering Voltage for effect
+                let flickerCount = 0;
+                const flickerInterval = setInterval(() => {
+                    const voltage = (118.5 + Math.random() * 3).toFixed(1);
+                    voltageReadout.textContent = `${voltage}V`;
+                    flickerCount++;
+                    if (flickerCount > 6) {
+                        clearInterval(flickerInterval);
+                        voltageReadout.textContent = '120.0V';
+                    }
+                }, 80);
+            } else {
+                // Reset to 'SAFE' state
+                handleLabel.textContent = 'SAFE';
+                statusReadout.textContent = 'SAFE';
+                statusReadout.style.color = ''; // Reset CSS Var
+                
+                voltageReadout.textContent = '0.0V';
+                linkReadout.textContent = 'N/A';
+                linkReadout.style.color = '#888';
+            }
+        });
+    </script>
+</body>
+</html>

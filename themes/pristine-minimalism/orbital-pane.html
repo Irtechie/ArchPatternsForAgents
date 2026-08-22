@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pristine Orbital Data Pane</title>
+<!-- Google Fonts: Inter for that flawless, structural geometric look -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;400;600&display=swap" rel="stylesheet">
+<style>
+    :root {
+        /* Slow-moving fluid mesh colors using OKLCH */
+        --mesh-1: oklch(35% 0.15 250); /* Deep Abyssal Blue */
+        --mesh-2: oklch(45% 0.20 280); /* Vibrant Purple/Indigo */
+        --mesh-3: oklch(55% 0.18 210); /* Ethereal Cyan */
+        --mesh-4: oklch(25% 0.10 300); /* Dark Violet */
+        
+        --text-primary: rgba(255, 255, 255, 0.95);
+        --text-secondary: rgba(255, 255, 255, 0.5);
+    }
+
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+
+    body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background-color: #050510; /* Fallback */
+        font-family: 'Inter', sans-serif;
+        overflow: hidden;
+        perspective: 1000px; /* Required for the 3D tilt effect */
+    }
+
+    /* 1. The Fluid Mesh Gradient Background */
+    .mesh-background {
+        position: absolute;
+        top: -50%; left: -50%; right: -50%; bottom: -50%;
+        width: 200%; height: 200%;
+        background: 
+            radial-gradient(circle at 15% 50%, var(--mesh-1), transparent 50%),
+            radial-gradient(circle at 85% 30%, var(--mesh-2), transparent 50%),
+            radial-gradient(circle at 90% 80%, var(--mesh-3), transparent 50%),
+            radial-gradient(circle at 20% 90%, var(--mesh-4), transparent 50%);
+        background-size: 100% 100%;
+        /* Slow, breathing animation to make the background feel alive */
+        animation: fluidFlow 20s ease-in-out infinite alternate;
+        z-index: 0;
+        filter: blur(60px); /* Blends the radial gradients into a seamless mesh */
+    }
+
+    @keyframes fluidFlow {
+        0% { transform: translate(0, 0) scale(1); }
+        50% { transform: translate(-2%, 3%) scale(1.05); }
+        100% { transform: translate(3%, -2%) scale(1); }
+    }
+
+    /* 2. The Glass Pane Container */
+    .glass-pane {
+        position: relative;
+        z-index: 10;
+        width: 380px;
+        padding: 40px 30px;
+        border-radius: 24px;
+        
+        /* The Glassmorphism Engine */
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
+        backdrop-filter: blur(30px) saturate(150%);
+        -webkit-backdrop-filter: blur(30px) saturate(150%);
+        
+        /* Zero solid borders. Only soft inner light to define the edge */
+        box-shadow: 
+            0 30px 60px rgba(0, 0, 0, 0.4), /* Drop shadow for physical height */
+            inset 0 1px 1px rgba(255, 255, 255, 0.3), /* Top edge light catch */
+            inset 1px 0 1px rgba(255, 255, 255, 0.1); /* Left edge light catch */
+        
+        /* Physics transition for when the mouse LEAVES the pane (snaps back) */
+        /* Note: Transform transition is disabled during mousemove via JS for instant tracking */
+        transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+        transform-style: preserve-3d;
+        will-change: transform;
+    }
+
+    /* An internal glare effect that moves with the mouse */
+    .glare {
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        border-radius: 24px;
+        background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.15) 0%, transparent 60%);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.4s ease;
+        z-index: -1;
+    }
+
+    /* 3. Extreme Typography Scale */
+    .telemetry-label {
+        font-size: 0.65rem;
+        font-weight: 600;
+        letter-spacing: 0.4em;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+        margin-bottom: 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transform: translateZ(20px); /* Pops off the glass slightly in 3D */
+    }
+
+    .telemetry-label .status-dot {
+        width: 6px; height: 6px;
+        background-color: oklch(75% 0.15 200); /* Ethereal Cyan Dot */
+        border-radius: 50%;
+        box-shadow: 0 0 10px oklch(75% 0.15 200);
+    }
+
+    .metric-container {
+        transform: translateZ(40px); /* Pops text further off the glass */
+    }
+
+    .metric-value {
+        font-size: 5.5rem;
+        font-weight: 200; /* Extremely thin */
+        color: var(--text-primary);
+        line-height: 1;
+        letter-spacing: -0.04em;
+        margin-bottom: 0.5rem;
+        text-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .metric-unit {
+        font-size: 0.75rem;
+        font-weight: 400;
+        letter-spacing: 0.2em;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+    }
+
+    .graph-placeholder {
+        margin-top: 3rem;
+        height: 60px;
+        width: 100%;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        position: relative;
+        transform: translateZ(10px);
+    }
+
+    /* A pure CSS minimal wave/line graph simulation */
+    .graph-line {
+        position: absolute;
+        bottom: 0; left: 0; right: 0; height: 100%;
+        background: linear-gradient(to right, 
+            transparent 0%, 
+            rgba(255,255,255,0.1) 20%, 
+            rgba(255,255,255,0.4) 50%, 
+            rgba(255,255,255,0.1) 80%, 
+            transparent 100%);
+        mask-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 100 20" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><path d="M0,20 Q10,10 20,20 T40,20 T60,10 T80,20 T100,5 L100,20 L0,20 Z" fill="black"/></svg>');
+        -webkit-mask-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 100 20" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><path d="M0,20 Q20,0 40,20 T80,0 T100,20 L100,20 L0,20 Z" fill="black"/></svg>');
+        -webkit-mask-size: 100% 100%;
+        opacity: 0.7;
+    }
+</style>
+</head>
+<body>
+
+    <div class="mesh-background"></div>
+
+    <div class="glass-pane" id="tiltCard">
+        <div class="glare" id="glare"></div>
+        
+        <div class="telemetry-label">
+            <span>Orbital Telemetry</span>
+            <span class="status-dot"></span>
+        </div>
+
+        <div class="metric-container">
+            <div class="metric-value">1,024<span style="font-size: 3rem; opacity: 0.5;">.8</span></div>
+            <div class="metric-unit">Teraflops // Sync Rate</div>
+        </div>
+
+        <div class="graph-placeholder">
+            <div class="graph-line"></div>
+        </div>
+    </div>
+
+    <script>
+        const card = document.getElementById('tiltCard');
+        const glare = document.getElementById('glare');
+
+        // Fluid 3D Tilt Physics
+        card.addEventListener('mousemove', (e) => {
+            // Remove transition during movement for instant, glued-to-cursor tracking
+            card.style.transition = 'none';
+            glare.style.opacity = '1';
+
+            const rect = card.getBoundingClientRect();
+            
+            // Get mouse position relative to the center of the card
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+
+            // Calculate rotation. Max rotation is 12 degrees.
+            // y-axis mouse movement controls X-axis rotation (tilt up/down)
+            // x-axis mouse movement controls Y-axis rotation (tilt left/right)
+            const rotateX = ((y - centerY) / centerY) * -12; 
+            const rotateY = ((x - centerX) / centerX) * 12;
+
+            // Apply the 3D transform and slight lift (translateZ)
+            card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(20px)`;
+
+            // Move the internal glare to follow the light source (the mouse)
+            glare.style.background = `radial-gradient(circle at ${x}px ${y}px, rgba(255, 255, 255, 0.2) 0%, transparent 60%)`;
+        });
+
+        // Spring Physics Reset when mouse leaves
+        card.addEventListener('mouseleave', () => {
+            // Restore the cubic-bezier transition to simulate a physical spring snapping back
+            card.style.transition = 'transform 0.6s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.6s cubic-bezier(0.23, 1, 0.32, 1)';
+            card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) translateZ(0px)`;
+            glare.style.opacity = '0';
+        });
+    </script>
+</body>
+</html>

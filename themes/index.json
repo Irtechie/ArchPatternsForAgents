@@ -1,0 +1,112 @@
+{
+  "$comment": "Theme registry for ArchPatternsForAgents. Consumed by the ui-craft skill and by any project that asks this repo for a layout. Append themes and components over time; do not restructure without updating .github/skills/ui-craft/SKILL.md.",
+  "version": 1,
+  "updated": "2026-08-21",
+  "consume": {
+    "how": "Pick one theme id. Apply its tokens and technique. Author markup from the ui-craft element rules, NOT by copying a component whose conformance is visual-reference.",
+    "check": "node .github/skills/ui-craft/scripts/check-ui-craft.mjs <your-artifact-dir>",
+    "conformance_levels": {
+      "conformant": "Markup and operability pass the checker. Safe to copy structure and style.",
+      "visual-reference": "Aesthetic direction is correct; markup or operability does not pass. Copy the look, not the DOM."
+    }
+  },
+  "themes": [
+    {
+      "id": "gritty-cyberpunk",
+      "name": "Gritty Cyberpunk",
+      "world": "A decker's rig in a neon-soaked dystopia. High contrast, slightly degraded, hyper-responsive.",
+      "use_when": "High-stakes or destructive actions, live system state, anything where the operator should feel the weight of a decision.",
+      "ground": "#050505 abyssal black, repeating-linear-gradient scanlines at 1px/2px",
+      "accents": ["oklch(75% 0.25 150) toxic green", "oklch(70% 0.35 340) magenta", "oklch(85% 0.2 90) amber"],
+      "type": "rigid monospace, uppercase, letter-spacing 0.1em",
+      "technique": ["layered box-shadow insets for extruded polymer and metal ledges", "drop-shadow and text-shadow bloom on activation", "brief chromatic-aberration glitch on commit", "corner brackets via ::before/::after"],
+      "components": [
+        {
+          "file": "gritty-cyberpunk/override-toggle.html",
+          "role": "destructive-action-toggle",
+          "conformance": "visual-reference",
+          "measured": { "elements": 18, "distinct": 5, "genericPercent": 83, "richElements": 0, "customProperties": 7 },
+          "defects": [
+            "input is display:none — the control is unreachable by Tab and absent from the accessibility tree",
+            "glitch keyframes with no prefers-reduced-motion branch",
+            "83% div/span; the [ STATUS: SAFE ] readouts are a definition list rendered as divs",
+            "bracket glyphs are text content rather than ::before/::after",
+            "content:\"\" set on .switch-handle, a real element, where it is a no-op"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pristine-minimalism",
+      "name": "Pristine Hyper-Minimalism",
+      "world": "A private orbital command deck. Stark, flawless, focused on spatial depth and fluid motion.",
+      "use_when": "Headline metrics, telemetry summaries, any surface whose job is one number read at a glance.",
+      "ground": "slow fluid mesh of four analogous oklch radial gradients over #050510",
+      "accents": ["oklch(35% 0.15 250)", "oklch(45% 0.20 280)", "oklch(55% 0.18 210)", "oklch(25% 0.10 300)"],
+      "type": "geometric sans; massive thin display numeral against tiny tracked uppercase label",
+      "technique": ["backdrop-filter: blur(30px) saturate(150%)", "1px white border at 10% opacity plus inner top-edge highlight", "no hard borders inside the pane", "pointer-tracked rotateX/rotateY with cubic-bezier spring return"],
+      "components": [
+        {
+          "file": "pristine-minimalism/orbital-pane.html",
+          "role": "metric-readout",
+          "conformance": "visual-reference",
+          "measured": { "elements": 14, "distinct": 3, "genericPercent": 86, "richElements": 0, "customProperties": 6 },
+          "defects": [
+            "3D tilt transform with no prefers-reduced-motion branch",
+            "86% div/span; a metric with a label is <dl> or <output>, and any timestamp is <time datetime>",
+            "6 custom properties; a named palette wants 7-11"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "deep-lab-tech",
+      "name": "Deep Lab Tech",
+      "world": "An underground R&D facility. Utilitarian, data-dense, highly structured.",
+      "use_when": "Dense readouts, live signals, comparison matrices, anything an operator scans rather than reads.",
+      "ground": "very dark charcoal with a fine millimetre-paper SVG grid",
+      "accents": ["phosphor amber", "terminal green"],
+      "type": "monospace throughout, tabular-lining numerals, hard alignment",
+      "technique": ["bento grid of readout zones", "corner brackets via ::before/::after instead of continuous boxes", "inline SVG waveform with feGaussianBlur phosphor bloom", "no charting library"],
+      "components": [
+        {
+          "file": "deep-lab-tech/oscilloscope-matrix.html",
+          "role": "live-signal-matrix",
+          "conformance": "visual-reference",
+          "measured": { "elements": 19, "distinct": 3, "genericPercent": 95, "richElements": 0, "customProperties": 7 },
+          "defects": [
+            "95% div/span from a vocabulary of exactly div, span, svg — the worst substrate of the three generated themes, in the theme whose entire premise is dense scientific data",
+            "a frequency matrix is <table> with <caption> and <th scope>; a bounded reading is <meter>; a sample instant is <time datetime>",
+            "waveform animation with no prefers-reduced-motion branch",
+            "1 grid-template, so the advertised bento layout is one repeated shape",
+            "flat ground despite the theme calling for a millimetre-paper grid"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "nocturnal-forge",
+      "name": "The Nocturnal Forge",
+      "world": "A late-night workshop bridging compute, hardware and physical space.",
+      "use_when": "Home lab telemetry, machine control, long dark-room sessions.",
+      "ground": "deep charcoal, warm and low-blue-light",
+      "accents": ["subdued tungsten", "burnt orange oklch"],
+      "type": "sturdy sans with monospace numerals",
+      "technique": ["feTurbulence noise overlay for powder-coated metal", "complex inset+outset box-shadow arrays to carve controls out of the ground", "conic-gradient value track", "drag interaction with resistance, never free-spinning"],
+      "components": [
+        {
+          "file": "nocturnal-forge/allocation-dial.html",
+          "role": "hardware-allocation-dial",
+          "conformance": "visual-reference",
+          "measured": { "elements": 11, "distinct": 3, "genericPercent": 91, "richElements": 0, "customProperties": 8 },
+          "defects": [
+            "the dial is div drag handlers with no native control — no keyboard, no value, no role; it must be <input type=range> under the skin",
+            "91% div/span from a vocabulary of div, span, svg",
+            "a VRAM figure with a ceiling is <meter>, and its readout is <output>",
+            "flat ground despite the theme calling for a noise-textured surface"
+          ]
+        }
+      ]
+    }
+  ]
+}
