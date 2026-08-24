@@ -7,8 +7,11 @@
     "shoot": "node scripts/shoot-themes.mjs",
     "verify": "node scripts/shoot-themes.mjs --verify",
     "a11y": "node scripts/audit-a11y-names.mjs",
+    "divergence": "node scripts/audit-theme-divergence.mjs",
+    "repetition": "node scripts/audit-visual-repetition.mjs",
     "check:pages": "node .github/skills/ui-craft/scripts/check-ui-craft.mjs themes/deep-lab-tech/page.html && node .github/skills/ui-craft/scripts/check-ui-craft.mjs themes/gritty-cyberpunk/page.html && node .github/skills/ui-craft/scripts/check-ui-craft.mjs themes/nocturnal-forge/page.html && node .github/skills/ui-craft/scripts/check-ui-craft.mjs themes/pristine-minimalism/page.html",
-    "test": "npm run check:pages && npm run a11y && npm run verify"
+    "test": "npm run check:pages && npm run a11y && npm run controls && npm run divergence && npm run repetition && npm run verify",
+    "controls": "node scripts/audit-control-index.mjs"
   },
   "repository": {
     "type": "git",

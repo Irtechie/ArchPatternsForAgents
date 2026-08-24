@@ -1,7 +1,7 @@
 {
   "$comment": "Theme registry for ArchPatternsForAgents. Consumed by the ui-craft skill and by any project that asks this repo for a layout. Append themes and components over time; do not restructure without updating .github/skills/ui-craft/SKILL.md.",
   "version": 1,
-  "updated": "2026-08-21",
+  "updated": "2026-08-23",
   "consume": {
     "how": "Pick one theme id. Apply its tokens and technique. Author markup from the ui-craft element rules, NOT by copying a component whose conformance is visual-reference.",
     "check": "node .github/skills/ui-craft/scripts/check-ui-craft.mjs <your-artifact-dir-or-file>",
@@ -10,7 +10,16 @@
       "visual-reference": "Aesthetic direction is correct; markup or operability does not pass. Copy the look, not the DOM."
     },
     "pick_a_look": "Every theme ships a full page and a rendered image. Open themes/GALLERY.md, choose by eye, then read that theme's page.html for the finish and themes/_shared/substrate-contract.md for the rules it obeys.",
-    "check_names": "node scripts/audit-a11y-names.mjs <your-page.html>"
+    "check_names": "node scripts/audit-a11y-names.mjs <your-page.html>",
+    "genre": "Each theme declares a genre, a premise, the elements it leads with, and the elements it must refuse. Genre decides which data the surface shows at all; composition and finish follow from it. Two themes with the same genre are the same theme in two colours.",
+    "checks": [
+      "node .github/skills/ui-craft/scripts/check-ui-craft.mjs <file-or-dir>",
+      "node scripts/audit-a11y-names.mjs <page.html>",
+      "node scripts/audit-theme-divergence.mjs   # registry-wide",
+      "node scripts/audit-visual-repetition.mjs  # registry-wide"
+    ],
+    "gallery": "themes/GALLERY.md",
+    "controls": "Asking for a control by kind? Read controls.kinds -- never copy the DOM of a visual-reference component; follow its use_instead."
   },
   "themes": [
     {
@@ -49,7 +58,8 @@
             "83% div/span; the [ STATUS: SAFE ] readouts are a definition list rendered as divs",
             "bracket glyphs are text content rather than ::before/::after",
             "content:\"\" set on .switch-handle, a real element, where it is a no-op"
-          ]
+          ],
+          "use_instead": "gritty-cyberpunk/override-toggle-conformant.html"
         },
         {
           "file": "gritty-cyberpunk/override-toggle-conformant.html",
@@ -68,17 +78,34 @@
       ],
       "page": "gritty-cyberpunk/page.html",
       "preview": "gritty-cyberpunk/preview.png",
-      "preview_bytes": 690451,
-      "composition": "High-stakes terminal. One large arm/disarm override switch gating the page accent, a command entry line, a register-dump table and a log feed.",
+      "preview_bytes": 528127,
       "page_measured": {
-        "elements": 158,
-        "distinct": 45,
-        "genericPercent": 3,
-        "richElements": 18,
-        "gridTemplates": 23,
-        "customProperties": 20
+        "elements": 73,
+        "distinct": 32,
+        "genericPercent": 7,
+        "richElements": 12,
+        "gridTemplates": 20,
+        "customProperties": 20,
+        "panels": 15,
+        "largestIdenticalRun": 2
       },
-      "page_conformance": "conformant"
+      "page_conformance": "conformant",
+      "genre": "confirm and execute",
+      "premise": "An operator is about to do something irreversible and must feel the weight before committing.",
+      "leads_with": [
+        "form",
+        "button",
+        "samp",
+        "code",
+        "details",
+        "output"
+      ],
+      "forbidden": [
+        "table",
+        "meter",
+        "progress"
+      ],
+      "forbidden_note": "No metrics grid and no estate table. This surface is about an act, not a status."
     },
     {
       "id": "pristine-minimalism",
@@ -115,22 +142,41 @@
             "3D tilt transform with no prefers-reduced-motion branch",
             "86% div/span; a metric with a label is <dl> or <output>, and any timestamp is <time datetime>",
             "6 custom properties; a named palette wants 7-11"
-          ]
+          ],
+          "use_instead": "pristine-minimalism/page.html"
         }
       ],
       "page": "pristine-minimalism/page.html",
       "preview": "pristine-minimalism/preview.png",
-      "preview_bytes": 1942098,
-      "composition": "The restraint theme. One enormous hero metric, three quiet secondary figures, exactly two controls, and an airy table with no gridlines.",
+      "preview_bytes": 1334208,
       "page_measured": {
-        "elements": 154,
-        "distinct": 35,
-        "genericPercent": 2,
-        "richElements": 14,
-        "gridTemplates": 22,
-        "customProperties": 24
+        "elements": 46,
+        "distinct": 19,
+        "genericPercent": 0,
+        "richElements": 7,
+        "gridTemplates": 16,
+        "customProperties": 28,
+        "panels": 1,
+        "largestIdenticalRun": 1
       },
-      "page_conformance": "conformant"
+      "page_conformance": "conformant",
+      "genre": "single metric",
+      "premise": "One number, read at a glance, from across a room. Everything else is subtraction.",
+      "leads_with": [
+        "output",
+        "time",
+        "figure"
+      ],
+      "forbidden": [
+        "table",
+        "fieldset",
+        "meter",
+        "progress",
+        "dl",
+        "ol",
+        "details"
+      ],
+      "forbidden_note": "The strictest list in the registry, and the point of the theme. A page whose job is one number does not need a table, a form group or a gauge."
     },
     {
       "id": "deep-lab-tech",
@@ -167,22 +213,35 @@
             "waveform animation with no prefers-reduced-motion branch",
             "1 grid-template, so the advertised bento layout is one repeated shape",
             "flat ground despite the theme calling for a millimetre-paper grid"
-          ]
+          ],
+          "use_instead": "deep-lab-tech/page.html"
         }
       ],
       "page": "deep-lab-tech/page.html",
       "preview": "deep-lab-tech/preview.png",
       "preview_bytes": 1608808,
-      "composition": "Densest in the registry. A bento rack of readouts: full estate table, nine meters, a four-fader detector channel bank, radio profile selection, expandable notes.",
       "page_measured": {
         "elements": 246,
         "distinct": 49,
         "genericPercent": 0,
         "richElements": 24,
         "gridTemplates": 28,
-        "customProperties": 23
+        "customProperties": 23,
+        "panels": 10,
+        "largestIdenticalRun": 1
       },
-      "page_conformance": "conformant"
+      "page_conformance": "conformant",
+      "genre": "data explorer",
+      "premise": "An operator scans a comparison matrix looking for the outlier. Density is the feature.",
+      "leads_with": [
+        "table",
+        "colgroup",
+        "tfoot",
+        "meter",
+        "progress"
+      ],
+      "forbidden": [],
+      "forbidden_note": "None. A comparison matrix is genuinely a table; this is the one theme where it leads."
     },
     {
       "id": "nocturnal-forge",
@@ -218,22 +277,176 @@
             "91% div/span from a vocabulary of div, span, svg",
             "a VRAM figure with a ceiling is <meter>, and its readout is <output>",
             "flat ground despite the theme calling for a noise-textured surface"
-          ]
+          ],
+          "use_instead": "nocturnal-forge/page.html#driftDial"
         }
       ],
       "page": "nocturnal-forge/page.html",
       "preview": "nocturnal-forge/preview.png",
-      "preview_bytes": 964816,
-      "composition": "Machine console. One hero rotary dial carrying the whole primary value, three heavy latch switches, and a small number of large supporting readouts.",
+      "preview_bytes": 791697,
       "page_measured": {
-        "elements": 164,
-        "distinct": 41,
+        "elements": 104,
+        "distinct": 28,
         "genericPercent": 0,
-        "richElements": 17,
-        "gridTemplates": 23,
-        "customProperties": 21
+        "richElements": 9,
+        "gridTemplates": 19,
+        "customProperties": 22,
+        "panels": 11,
+        "largestIdenticalRun": 1
       },
-      "page_conformance": "conformant"
+      "page_conformance": "conformant",
+      "genre": "control panel",
+      "premise": "An operator adjusts a machine in a dark room and needs to feel the control move.",
+      "leads_with": [
+        "input[range]",
+        "output",
+        "fieldset",
+        "legend"
+      ],
+      "forbidden": [
+        "table"
+      ],
+      "forbidden_note": "No estate table. A control panel that lists rows of data is a dashboard wearing a dial."
     }
-  ]
+  ],
+  "controls": {
+    "note": "Ask for a control by kind, not by theme. Each entry names the semantic substrate (fixed, never negotiable) and points at a conformant instance you can read in a working page. Copy the element and its state bindings; restyle the finish freely.",
+    "resolve": "themes/<page>#<element-id>. Open the page, find the id, take the element plus the CSS rules that key off :checked / :focus-visible / :disabled.",
+    "kinds": [
+      {
+        "kind": "toggle",
+        "substrate": "input[type=checkbox]",
+        "instances": [
+          {
+            "at": "gritty-cyberpunk/page.html#armSwitch",
+            "finish": "heavy mechanical throw switch, travels 80px, ignites on arm"
+          },
+          {
+            "at": "nocturnal-forge/page.html#enforcementLatch",
+            "finish": "tungsten latch, seats with an inset shadow"
+          },
+          {
+            "at": "deep-lab-tech/page.html#arm-declared",
+            "finish": "compact bracketed arm, four in a rack"
+          },
+          {
+            "at": "gritty-cyberpunk/override-toggle-conformant.html",
+            "finish": "standalone worked example, the one conformant component"
+          }
+        ],
+        "proves": "clipped with position/clip-path, never display:none, so Tab and Space still reach it"
+      },
+      {
+        "kind": "dial",
+        "substrate": "input[type=range]",
+        "instances": [
+          {
+            "at": "nocturnal-forge/page.html#driftDial",
+            "finish": "rotary, conic-gradient track burning orange, feTurbulence powder coat"
+          }
+        ],
+        "proves": "a rotary dial is a range input rotated by CSS; arrow keys move it and it announces a value",
+        "instead_of": "nocturnal-forge/allocation-dial.html -- drag handlers, no form control, no keyboard, no value"
+      },
+      {
+        "kind": "fader",
+        "substrate": "input[type=range]",
+        "instances": [
+          {
+            "at": "nocturnal-forge/page.html#structureFader",
+            "finish": "vertical channel fader with a machined cap"
+          },
+          {
+            "at": "deep-lab-tech/page.html#fader-declared",
+            "finish": "flat phosphor slider, tabular readout beside it"
+          }
+        ],
+        "proves": "same substrate as the dial; only the finish differs"
+      },
+      {
+        "kind": "exclusive choice",
+        "substrate": "input[type=radio] in fieldset/legend",
+        "instances": [
+          {
+            "at": "deep-lab-tech/page.html#profile-strict",
+            "finish": "bracketed segment row"
+          }
+        ],
+        "proves": "grouping is a fieldset, not a heading above buttons; arrow keys move within the group"
+      },
+      {
+        "kind": "gated action",
+        "substrate": "button[disabled]",
+        "instances": [
+          {
+            "at": "gritty-cyberpunk/page.html#commitButton",
+            "finish": "cold metal until both interlocks satisfy"
+          }
+        ],
+        "proves": "the native disabled attribute holds the gate, so the paint cannot disagree with the state"
+      },
+      {
+        "kind": "typed confirmation",
+        "substrate": "input[type=text]",
+        "instances": [
+          {
+            "at": "gritty-cyberpunk/page.html#confirmText",
+            "finish": "terminal field, required text shown in code"
+          }
+        ],
+        "proves": "second interlock on an irreversible act"
+      },
+      {
+        "kind": "option list",
+        "substrate": "select",
+        "instances": [
+          {
+            "at": "pristine-minimalism/page.html#time-window",
+            "finish": "minimal, sits under the hero number"
+          }
+        ],
+        "proves": "native select keeps keyboard and platform picker behaviour"
+      },
+      {
+        "kind": "live readout",
+        "substrate": "output",
+        "instances": [
+          {
+            "at": "nocturnal-forge/page.html",
+            "finish": "digital value in the dial face"
+          },
+          {
+            "at": "deep-lab-tech/page.html",
+            "finish": "tabular-lining figure per channel"
+          }
+        ],
+        "proves": "output is a live region by default, so a value change is announced",
+        "hazard": "output is itself labelable. A <label> wrapping an output before an input binds to the output and leaves the input unnamed. Use explicit label[for]."
+      },
+      {
+        "kind": "value in a range",
+        "substrate": "meter",
+        "instances": [
+          {
+            "at": "deep-lab-tech/page.html",
+            "finish": "phosphor gauge, nine of them"
+          }
+        ],
+        "proves": "not a div with a width percentage",
+        "note": "forbidden on gritty-cyberpunk and pristine-minimalism -- see each theme's forbidden list"
+      },
+      {
+        "kind": "rows sharing columns",
+        "substrate": "table with caption/thead/th[scope]",
+        "instances": [
+          {
+            "at": "deep-lab-tech/page.html",
+            "finish": "5-column estate matrix, corner brackets, no cell borders"
+          }
+        ],
+        "proves": "row and column relationships reach a screen reader",
+        "note": "forbidden on the other three themes. A table is a genre decision, not a default."
+      }
+    ]
+  }
 }

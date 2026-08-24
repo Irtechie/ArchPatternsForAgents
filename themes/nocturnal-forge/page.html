@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Nocturnal Forge — Architecture Conformance Console</title>
+<title>Nocturnal Forge — Machine Control Panel</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=IBM+Plex+Mono:wght@500;700&display=swap" rel="stylesheet">
@@ -26,8 +26,8 @@
         --forge-ok: oklch(71% 0.11 126);
         --forge-font-display: "Rajdhani", "Arial Narrow", "Segoe UI", sans-serif;
         --forge-font-mono: "IBM Plex Mono", "Cascadia Mono", Consolas, monospace;
-        --dial-fill: 122.5deg;
-        --dial-angle: -17.5deg;
+        --dial-fill: 98deg;
+        --dial-angle: -42deg;
         --dial-shadow: 0 2rem 4rem rgba(0, 0, 0, 0.72), inset 0 0.18rem 0.22rem rgba(255, 232, 196, 0.08), inset 0 -1.1rem 1.8rem rgba(0, 0, 0, 0.9);
     }
 
@@ -54,7 +54,7 @@
         isolation: isolate;
         display: grid;
         grid-template-rows: auto minmax(0, 1fr) auto;
-        gap: clamp(1.3rem, 3vw, 2.4rem);
+        gap: clamp(1rem, 2.4vw, 2rem);
         min-height: 100vh;
         padding: clamp(1.1rem, 3.8vw, 3.6rem);
     }
@@ -73,7 +73,7 @@
 
     .forge-masthead {
         display: grid;
-        grid-template-columns: minmax(0, 1.15fr) minmax(18rem, 0.85fr);
+        grid-template-columns: minmax(0, 1.18fr) minmax(17rem, 0.82fr);
         gap: clamp(1rem, 3vw, 2rem);
         align-items: end;
         max-width: 86rem;
@@ -142,7 +142,7 @@
 
     .console-shell {
         display: grid;
-        grid-template-columns: minmax(21rem, 1.12fr) minmax(22rem, 0.88fr);
+        grid-template-columns: minmax(21rem, 1.08fr) minmax(22rem, 0.92fr);
         gap: clamp(1rem, 3vw, 2rem);
         max-width: 86rem;
         width: 100%;
@@ -152,9 +152,8 @@
 
     .hero-panel {
         display: grid;
-        grid-template-rows: auto minmax(24rem, 1fr) auto;
-        gap: clamp(1rem, 2.6vw, 1.8rem);
-        min-height: 42rem;
+        grid-template-rows: auto auto minmax(0, 1fr);
+        gap: clamp(0.85rem, 2vw, 1.35rem);
         padding: clamp(1rem, 3vw, 2.2rem);
         border: 1px solid var(--forge-rivet);
         border-radius: 2.2rem;
@@ -178,14 +177,19 @@
         padding-bottom: 0.8rem;
     }
 
+    .hero-label code {
+        color: var(--forge-muted);
+        white-space: nowrap;
+    }
+
     .dial-station {
-        --dial-size: clamp(18rem, 42vw, 31rem);
+        --dial-size: clamp(17rem, 40vw, 30rem);
         position: relative;
         display: grid;
         grid-template-areas: "dial";
         place-items: center;
         min-height: var(--dial-size);
-        margin: auto;
+        margin: 0 auto;
     }
 
     .dial-range {
@@ -287,32 +291,150 @@
         text-align: center;
     }
 
-    .toggle-bank {
+    .burn-trace {
         display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: minmax(0, 1fr) minmax(11rem, 0.55fr);
         gap: clamp(0.75rem, 2vw, 1.2rem);
-        padding: 0;
-        border: 0;
+        align-items: center;
+        margin: 0;
+        padding: clamp(0.85rem, 2vw, 1.1rem);
+        border: 1px solid var(--forge-line);
+        border-radius: 1.2rem;
+        background: linear-gradient(180deg, rgba(255, 177, 88, 0.055), rgba(0, 0, 0, 0.24)), #0b0b0b;
+        box-shadow: inset 0 0 0 1px rgba(255, 191, 126, 0.08), inset 0 0.8rem 1.4rem rgba(0, 0, 0, 0.7);
     }
 
-    .toggle-bank legend {
-        margin-bottom: 0.8rem;
+    .burn-trace svg {
+        width: 100%;
+        min-height: 7rem;
+        filter: drop-shadow(0 0 0.8rem oklch(65% 0.23 43 / 0.28));
+    }
+
+    .burn-trace figcaption {
+        margin: 0;
+        color: var(--forge-muted);
+        font-family: var(--forge-font-mono);
+    }
+
+    .instrument-rack {
+        display: grid;
+        grid-template-rows: auto auto minmax(0, 1fr);
+        gap: clamp(1rem, 2.4vw, 1.4rem);
+    }
+
+    .fader-bank,
+    .latch-bank,
+    .state-panel {
+        border: 1px solid var(--forge-line);
+        border-radius: 1.35rem;
+        background:
+            linear-gradient(145deg, rgba(255, 255, 255, 0.045), transparent 30%),
+            var(--forge-cavity);
+        box-shadow: 0 1.2rem 2.4rem rgba(0, 0, 0, 0.62), inset 0 0.12rem 0.18rem rgba(255, 232, 198, 0.07), inset 0 -0.8rem 1rem rgba(0, 0, 0, 0.55);
+        padding: clamp(1rem, 2.5vw, 1.35rem);
+    }
+
+    fieldset {
+        min-width: 0;
+        margin: 0;
+    }
+
+    legend {
         color: var(--forge-tungsten);
         font-family: var(--forge-font-mono);
+        font-weight: 700;
         letter-spacing: 0.12em;
         text-transform: uppercase;
     }
 
-    .throw-switch {
-        position: relative;
+    .fader-bank {
         display: grid;
-        grid-template-rows: 8rem auto auto;
-        gap: 0.6rem;
-        min-width: 0;
-        cursor: pointer;
+        grid-template-rows: auto repeat(4, auto);
+        gap: 0.85rem;
     }
 
-    .throw-switch input {
+    .fader-channel {
+        --range-pct: 0%;
+        display: grid;
+        grid-template-columns: minmax(8rem, 0.72fr) minmax(9rem, 1fr) max-content;
+        gap: 0.85rem;
+        align-items: center;
+        padding: 0.75rem;
+        border-radius: 1rem;
+        background: linear-gradient(145deg, rgba(255, 220, 168, 0.035), rgba(0, 0, 0, 0.28));
+        box-shadow: inset 0 0 0 1px rgba(107, 88, 75, 0.3), inset 0 0.55rem 0.8rem rgba(0, 0, 0, 0.42);
+    }
+
+    .fader-channel label,
+    .latch-control label,
+    .state-panel dt {
+        color: var(--forge-muted);
+        font-family: var(--forge-font-mono);
+        font-size: 0.86rem;
+        text-transform: uppercase;
+    }
+
+    .channel-range {
+        width: 100%;
+        height: 1.35rem;
+        border: 1px solid #070707;
+        border-radius: 999px;
+        background: linear-gradient(90deg, var(--forge-ember) 0 var(--range-pct), #080808 var(--range-pct) 100%);
+        box-shadow: inset 0 0.35rem 0.5rem rgba(0, 0, 0, 0.9), 0 0.25rem 0.45rem rgba(0, 0, 0, 0.56);
+        appearance: none;
+        -webkit-appearance: none;
+        accent-color: var(--forge-ember);
+    }
+
+    .channel-range::-webkit-slider-thumb {
+        appearance: none;
+        -webkit-appearance: none;
+        width: 1.1rem;
+        height: 2.35rem;
+        border: 1px solid #130a05;
+        border-radius: 0.36rem;
+        background: linear-gradient(180deg, var(--forge-tungsten), var(--forge-ember) 60%, #33170a);
+        box-shadow: 0 0.55rem 0.9rem rgba(0, 0, 0, 0.82), inset 0 0.16rem 0.1rem rgba(255, 247, 230, 0.34);
+    }
+
+    .channel-range::-moz-range-thumb {
+        width: 1.1rem;
+        height: 2.35rem;
+        border: 1px solid #130a05;
+        border-radius: 0.36rem;
+        background: linear-gradient(180deg, var(--forge-tungsten), var(--forge-ember) 60%, #33170a);
+        box-shadow: 0 0.55rem 0.9rem rgba(0, 0, 0, 0.82), inset 0 0.16rem 0.1rem rgba(255, 247, 230, 0.34);
+    }
+
+    .channel-range:focus-visible {
+        outline: 0.22rem solid var(--forge-tungsten);
+        outline-offset: 0.28rem;
+    }
+
+    .fader-output,
+    .latch-output,
+    .state-panel dd {
+        color: var(--forge-text);
+        font-family: var(--forge-font-mono);
+        font-variant-numeric: tabular-nums;
+        text-align: right;
+    }
+
+    .latch-bank {
+        display: grid;
+        grid-template-rows: auto repeat(3, auto);
+        gap: 0.85rem;
+    }
+
+    .latch-control {
+        display: grid;
+        grid-template-columns: minmax(8rem, 1fr) minmax(5.5rem, auto) max-content;
+        gap: 0.85rem;
+        align-items: center;
+        min-width: 0;
+    }
+
+    .latch-input {
         position: absolute;
         width: 1px;
         height: 1px;
@@ -324,237 +446,63 @@
         border: 0;
     }
 
+    .throw-switch {
+        cursor: pointer;
+    }
+
     .switch-skin {
         position: relative;
+        display: block;
+        width: 5.5rem;
+        height: 3.2rem;
         border: 1px solid var(--forge-line);
-        border-radius: 1rem;
+        border-radius: 0.9rem;
         background: linear-gradient(#161413, #080808);
         box-shadow: inset 0 0.8rem 1.2rem rgba(0, 0, 0, 0.86), inset 0 -0.45rem 0.8rem rgba(255, 214, 167, 0.05), 0 0.8rem 1.2rem rgba(0, 0, 0, 0.55);
     }
 
     .switch-skin i {
         position: absolute;
-        left: 14%;
-        right: 14%;
-        bottom: 11%;
-        height: 43%;
-        border-radius: 0.72rem;
+        top: 14%;
+        bottom: 14%;
+        left: 10%;
+        width: 38%;
+        border-radius: 0.62rem;
         background: linear-gradient(180deg, #39322c, #171311);
         box-shadow: 0 0.75rem 1.1rem rgba(0, 0, 0, 0.8), inset 0 0.18rem 0.12rem rgba(255, 244, 220, 0.14);
-        transition: bottom 180ms ease, box-shadow 180ms ease, background 180ms ease;
+        transition: left 180ms ease, box-shadow 180ms ease, background 180ms ease;
     }
 
-    .throw-switch input:checked + .switch-skin i {
-        bottom: 46%;
+    .latch-input:checked + .throw-switch .switch-skin i {
+        left: 52%;
         background: linear-gradient(180deg, #5b3a20, #25140d);
         box-shadow: 0 0.9rem 1.2rem rgba(0, 0, 0, 0.86), 0 0 1.4rem oklch(65% 0.23 43 / 0.44), inset 0 0.18rem 0.12rem rgba(255, 244, 220, 0.2);
     }
 
-    .throw-switch input:focus-visible + .switch-skin {
+    .latch-input:focus-visible + .throw-switch .switch-skin {
         outline: 0.2rem solid var(--forge-tungsten);
         outline-offset: 0.3rem;
     }
 
-    .throw-switch strong {
-        font-size: clamp(1rem, 2vw, 1.2rem);
-        text-transform: uppercase;
-    }
-
-    .throw-switch small {
-        color: var(--forge-muted);
-        font-family: var(--forge-font-mono);
-    }
-
-    .instrument-rack {
-        display: grid;
-        grid-template-rows: auto auto auto auto;
-        gap: clamp(1rem, 2.4vw, 1.4rem);
-    }
-
-    .meter-panel,
-    .estate-panel,
-    .drift-panel,
-    .activity-panel {
-        border: 1px solid var(--forge-line);
-        border-radius: 1.35rem;
-        background:
-            linear-gradient(145deg, rgba(255, 255, 255, 0.045), transparent 30%),
-            var(--forge-cavity);
-        box-shadow: 0 1.2rem 2.4rem rgba(0, 0, 0, 0.62), inset 0 0.12rem 0.18rem rgba(255, 232, 198, 0.07), inset 0 -0.8rem 1rem rgba(0, 0, 0, 0.55);
-        padding: clamp(1rem, 2.5vw, 1.35rem);
-    }
-
-    .meter-panel {
-        display: grid;
-        grid-template-rows: auto auto;
-        gap: 1rem;
-    }
-
-    .metric-board {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr);
-        gap: 0.85rem;
-        margin: 0;
-    }
-
-    .metric-board dt {
-        color: var(--forge-muted);
-        font-family: var(--forge-font-mono);
-        font-size: 0.86rem;
-        text-transform: uppercase;
-    }
-
-    .metric-board dd {
-        display: grid;
-        grid-template-columns: minmax(8rem, 1fr) max-content;
-        gap: 0.75rem;
-        align-items: center;
-        margin: 0 0 0.3rem;
-    }
-
-    meter,
-    progress {
-        width: 100%;
-        height: 1rem;
-        border: 1px solid #090909;
-        border-radius: 999px;
-        background: #080808;
-        box-shadow: inset 0 0.3rem 0.45rem rgba(0, 0, 0, 0.9), 0 0.2rem 0.4rem rgba(0, 0, 0, 0.5);
-    }
-
-    meter::-webkit-meter-bar {
-        border: 0;
-        border-radius: 999px;
-        background: #080808;
-    }
-
-    meter::-webkit-meter-optimum-value,
-    progress::-webkit-progress-value {
-        border-radius: 999px;
-        background: linear-gradient(90deg, var(--forge-ember), var(--forge-tungsten));
-        box-shadow: 0 0 1rem oklch(65% 0.23 43 / 0.35);
-    }
-
-    progress::-webkit-progress-bar {
-        border-radius: 999px;
-        background: #080808;
-    }
-
-    .estate-table {
-        width: 100%;
-        border-collapse: collapse;
-        font-family: var(--forge-font-mono);
-        font-size: clamp(0.74rem, 1.25vw, 0.9rem);
-    }
-
-    .estate-table caption {
-        margin-bottom: 0.8rem;
-        color: var(--forge-tungsten);
-        font-family: var(--forge-font-display);
-        font-size: 1.2rem;
-        font-weight: 700;
-        text-align: left;
-        text-transform: uppercase;
-    }
-
-    .estate-table th,
-    .estate-table td {
-        padding: 0.45rem 0.5rem;
-        border-bottom: 1px solid rgba(107, 88, 75, 0.42);
-        text-align: left;
-        white-space: nowrap;
-    }
-
-    .estate-table th {
-        color: var(--forge-muted);
-        font-size: 0.72rem;
-        text-transform: uppercase;
-    }
-
-    .estate-table td:last-child { color: var(--forge-tungsten); text-transform: uppercase; }
-
-    .drift-panel {
+    .state-panel {
         display: grid;
         grid-template-rows: auto auto;
         gap: 0.9rem;
     }
 
-    details summary {
-        cursor: pointer;
-        color: var(--forge-tungsten);
-        font-weight: 700;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-    }
-
-    .drift-figure {
+    .state-panel dl {
         display: grid;
-        grid-template-columns: minmax(0, 1fr);
-        gap: 0.8rem;
-        margin: 1rem 0 0;
-    }
-
-    .drift-figure svg {
-        width: 100%;
-        min-height: 9rem;
-        border-radius: 1rem;
-        background: linear-gradient(180deg, rgba(255, 177, 88, 0.06), rgba(0, 0, 0, 0.24)), #0b0b0b;
-        box-shadow: inset 0 0 0 1px rgba(255, 191, 126, 0.1), inset 0 0.8rem 1.4rem rgba(0, 0, 0, 0.7);
-    }
-
-    .drift-figure figcaption,
-    .activity-list {
-        color: var(--forge-muted);
-        font-family: var(--forge-font-mono);
-    }
-
-    .activity-panel {
-        display: grid;
-        grid-template-rows: auto auto auto;
-        gap: 0.85rem;
-    }
-
-    .activity-list {
-        display: grid;
-        grid-template-rows: repeat(3, auto);
-        gap: 0.65rem;
+        grid-template-columns: minmax(8rem, 0.8fr) minmax(0, 1fr);
+        gap: 0.5rem 1rem;
         margin: 0;
-        padding-left: 1.25rem;
     }
 
-    .activity-list li::marker { color: var(--forge-tungsten); }
-
-    .action-row {
-        display: grid;
-        grid-template-columns: max-content minmax(0, 1fr);
-        gap: 1rem;
-        align-items: center;
+    .state-panel dd {
+        margin: 0;
     }
 
-    .forge-button {
-        border: 1px solid #21120b;
-        border-radius: 0.9rem;
-        padding: 0.9rem 1.25rem;
-        color: #170c05;
-        background: linear-gradient(180deg, var(--forge-tungsten), var(--forge-ember));
-        box-shadow: 0 0.85rem 1.3rem rgba(0, 0, 0, 0.68), inset 0 0.18rem 0.1rem rgba(255, 255, 255, 0.32), inset 0 -0.45rem 0.55rem rgba(87, 36, 8, 0.42);
-        font: 700 1rem/1 var(--forge-font-mono);
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        cursor: pointer;
-    }
-
-    .forge-button:focus-visible {
-        outline: 0.22rem solid var(--forge-text);
-        outline-offset: 0.25rem;
-    }
-
-    .forge-button:active {
-        transform: translateY(0.12rem);
-        box-shadow: 0 0.35rem 0.75rem rgba(0, 0, 0, 0.76), inset 0 0.2rem 0.2rem rgba(73, 26, 5, 0.55);
-    }
-
-    .action-result {
+    .state-panel p {
+        margin: 0;
         color: var(--forge-muted);
         font-family: var(--forge-font-mono);
     }
@@ -593,12 +541,15 @@
         .forge-masthead,
         .console-shell,
         .hero-label,
-        .action-row {
+        .burn-trace,
+        .fader-channel,
+        .latch-control,
+        .state-panel dl {
             grid-template-columns: 1fr;
         }
 
-        .toggle-bank { grid-template-columns: 1fr; }
-        .hero-panel { min-height: auto; }
+        .latch-output,
+        .fader-output { text-align: left; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -629,13 +580,13 @@
     <header class="forge-masthead">
         <section class="title-block" aria-labelledby="console-title">
             <p class="eyebrow">Irtechie / ArchPatternsForAgents</p>
-            <h1 id="console-title">Architecture Conformance Console</h1>
+            <h1 id="console-title">Machine Control Panel</h1>
             <p>Commit <code>ce75e79</code> · Run 12 · <time datetime="2026-08-21T21:40">2026-08-21T21:40</time></p>
         </section>
 
         <dl class="run-stamps" aria-label="Run identity">
-            <dt>Owner</dt>
-            <dd>Irtechie / ArchPatternsForAgents</dd>
+            <dt>Machine</dt>
+            <dd>Architecture conformance rig</dd>
             <dt>Commit</dt>
             <dd><code>ce75e79</code></dd>
             <dt>Run</dt>
@@ -645,150 +596,113 @@
         </dl>
     </header>
 
-    <section class="console-shell" aria-label="Nocturnal Forge console">
+    <form class="console-shell" aria-label="Nocturnal Forge machine controls">
         <article class="hero-panel" aria-labelledby="dial-title">
             <header class="hero-label">
-                <h2 id="dial-title">Undeclared Drift Allocation</h2>
-                <code>14 / 40 budget</code>
+                <h2 id="dial-title">Drift Budget Ceiling</h2>
+                <code>0–40 ceiling</code>
             </header>
 
             <figure class="dial-station">
-                <label class="dial-units" for="driftDial">Undeclared drift findings</label>
-                <input class="dial-range" id="driftDial" type="range" min="0" max="32" step="0.5" value="14" aria-describedby="dialHelp">
+                <label class="dial-units" for="driftDial">Drift budget ceiling</label>
+                <input class="dial-range" id="driftDial" type="range" min="0" max="40" step="1" value="14" aria-describedby="dialHelp">
                 <b class="dial-bezel" aria-hidden="true">
                     <i class="dial-needle"></i>
                 </b>
                 <strong class="dial-hub">
-                    <output class="dial-readout" id="driftOutput" for="driftDial" aria-live="polite">14 findings</output>
-                    <small class="dial-units">of 40 budget</small>
+                    <output class="dial-readout" id="driftOutput" for="driftDial" aria-live="polite">14</output>
+                    <small class="dial-units">findings ceiling</small>
                 </strong>
-                <figcaption class="dial-caption" id="dialHelp">The dial mirrors Undeclared drift: 14 findings, of 40 budget. Arrow keys adjust the real range input.</figcaption>
+                <figcaption class="dial-caption" id="dialHelp">A real range input spans the full dial. Use arrow keys to raise or lower the drift ceiling.</figcaption>
             </figure>
 
-            <fieldset class="toggle-bank">
-                <legend>Activity latches</legend>
-                <label class="throw-switch">
-                    <input type="checkbox" checked>
-                    <b class="switch-skin" aria-hidden="true"><i></i></b>
-                    <strong>Run 12 complete</strong>
-                    <small><time datetime="2026-08-21T21:40">21:40</time> — 14 findings across 9 repositories. <code>exit 0</code>. 100%</small>
-                </label>
-                <label class="throw-switch">
-                    <input type="checkbox" checked>
-                    <b class="switch-skin" aria-hidden="true"><i></i></b>
-                    <strong>Blind spot declared</strong>
-                    <small><time datetime="2026-08-21T20:05">20:05</time> — accessible-name quality is unchecked. 62%</small>
-                </label>
-                <label class="throw-switch">
-                    <input type="checkbox" checked>
-                    <b class="switch-skin" aria-hidden="true"><i></i></b>
-                    <strong>False positive retired</strong>
-                    <small><time datetime="2026-08-21T17:22">17:22</time> — <code>(?&lt;![\w-])</code> corrected. 100%</small>
-                </label>
-            </fieldset>
+            <figure class="burn-trace">
+                <svg viewBox="0 0 360 150" role="img" aria-labelledby="drift-chart-title drift-chart-desc">
+                    <title id="drift-chart-title">Twelve-run drift burn-down</title>
+                    <desc id="drift-chart-desc">Drift values: 38, 33, 30, 26, 24, 21, 34, 19, 17, 16, 15, 14. Run 7 spikes before the final descent.</desc>
+                    <polyline points="12,18 42,39 72,52 102,69 132,77 162,90 192,35 222,98 252,107 282,111 312,115 342,120" fill="none" stroke="oklch(65% 0.23 43)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"></polyline>
+                    <line x1="12" y1="123" x2="342" y2="123" stroke="rgba(255, 232, 196, 0.18)" stroke-width="2"></line>
+                    <circle cx="192" cy="35" r="7" fill="oklch(76% 0.18 58)"></circle>
+                    <circle cx="342" cy="120" r="6" fill="oklch(65% 0.23 43)"></circle>
+                </svg>
+                <figcaption><code>38, 33, 30, 26, 24, 21, 34, 19, 17, 16, 15, 14</code>. The spike at run 7 is the machine swallowing a late pattern entry.</figcaption>
+            </figure>
         </article>
 
-        <aside class="instrument-rack" aria-label="Supporting instrumentation">
-            <section class="meter-panel" aria-labelledby="metrics-title">
-                <h2 id="metrics-title">Metrics</h2>
-                <dl class="metric-board">
-                    <dt>Declared conformance</dt>
-                    <dd><meter min="0" max="9" value="7">7 of 9 repos</meter><output>7 of 9 repos</output></dd>
-                    <dt>Detector coverage</dt>
-                    <dd><meter min="0" max="100" value="82">82%</meter><output>82% of tree</output></dd>
-                    <dt>Undeclared drift</dt>
-                    <dd><meter min="0" max="40" value="14">14 findings</meter><output>14 findings, of 40 budget</output></dd>
-                    <dt>Generic markup</dt>
-                    <dd><meter min="0" max="100" value="15">15%</meter><output>15% div/span</output></dd>
+        <aside class="instrument-rack" aria-label="Detector and latch controls">
+            <fieldset class="fader-bank">
+                <legend>Detector channel faders</legend>
+
+                <section class="fader-channel">
+                    <label for="structureFader">Structure channel</label>
+                    <input class="channel-range" id="structureFader" type="range" min="0" max="100" value="82">
+                    <output class="fader-output" id="structureOutput" for="structureFader" aria-live="polite">82%</output>
+                </section>
+
+                <section class="fader-channel">
+                    <label for="namingFader">Naming channel</label>
+                    <input class="channel-range" id="namingFader" type="range" min="0" max="100" value="64">
+                    <output class="fader-output" id="namingOutput" for="namingFader" aria-live="polite">64%</output>
+                </section>
+
+                <section class="fader-channel">
+                    <label for="boundariesFader">Boundaries channel</label>
+                    <input class="channel-range" id="boundariesFader" type="range" min="0" max="100" value="41">
+                    <output class="fader-output" id="boundariesOutput" for="boundariesFader" aria-live="polite">41%</output>
+                </section>
+
+                <section class="fader-channel">
+                    <label for="motionFader">Motion channel</label>
+                    <input class="channel-range" id="motionFader" type="range" min="0" max="100" value="9">
+                    <output class="fader-output" id="motionOutput" for="motionFader" aria-live="polite">9%</output>
+                </section>
+            </fieldset>
+
+            <fieldset class="latch-bank">
+                <legend>Latch switches</legend>
+
+                <section class="latch-control">
+                    <label for="enforcementLatch">Enforcement latch</label>
+                    <input class="latch-input" id="enforcementLatch" type="checkbox" checked>
+                    <label class="throw-switch" for="enforcementLatch"><b class="switch-skin" aria-hidden="true"><i></i></b></label>
+                    <output class="latch-output" id="enforcementOutput" for="enforcementLatch" aria-live="polite">armed</output>
+                </section>
+
+                <section class="latch-control">
+                    <label for="retireLatch">Auto-retire false positives</label>
+                    <input class="latch-input" id="retireLatch" type="checkbox" checked>
+                    <label class="throw-switch" for="retireLatch"><b class="switch-skin" aria-hidden="true"><i></i></b></label>
+                    <output class="latch-output" id="retireOutput" for="retireLatch" aria-live="polite">on</output>
+                </section>
+
+                <section class="latch-control">
+                    <label for="blockLatch">Block on fail</label>
+                    <input class="latch-input" id="blockLatch" type="checkbox">
+                    <label class="throw-switch" for="blockLatch"><b class="switch-skin" aria-hidden="true"><i></i></b></label>
+                    <output class="latch-output" id="blockOutput" for="blockLatch" aria-live="polite">off</output>
+                </section>
+            </fieldset>
+
+            <section class="state-panel" aria-labelledby="state-title">
+                <h2 id="state-title">Live machine state</h2>
+                <dl>
+                    <dt>Ceiling</dt>
+                    <dd><output id="ceilingMirror" for="driftDial">14 findings</output></dd>
+                    <dt>Structure</dt>
+                    <dd><output id="structureMirror" for="structureFader">82%</output></dd>
+                    <dt>Naming</dt>
+                    <dd><output id="namingMirror" for="namingFader">64%</output></dd>
+                    <dt>Boundaries</dt>
+                    <dd><output id="boundariesMirror" for="boundariesFader">41%</output></dd>
+                    <dt>Motion</dt>
+                    <dd><output id="motionMirror" for="motionFader">9%</output></dd>
+                    <dt>Latches</dt>
+                    <dd><output id="latchMirror" for="enforcementLatch retireLatch blockLatch">Enforcement armed · Auto-retire on · Block on fail off</output></dd>
                 </dl>
-            </section>
-
-            <section class="estate-panel" aria-labelledby="estate-title">
-                <table class="estate-table">
-                    <caption id="estate-title">Estate</caption>
-                    <thead>
-                        <tr>
-                            <th scope="col">Repository</th>
-                            <th scope="col">Pattern</th>
-                            <th scope="col">div/span</th>
-                            <th scope="col">Elements</th>
-                            <th scope="col">Checked</th>
-                            <th scope="col">State</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <th scope="row"><code>financeops</code></th>
-                            <td>plugin-host</td>
-                            <td>22%</td>
-                            <td>45</td>
-                            <td><time datetime="2026-08-21">2026-08-21</time></td>
-                            <td>pass</td>
-                        </tr>
-                        <tr>
-                            <th scope="row"><code>agent127</code></th>
-                            <td>llm-assisted</td>
-                            <td>24%</td>
-                            <td>31</td>
-                            <td><time datetime="2026-08-21">2026-08-21</time></td>
-                            <td>pass</td>
-                        </tr>
-                        <tr>
-                            <th scope="row"><code>healthops</code></th>
-                            <td>plugin-host</td>
-                            <td>29%</td>
-                            <td>18</td>
-                            <td><time datetime="2026-08-20">2026-08-20</time></td>
-                            <td>thin</td>
-                        </tr>
-                        <tr>
-                            <th scope="row"><code>learnops</code></th>
-                            <td>plugin-host</td>
-                            <td>33%</td>
-                            <td>16</td>
-                            <td><time datetime="2026-08-20">2026-08-20</time></td>
-                            <td>thin</td>
-                        </tr>
-                        <tr>
-                            <th scope="row"><code>fleetcontroller</code></th>
-                            <td>undeclared</td>
-                            <td>46%</td>
-                            <td>12</td>
-                            <td><time datetime="2026-08-21">2026-08-21</time></td>
-                            <td><strong>fail</strong></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </section>
-
-            <details class="drift-panel" open>
-                <summary>Drift per run, twelve runs, 2026-06-14 → 2026-08-21</summary>
-                <figure class="drift-figure">
-                    <svg viewBox="0 0 360 150" role="img" aria-labelledby="drift-chart-title drift-chart-desc">
-                        <title id="drift-chart-title">Drift series</title>
-                        <desc id="drift-chart-desc">38, 33, 30, 26, 24, 21, 34, 19, 17, 16, 15, 14. The spike at run 7 is fleetcontroller landing before its pattern entry did.</desc>
-                        <polyline points="12,18 42,39 72,52 102,69 132,77 162,90 192,35 222,98 252,107 282,111 312,115 342,120" fill="none" stroke="oklch(65% 0.23 43)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"></polyline>
-                        <line x1="12" y1="123" x2="342" y2="123" stroke="rgba(255, 232, 196, 0.18)" stroke-width="2"></line>
-                        <circle cx="192" cy="35" r="7" fill="oklch(76% 0.18 58)"></circle>
-                    </svg>
-                    <figcaption><code>38, 33, 30, 26, 24, 21, 34, 19, 17, 16, 15, 14</code>. The spike at run 7 is <code>fleetcontroller</code> landing before its pattern entry did.</figcaption>
-                </figure>
-            </details>
-
-            <section class="activity-panel" aria-labelledby="activity-title">
-                <h2 id="activity-title">Activity</h2>
-                <ol class="activity-list">
-                    <li><time datetime="2026-08-21T21:40">21:40</time> — Run 12 complete. 14 findings across 9 repositories. <code>exit 0</code>. <progress max="100" value="100">100%</progress> 100%</li>
-                    <li><time datetime="2026-08-21T20:05">20:05</time> — Blind spot declared: accessible-name quality is unchecked, found by human comparison rather than by the detector. <progress max="100" value="62">62%</progress> 62%</li>
-                    <li><time datetime="2026-08-21T17:22">17:22</time> — False positive retired: word-boundary match on <code>.icon-button</code> corrected to <code>(?&lt;![\w-])</code>. <progress max="100" value="100">100%</progress> 100%</li>
-                </ol>
-                <p class="action-row">
-                    <button class="forge-button" type="button" id="sealRun">Seal run 12</button>
-                    <output class="action-result" id="sealOutput" for="sealRun">Run 12 complete. 14 findings across 9 repositories. exit 0. 100%</output>
-                </p>
+                <p>The machine is live; the controls above are the state.</p>
             </section>
         </aside>
-    </section>
+    </form>
 
     <blockquote class="creed">
         The element is the substrate. The theme is the finish.
@@ -799,12 +713,24 @@
 <script>
     const driftDial = document.getElementById("driftDial");
     const driftOutput = document.getElementById("driftOutput");
+    const ceilingMirror = document.getElementById("ceilingMirror");
     const dialStation = document.querySelector(".dial-station");
-    const sealRun = document.getElementById("sealRun");
-    const sealOutput = document.getElementById("sealOutput");
+    const faders = [
+        ["structureFader", "structureOutput", "structureMirror"],
+        ["namingFader", "namingOutput", "namingMirror"],
+        ["boundariesFader", "boundariesOutput", "boundariesMirror"],
+        ["motionFader", "motionOutput", "motionMirror"]
+    ];
+    const latches = [
+        ["enforcementLatch", "enforcementOutput", "Enforcement", "armed", "disarmed"],
+        ["retireLatch", "retireOutput", "Auto-retire", "on", "off"],
+        ["blockLatch", "blockOutput", "Block on fail", "on", "off"]
+    ];
+    const latchMirror = document.getElementById("latchMirror");
 
-    function formatFindingValue(value) {
-        return Number.isInteger(value) ? String(value) : value.toFixed(1);
+    function write(output, value) {
+        output.value = value;
+        output.textContent = value;
     }
 
     function renderDial() {
@@ -816,16 +742,43 @@
         const angle = -140 + sweep;
         dialStation.style.setProperty("--dial-fill", `${sweep}deg`);
         dialStation.style.setProperty("--dial-angle", `${angle}deg`);
-        driftOutput.value = `${formatFindingValue(value)} findings`;
-        driftOutput.textContent = `${formatFindingValue(value)} findings`;
+        write(driftOutput, String(value));
+        write(ceilingMirror, `${value} findings`);
+    }
+
+    function renderFader(input, output, mirror) {
+        const min = Number(input.min);
+        const max = Number(input.max);
+        const value = Number(input.value);
+        const pct = ((value - min) / (max - min)) * 100;
+        input.style.setProperty("--range-pct", `${pct}%`);
+        write(output, `${value}%`);
+        write(mirror, `${value}%`);
+    }
+
+    function renderLatches() {
+        const states = latches.map(([id, outputId, label, onText, offText]) => {
+            const input = document.getElementById(id);
+            const value = input.checked ? onText : offText;
+            write(document.getElementById(outputId), value);
+            return `${label} ${value}`;
+        });
+        write(latchMirror, states.join(" · "));
     }
 
     driftDial.addEventListener("input", renderDial);
-    sealRun.addEventListener("click", () => {
-        sealOutput.value = "Run 12 complete. 14 findings across 9 repositories. exit 0. 100%";
-        sealOutput.textContent = "Run 12 complete. 14 findings across 9 repositories. exit 0. 100%";
-    });
+    for (const [inputId, outputId, mirrorId] of faders) {
+        const input = document.getElementById(inputId);
+        const output = document.getElementById(outputId);
+        const mirror = document.getElementById(mirrorId);
+        input.addEventListener("input", () => renderFader(input, output, mirror));
+        renderFader(input, output, mirror);
+    }
+    for (const [id] of latches) {
+        document.getElementById(id).addEventListener("change", renderLatches);
+    }
     renderDial();
+    renderLatches();
 </script>
 </body>
 </html>

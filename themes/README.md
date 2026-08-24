@@ -16,23 +16,53 @@ pages pass both checks with zero failures.
 
 ## Use one
 
-1. Read `index.json`. Pick a theme `id` by its `use_when`, not by its looks.
+1. Read `index.json`. Pick a theme `id` by its `genre` and `use_when`, not by its
+   looks. The `genre` decides what kind of surface it is, and therefore what data
+   belongs on it — check the theme's `forbidden` list before you plan a layout.
 2. Apply the theme's `ground`, `accents`, `type` and `technique`.
 3. Author markup from
    [`.github/skills/ui-craft/SKILL.md`](../.github/skills/ui-craft/SKILL.md) Rule 1.
-   **Do not copy the DOM of a `visual-reference` component.**
-4. Verify. Both must exit 0:
+   **Do not copy the DOM of a `visual-reference` component** — follow its
+   `use_instead`.
+4. Verify. All must exit 0:
    ```
    node .github/skills/ui-craft/scripts/check-ui-craft.mjs <your-dir-or-file>
    node scripts/audit-a11y-names.mjs <your-page.html>
    ```
+
+## Need a control, not a theme?
+
+Read `index.json` → `controls.kinds`. Ask by **kind** — toggle, dial, fader,
+gated action — and you get the fixed semantic substrate plus a pointer to a
+conformant instance inside a working page, addressed as
+`themes/<page>#<element-id>`:
+
+| Ask for | Substrate | Go to |
+|---|---|---|
+| toggle | `input[type=checkbox]` | `gritty-cyberpunk/page.html#armSwitch` |
+| dial | `input[type=range]` | `nocturnal-forge/page.html#driftDial` |
+| fader | `input[type=range]` | `nocturnal-forge/page.html#structureFader` |
+| exclusive choice | `input[type=radio]` in `fieldset` | `deep-lab-tech/page.html#profile-strict` |
+| gated action | `button[disabled]` | `gritty-cyberpunk/page.html#commitButton` |
+| option list | `select` | `pristine-minimalism/page.html#time-window` |
+
+A dial and a fader are the same substrate with a different finish. That is the
+whole point of the layer split, and it is why the index is keyed by kind rather
+than by theme.
+
+This exists because it was previously broken. Ask the registry for "a dial" and
+the only thing named dial was `nocturnal-forge/allocation-dial.html` — 91%
+`div`/`span`, built from drag handlers, containing **no form control at all**.
+Every `visual-reference` component now carries a `use_instead` pointing at
+something real, and `scripts/audit-control-index.mjs` fails if any pointer stops
+resolving or if an entry's element is not the substrate it claims.
 
 ## Conformance levels
 
 | Level | Meaning |
 |---|---|
 | `conformant` | Markup and operability pass the checker. Copy structure and style. |
-| `visual-reference` | The look is right; the markup is not. Copy the finish, not the DOM. |
+| `visual-reference` | The look is right; the markup is not. Copy the finish, not the DOM — and follow `use_instead` to a conformant equivalent. |
 
 Every **page** here is `conformant`. Every **single component** except one is
 `visual-reference`. Both facts are findings, not oversights — see below.
@@ -122,9 +152,15 @@ components above:
 | Theme | As a component | As a page |
 |---|---|---|
 | `deep-lab-tech` | 95% div/span, 3 distinct, 0 rich | **0%**, 49 distinct, 24 rich |
-| `nocturnal-forge` | 91%, 3 distinct, 0 rich | **0%**, 41 distinct, 17 rich |
-| `pristine-minimalism` | 86%, 3 distinct, 0 rich | **2%**, 35 distinct, 14 rich |
-| `gritty-cyberpunk` | 83%, 5 distinct, 0 rich | **3%**, 45 distinct, 18 rich |
+| `nocturnal-forge` | 91%, 3 distinct, 0 rich | **0%**, 28 distinct, 9 rich |
+| `pristine-minimalism` | 86%, 3 distinct, 0 rich | **0%**, 19 distinct, 7 rich |
+| `gritty-cyberpunk` | 83%, 5 distinct, 0 rich | **7%**, 32 distinct, 12 rich |
+
+Three of those four pages were then rebuilt a second time, and the numbers above
+are the rebuild. The first version of each passed both per-page checks and was
+still wrong: the four shared **57%** of their element vocabulary and three had no
+element unique to them. See [`GALLERY.md`](GALLERY.md) for the full before/after.
+The counts fell because a restraint theme is now permitted to be small.
 
 The variable was the constraint, not the prompt. Nothing was made uglier by
 being semantic, which is the second time the same claim has survived a test.

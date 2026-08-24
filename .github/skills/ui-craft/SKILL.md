@@ -52,6 +52,16 @@ without JavaScript, `<table>` gives screen readers row and column relationships,
 differ from its neighbours'.** If neighbouring cards have the same fields, that
 is a table wearing a costume.
 
+**And this list is a menu, not a checklist.** It answers *"I have this data —
+which element is it?"* It does not say "use eight of these." Read as a checklist
+it produces a second monoculture: pages carrying one of every rich element,
+including a `<fieldset>` around a single control and a `<meter>` on a page with
+nothing to measure. That was measured in this very registry — four themes ended
+up sharing **57%** of their element vocabulary, and three of the four had no
+element unique to them, because a threshold ("8 or more rich elements") became a
+target. Escaping card soup into checklist soup is not an escape. If the data
+shape is not on your page, its element does not belong there either.
+
 ## Rule 2 — layout density, not layout repetition
 
 Aim for a distinct `grid-template` per section that has a distinct information
@@ -185,14 +195,27 @@ and author markup from Rule 1.
 Each theme's `page.html` is a **conformant** worked example at page scale: copy
 its structure freely. A component marked `visual-reference` is the opposite —
 that label means its markup failed the checker, so **copy the finish, never the
-DOM**.
+DOM**, and follow its `use_instead`.
 
-Three layers, and only the first is fixed. **Substrate** — the semantic element —
-never varies: a dial and a fader are both `<input type="range">`. **Composition**
-— which controls exist, how many, and their hierarchy — varies per theme, because
-interaction character is part of the design, not paint. **Finish** — colour,
-texture, type, motion — varies per theme. Freezing composition to prove the
-substrate point would be freezing the wrong layer.
+Need a single control rather than a whole look? `index.json` has a `controls`
+index keyed by **kind** — toggle, dial, fader, exclusive choice, gated action,
+option list. Each names the fixed substrate and points at a conformant instance
+as `themes/<page>#<element-id>`. A dial and a fader resolve to the same
+`input[type=range]` with different finishes, which is the layer split made
+literal. It exists because asking this registry for "a dial" used to return a
+component with no form control in it at all.
+
+Four layers, and only the first is fixed. **Substrate** — the semantic element —
+never varies: a dial and a fader are both `<input type="range">`. **Genre** —
+what kind of surface this is, and therefore which data it shows at all — varies
+per theme, and it is the layer that decides whether there is a table on the page
+in the first place. **Composition** — which controls exist, how many, their
+hierarchy — varies. **Finish** — colour, texture, type, motion — varies.
+
+Genre was learned the hard way. An earlier contract fixed one shared data payload
+so four previews would be comparable; because the data shape picks the element,
+that froze the elements too, and the four themes converged on the same 16. Two
+themes with the same genre are one theme in two colours.
 
 ## Check it
 
@@ -201,6 +224,7 @@ Do not self-report. Run both:
 ```
 node .github/skills/ui-craft/scripts/check-ui-craft.mjs <file-or-dir>
 node scripts/audit-a11y-names.mjs <page.html>
+node scripts/audit-theme-divergence.mjs
 ```
 
 The first reports element vocabulary, div ratio, rich-element count, layout
@@ -213,6 +237,12 @@ that passed the first check shipped a slider with no accessible name at all: its
 wrapping `<label>` held an `<output>` before the `<input>`, and `<output>` is
 itself labelable, so the label bound to the output. The presence of a `<label>`
 is not evidence of a name.
+
+The third is **registry-wide** and grades the themes against each other: each
+genre's forbidden elements must be absent, and the vocabulary common to every
+theme must stay under a ceiling. It exists because all four convergent pages
+passed the first two individually — **a per-page check can never see a
+monoculture.** Sameness is only visible across the set.
 
 Neither check can see whether the thing looks right, or whether the value shown
 is the real one. **Render it and look at it.** Three real defects in the theme

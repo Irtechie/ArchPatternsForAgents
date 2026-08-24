@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Architecture Conformance Console — Pristine Hyper-Minimalism</title>
+<title>Undeclared Drift — Pristine Hyper-Minimalism</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;400;600;800&display=swap" rel="stylesheet">
@@ -86,7 +86,7 @@
         position: relative;
         z-index: 1;
         display: grid;
-        grid-template-rows: auto auto auto auto auto auto;
+        grid-template-rows: auto auto auto auto auto;
         gap: var(--section-gap);
         width: min(100%, 72rem);
         margin: 0 auto;
@@ -95,17 +95,17 @@
 
     .console-head {
         display: grid;
-        grid-template-columns: minmax(0, 1fr) minmax(14rem, 0.42fr);
+        grid-template-columns: minmax(0, 1fr) minmax(13rem, 0.34fr);
         gap: clamp(1.25rem, 3.2vw, 3.6rem);
         align-items: end;
-        min-height: clamp(10rem, 18vw, 16rem);
+        min-height: clamp(8rem, 14vw, 12rem);
     }
 
     .title-group {
         display: grid;
         grid-template-rows: auto auto auto;
-        gap: clamp(0.9rem, 2vw, 1.6rem);
-        max-width: 62rem;
+        gap: clamp(0.7rem, 1.6vw, 1.2rem);
+        max-width: 56rem;
     }
 
     h1 {
@@ -119,11 +119,7 @@
     }
 
     .eyebrow,
-    .label,
-    caption,
-    legend,
-    summary,
-    th {
+    .label {
         color: var(--muted);
         font-size: clamp(0.62rem, 0.75vw, 0.72rem);
         font-weight: 800;
@@ -132,10 +128,31 @@
     }
 
     .lede {
-        max-width: 58ch;
+        max-width: 46ch;
         margin: 0;
         color: var(--muted);
     }
+
+    .context-pane {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: repeat(3, auto);
+        gap: 0.55rem;
+        margin: 0;
+        color: var(--faint);
+        text-align: right;
+    }
+
+    .context-pane p { margin: 0; }
+
+    code {
+        color: var(--ink);
+        font: 600 0.92em/1.4 "Inter", ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+        font-variant-numeric: tabular-nums;
+    }
+
+    time,
+    output { font-variant-numeric: tabular-nums; }
 
     .glass-pane {
         --tilt-x: 0deg;
@@ -181,243 +198,127 @@
 
     .hero-pane {
         grid-template-columns: minmax(0, 1fr) minmax(11rem, 0.28fr);
-        gap: clamp(1.5rem, 5vw, 4rem);
+        grid-template-rows: auto 1fr auto;
+        gap: clamp(1rem, 3vw, 2.4rem) clamp(1.5rem, 5vw, 4rem);
         align-items: end;
-        min-height: clamp(23rem, 48vw, 38rem);
+        min-height: clamp(25rem, 48vw, 37rem);
         padding: clamp(1.8rem, 5vw, 5rem);
     }
 
-    .hero-metric {
+    .hero-pane header {
+        grid-column: 1 / -1;
         display: grid;
-        grid-template-rows: auto auto;
-        gap: clamp(0.6rem, 1.5vw, 1.2rem);
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 1rem;
+        align-items: baseline;
     }
 
     .hero-value {
-        font-size: clamp(8rem, 24vw, 20rem);
+        grid-column: 1;
+        color: var(--ink);
+        font-size: clamp(10rem, 30vw, 25rem);
         font-weight: 100;
-        letter-spacing: -0.11em;
-        line-height: 0.76;
+        letter-spacing: -0.13em;
+        line-height: 0.72;
         text-shadow: 0 2rem 4rem rgba(0, 0, 0, 0.28);
     }
 
     .hero-note {
+        grid-column: 2;
         justify-self: end;
-        max-width: 18ch;
+        max-width: 15ch;
+        margin: 0;
         color: var(--faint);
-        font-size: clamp(0.85rem, 1vw, 1rem);
+        font-size: clamp(1rem, 1.4vw, 1.25rem);
+        line-height: 1.25;
     }
 
-    .stamp-list {
+    .window-control {
+        grid-column: 1 / -1;
         display: grid;
-        grid-template-columns: max-content minmax(0, 1fr);
-        gap: 0.65rem 1.2rem;
-        align-self: end;
-        margin: 0;
-    }
-
-    dt { color: var(--faint); }
-    dd { margin: 0; color: var(--ink); }
-    code { font: 600 0.92em/1.4 "Inter", ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace; }
-    time, code, td { font-variant-numeric: tabular-nums; }
-
-    .metric-strip {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(11rem, 1fr));
-        gap: clamp(0.9rem, 2vw, 1.5rem);
-    }
-
-    .metric-card {
-        grid-template-rows: auto auto auto;
-        gap: clamp(1rem, 2vw, 1.6rem);
-        min-height: 12rem;
-        padding: clamp(1.15rem, 2.3vw, 2rem);
-    }
-
-    .metric-card dd {
-        display: grid;
-        grid-template-rows: auto auto;
-        gap: 1.2rem;
-    }
-
-    .secondary-value {
-        font-size: clamp(2rem, 5vw, 4rem);
-        font-weight: 200;
-        letter-spacing: -0.06em;
-        line-height: 1;
-    }
-
-    meter {
-        width: 100%;
-        height: 2px;
-        appearance: none;
-        -webkit-appearance: none;
-        background: transparent;
-    }
-
-    meter::-webkit-meter-bar {
-        height: 2px;
-        border: 0;
-        border-radius: 999px;
-        background: rgba(255, 255, 255, 0.16);
-    }
-
-    meter::-webkit-meter-optimum-value,
-    meter::-webkit-meter-suboptimum-value,
-    meter::-webkit-meter-even-less-good-value {
-        border-radius: 999px;
-        background: linear-gradient(90deg, var(--accent), var(--accent-warm));
-    }
-
-    meter::-moz-meter-bar {
-        border-radius: 999px;
-        background: linear-gradient(90deg, var(--accent), var(--accent-warm));
-    }
-
-    .controls-pane {
-        grid-template-columns: minmax(14rem, 0.75fr) minmax(14rem, 1fr);
-        gap: clamp(1rem, 4vw, 4rem);
-        align-items: center;
-        padding: clamp(1.05rem, 2.2vw, 1.8rem);
-    }
-
-    .console-form {
-        display: grid;
-        grid-template-columns: minmax(12rem, 0.82fr) minmax(12rem, 1fr);
-        gap: clamp(1rem, 3vw, 2rem);
+        grid-template-columns: minmax(10rem, 0.4fr) minmax(12rem, 0.6fr);
+        gap: clamp(0.8rem, 2vw, 1.6rem);
         align-items: end;
+        max-width: 35rem;
         margin: 0;
     }
 
-    fieldset {
-        display: grid;
-        grid-template-rows: auto auto;
-        gap: 0.9rem;
-        min-width: 0;
-        margin: 0;
-        padding: 0;
-        border: 0;
-    }
-
-    label {
-        display: grid;
-        grid-template-rows: auto auto;
-        gap: 0.85rem;
-        min-width: 0;
-    }
-
-    select,
-    input[type="range"] {
-        width: 100%;
-        color: var(--ink);
-        font: inherit;
-        accent-color: var(--accent);
-    }
+    label { display: block; }
 
     select {
+        width: 100%;
         appearance: none;
         border: 0;
         border-bottom: 1px solid var(--line-bright);
         border-radius: 0;
         padding: 0.3rem 1.8rem 0.65rem 0;
+        color: var(--ink);
         background:
             linear-gradient(45deg, transparent 50%, var(--ink) 50%) right 0.35rem top 0.95rem / 0.45rem 0.45rem no-repeat,
             linear-gradient(135deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.018));
+        font: inherit;
     }
 
-    select:focus-visible,
-    input[type="range"]:focus-visible {
+    select:focus-visible {
         outline: 1px solid var(--accent);
         outline-offset: 0.45rem;
     }
 
-    input[type="range"] {
-        appearance: none;
-        -webkit-appearance: none;
-        height: 1.6rem;
-        background: transparent;
-    }
-
-    input[type="range"]::-webkit-slider-runnable-track {
-        height: 2px;
-        border-radius: 999px;
-        background: linear-gradient(90deg, var(--accent), rgba(255, 255, 255, 0.16));
-    }
-
-    input[type="range"]::-webkit-slider-thumb {
-        -webkit-appearance: none;
-        width: 0.9rem;
-        height: 0.9rem;
-        margin-top: -0.4rem;
-        border: 1px solid rgba(255, 255, 255, 0.42);
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.72);
-        box-shadow: 0 0 1.4rem rgba(255, 255, 255, 0.38);
-    }
-
-    input[type="range"]::-moz-range-track {
-        height: 2px;
-        border-radius: 999px;
-        background: linear-gradient(90deg, var(--accent), rgba(255, 255, 255, 0.16));
-    }
-
-    input[type="range"]::-moz-range-thumb {
-        width: 0.9rem;
-        height: 0.9rem;
-        border: 1px solid rgba(255, 255, 255, 0.42);
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.72);
-    }
-
-    output {
-        color: var(--ink);
-        font-weight: 600;
-    }
-
-    .range-readout {
+    .support-strip {
         display: grid;
-        grid-template-columns: 1fr auto;
-        gap: 1rem;
-        align-items: baseline;
+        grid-template-columns: minmax(14rem, 0.95fr) minmax(9rem, 0.48fr) minmax(11rem, 0.64fr);
+        gap: clamp(1rem, 4vw, 4.5rem);
+        align-items: start;
+        padding: clamp(0.6rem, 1.7vw, 1.2rem) clamp(0.4rem, 2vw, 1.8rem);
     }
 
-    .table-pane {
-        grid-template-rows: auto auto;
-        gap: clamp(0.7rem, 1.4vw, 1.25rem);
-        padding: clamp(1rem, 2vw, 1.75rem);
-        overflow-x: auto;
+    .support-figure {
+        --figure-size: clamp(1.9rem, 4.2vw, 3.8rem);
+        display: grid;
+        grid-template-rows: auto auto auto;
+        gap: clamp(0.35rem, 0.9vw, 0.7rem);
+        min-width: 0;
     }
 
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        min-width: 44rem;
+    .support-figure--coverage {
+        --figure-size: clamp(2.8rem, 6vw, 5.6rem);
     }
 
-    caption {
-        margin-bottom: clamp(1.2rem, 3vw, 2.3rem);
-        text-align: left;
+    .support-figure--conformance {
+        --figure-size: clamp(1.55rem, 3vw, 2.7rem);
+        justify-self: center;
+        margin-top: clamp(2rem, 6vw, 5rem);
+        opacity: 0.76;
     }
 
-    th,
-    td {
-        padding: 0.6rem 1rem;
-        text-align: left;
-        border-bottom: 1px solid var(--line);
-        white-space: nowrap;
+    .support-figure--markup {
+        --figure-size: clamp(2rem, 4.4vw, 4rem);
+        justify-self: end;
+        margin-top: clamp(0.8rem, 3vw, 2.7rem);
+        text-align: right;
+        opacity: 0.88;
     }
 
-    th:last-child,
-    td:last-child { text-align: right; }
-    tbody tr:last-child th,
-    tbody tr:last-child td { border-bottom: 0; }
-    td strong { font-weight: 800; color: var(--accent-warm); }
+    .secondary-value {
+        color: var(--ink);
+        font-size: var(--figure-size);
+        font-weight: 200;
+        letter-spacing: -0.06em;
+        line-height: 1;
+    }
 
-    .drift-pane {
-        grid-template-columns: minmax(0, 1fr) minmax(13rem, 0.35fr);
+    .quiet-copy {
+        max-width: 52ch;
+        margin: 0;
+        color: var(--muted);
+    }
+
+    .trend-pane {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(13rem, 0.34fr);
         gap: clamp(0.9rem, 2vw, 1.8rem);
         align-items: center;
-        padding: clamp(1rem, 2vw, 1.75rem);
+        padding: clamp(0.6rem, 1.6vw, 1.4rem) clamp(0.4rem, 2vw, 1.8rem);
     }
 
     figure {
@@ -427,6 +328,8 @@
         margin: 0;
     }
 
+    figcaption { max-width: 52ch; color: var(--muted); }
+
     svg {
         width: 100%;
         height: auto;
@@ -434,51 +337,15 @@
         overflow: visible;
     }
 
-    figcaption,
-    .quiet-copy {
-        color: var(--muted);
-        max-width: 56ch;
-    }
-
-    .activity-pane {
-        grid-template-columns: minmax(0, 1.1fr) minmax(19rem, 0.65fr);
-        grid-template-rows: auto auto;
-        gap: clamp(0.8rem, 1.8vw, 1.5rem) clamp(1.2rem, 3vw, 3rem);
-        align-items: start;
-        padding: clamp(1rem, 2vw, 1.75rem);
-    }
-
-    .activity-pane > header {
-        grid-column: 1 / -1;
-    }
-
-    ol {
+    .creed-pane {
         display: grid;
-        grid-template-rows: repeat(3, auto);
-        gap: 0.75rem;
-        grid-column: 1;
-        grid-row: 2;
-        margin: 0;
-        padding-left: 1.35rem;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: clamp(1rem, 3vw, 2rem);
+        align-items: end;
+        padding: clamp(0.6rem, 1.6vw, 1.4rem) clamp(0.4rem, 2vw, 1.8rem);
     }
-
-    li::marker { color: var(--faint); }
-
-    details {
-        align-self: start;
-        color: var(--muted);
-    }
-
-    summary {
-        cursor: pointer;
-        list-style-position: outside;
-    }
-
-    details p { max-width: 36ch; margin: 1rem 0 0; }
 
     blockquote {
-        grid-column: 2;
-        grid-row: 2;
         margin: 0;
         max-width: 30ch;
         font-size: clamp(1.35rem, 2.5vw, 2.25rem);
@@ -487,30 +354,28 @@
         line-height: 1.02;
     }
 
+    blockquote p { margin: 0; }
+
     cite {
-        grid-column: 2;
-        grid-row: 2;
-        align-self: end;
         color: var(--muted);
         font-style: normal;
-        padding-top: clamp(5rem, 9vw, 7rem);
     }
 
     @media (max-width: 760px) {
         .console-head,
         .hero-pane,
-        .metric-strip,
-        .controls-pane,
-        .console-form,
-        .drift-pane,
-        .activity-pane {
+        .hero-pane header,
+        .window-control,
+        .support-strip,
+        .trend-pane,
+        .creed-pane {
             grid-template-columns: 1fr;
         }
 
         .console-head { min-height: auto; }
+        .context-pane { text-align: left; }
+        .hero-value, .hero-note, .window-control { grid-column: auto; }
         .hero-note { justify-self: start; }
-        ol, blockquote, cite { grid-column: auto; grid-row: auto; }
-        cite { padding-top: 0; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -534,166 +399,68 @@
 <main class="pristine-console">
     <header class="console-head">
         <section class="title-group" aria-labelledby="console-title">
-            <p class="eyebrow">Irtechie / ArchPatternsForAgents</p>
-            <h1 id="console-title">Architecture Conformance Console</h1>
-            <p class="lede">A sparse reading of the same substrate: one dominant signal, quiet bounds, and semantic data left intact.</p>
+            <p class="eyebrow">Architecture conformance</p>
+            <h1 id="console-title">Undeclared drift</h1>
+            <p class="lede">One number, read at a glance, from across a room. Everything else is subtraction.</p>
         </section>
 
-        <dl class="stamp-list" aria-label="Run metadata">
-            <dt>Commit</dt>
-            <dd><code>ce75e79</code></dd>
-            <dt>Run</dt>
-            <dd>12</dd>
-            <dt>Time</dt>
-            <dd><time datetime="2026-08-21T21:40">2026-08-21T21:40</time></dd>
-            <dt>Owner</dt>
-            <dd>Irtechie / ArchPatternsForAgents</dd>
-        </dl>
+        <aside class="context-pane" aria-label="Run context">
+            <p><code>ce75e79</code></p>
+            <p>run 12</p>
+            <p><time datetime="2026-08-21T21:40">Aug 21, 2026 · 21:40</time></p>
+        </aside>
     </header>
 
-    <section class="glass-pane hero-pane" aria-labelledby="coverage-label">
-        <dl class="hero-metric">
-            <dt class="label" id="coverage-label">Detector coverage</dt>
-            <dd><strong class="hero-value">82%</strong></dd>
-        </dl>
-        <p class="hero-note">% of tree</p>
-    </section>
-
-    <section class="metric-strip" aria-label="Secondary metrics">
-        <dl class="glass-pane metric-card">
-            <dt class="label">Declared conformance</dt>
-            <dd><strong class="secondary-value">7</strong><meter min="0" max="9" value="7">7 of 9 repos</meter></dd>
-            <dd class="quiet-copy">of 9 repos</dd>
-        </dl>
-        <dl class="glass-pane metric-card">
-            <dt class="label">Undeclared drift</dt>
-            <dd><strong class="secondary-value">14</strong><meter min="0" max="40" value="14">14 findings of 40 budget</meter></dd>
-            <dd class="quiet-copy">findings, of 40 budget</dd>
-        </dl>
-        <dl class="glass-pane metric-card">
-            <dt class="label">Generic markup</dt>
-            <dd><strong class="secondary-value">15%</strong><meter min="0" max="100" value="15">15% div/span</meter></dd>
-            <dd class="quiet-copy">% div/span</dd>
-        </dl>
-    </section>
-
-    <section class="glass-pane controls-pane" aria-labelledby="review-tools">
+    <section class="glass-pane hero-pane" aria-labelledby="drift-label" aria-describedby="drift-budget">
         <header>
-            <p class="eyebrow" id="review-tools">Review profile</p>
-            <p class="quiet-copy">Two native controls, skinned without replacing their substrate.</p>
+            <p class="eyebrow" id="drift-label">Undeclared drift findings</p>
+            <p class="quiet-copy">Current run</p>
         </header>
-        <form class="console-form">
-            <fieldset>
-                <legend>Profile</legend>
-                <label>
-                    <span class="label">Lens</span>
-                    <select id="profile" name="profile">
-                        <option>Declared conformance</option>
-                        <option>Detector coverage</option>
-                        <option>Undeclared drift</option>
-                        <option>Generic markup</option>
-                    </select>
-                </label>
-            </fieldset>
-            <fieldset>
-                <legend>Generic-markup ceiling</legend>
-                <!-- Explicit for=, because <output> is itself a labelable
-                     element and appears first in this label's subtree; without
-                     it the label binds to the output and the slider is left
-                     with no accessible name at all. -->
-                <label for="ceiling">
-                    <span class="range-readout"><span class="label">Ceiling</span><output id="ceilingOutput" for="ceiling" aria-live="polite">25%</output></span>
-                    <input id="ceiling" name="ceiling" type="range" min="0" max="45" value="25" aria-describedby="ceilingHelp">
-                </label>
-                <p class="quiet-copy" id="ceilingHelp">Current shared value remains 15%.</p>
-            </fieldset>
+        <output class="hero-value" aria-labelledby="drift-label">14</output>
+        <p class="hero-note" id="drift-budget">against a budget of 40</p>
+        <form class="window-control" aria-label="Metric window">
+            <label class="label" for="time-window">Time window</label>
+            <select id="time-window" name="time-window">
+                <option>Last 12 runs</option>
+                <option>Last 30 days</option>
+                <option>All time</option>
+            </select>
         </form>
     </section>
 
-    <section class="glass-pane table-pane" aria-labelledby="estate-heading">
-        <header>
-            <p class="eyebrow" id="estate-heading">Estate</p>
-        </header>
-        <table>
-            <caption>Repository conformance table</caption>
-            <thead>
-                <tr>
-                    <th scope="col">Repository</th>
-                    <th scope="col">Pattern</th>
-                    <th scope="col">div/span</th>
-                    <th scope="col">Elements</th>
-                    <th scope="col">Checked</th>
-                    <th scope="col">State</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <th scope="row"><code>financeops</code></th>
-                    <td>plugin-host</td>
-                    <td>22%</td>
-                    <td>45</td>
-                    <td><time datetime="2026-08-21">2026-08-21</time></td>
-                    <td>pass</td>
-                </tr>
-                <tr>
-                    <th scope="row"><code>agent127</code></th>
-                    <td>llm-assisted</td>
-                    <td>24%</td>
-                    <td>31</td>
-                    <td><time datetime="2026-08-21">2026-08-21</time></td>
-                    <td>pass</td>
-                </tr>
-                <tr>
-                    <th scope="row"><code>healthops</code></th>
-                    <td>plugin-host</td>
-                    <td>29%</td>
-                    <td>18</td>
-                    <td><time datetime="2026-08-20">2026-08-20</time></td>
-                    <td>thin</td>
-                </tr>
-                <tr>
-                    <th scope="row"><code>learnops</code></th>
-                    <td>plugin-host</td>
-                    <td>33%</td>
-                    <td>16</td>
-                    <td><time datetime="2026-08-20">2026-08-20</time></td>
-                    <td>thin</td>
-                </tr>
-                <tr>
-                    <th scope="row"><code>fleetcontroller</code></th>
-                    <td>undeclared</td>
-                    <td>46%</td>
-                    <td>12</td>
-                    <td><time datetime="2026-08-21">2026-08-21</time></td>
-                    <td><strong>fail</strong></td>
-                </tr>
-            </tbody>
-        </table>
+    <section class="support-strip" aria-label="Quiet supporting figures">
+        <article class="support-figure support-figure--coverage">
+            <p class="label">Detector coverage</p>
+            <output class="secondary-value">82%</output>
+            <p class="quiet-copy">of tree</p>
+        </article>
+        <article class="support-figure support-figure--conformance">
+            <p class="label">Declared conformance</p>
+            <output class="secondary-value">7 of 9</output>
+            <p class="quiet-copy">repositories</p>
+        </article>
+        <article class="support-figure support-figure--markup">
+            <p class="label">Generic markup</p>
+            <output class="secondary-value">15%</output>
+            <p class="quiet-copy">div/span</p>
+        </article>
     </section>
 
-    <section class="glass-pane drift-pane" aria-labelledby="drift-heading">
+    <section class="trend-pane" aria-labelledby="trend-heading">
         <figure>
-            <figcaption id="drift-heading">Drift per run, twelve runs, 2026-06-14 → 2026-08-21: <code>38, 33, 30, 26, 24, 21, 34, 19, 17, 16, 15, 14</code></figcaption>
+            <figcaption id="trend-heading">Twelve-run drift series</figcaption>
             <svg viewBox="0 0 660 220" role="img" aria-labelledby="drift-title drift-desc">
                 <title id="drift-title">Undeclared drift trend</title>
-                <desc id="drift-desc">Values descend from 38 to 14 across twelve runs, with a spike to 34 at run 7.</desc>
-                <polyline points="0,16 60,54 120,77 180,108 240,123 300,146 360,47 420,162 480,177 540,185 600,193 660,200" fill="none" stroke="rgba(255,255,255,0.78)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <desc id="drift-desc">Twelve values: 38, 33, 30, 26, 24, 21, 34, 19, 17, 16, 15, 14.</desc>
                 <polyline points="0,16 60,54 120,77 180,108 240,123 300,146 360,47 420,162 480,177 540,185 600,193 660,200 660,220 0,220" fill="rgba(255,255,255,0.08)"/>
-                <circle cx="360" cy="47" r="5" fill="rgba(255,255,255,0.9)"/>
+                <polyline points="0,16 60,54 120,77 180,108 240,123 300,146 360,47 420,162 480,177 540,185 600,193 660,200" fill="none" stroke="rgba(255,255,255,0.78)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="660" cy="200" r="5" fill="rgba(255,255,255,0.9)"/>
             </svg>
         </figure>
-        <p class="quiet-copy">The spike at run 7 is <code>fleetcontroller</code> landing before its pattern entry did.</p>
+        <p class="quiet-copy">38, 33, 30, 26, 24, 21, 34, 19, 17, 16, 15, 14.</p>
     </section>
 
-    <section class="glass-pane activity-pane" aria-labelledby="activity-heading">
-        <header>
-            <p class="eyebrow" id="activity-heading">Activity</p>
-        </header>
-        <ol>
-            <li><time datetime="2026-08-21T21:40">21:40</time> — Run 12 complete. 14 findings across 9 repositories. <code>exit 0</code>. <meter min="0" max="100" value="100">100%</meter> <strong>100%</strong></li>
-            <li><time datetime="2026-08-21T20:05">20:05</time> — Blind spot declared: accessible-name quality is unchecked, found by human comparison rather than by the detector. <meter min="0" max="100" value="62">62%</meter> <strong>62%</strong></li>
-            <li><time datetime="2026-08-21T17:22">17:22</time> — False positive retired: word-boundary match on <code>.icon-button</code> corrected to <code>(?&lt;![\w-])</code>. <meter min="0" max="100" value="100">100%</meter> <strong>100%</strong></li>
-        </ol>
+    <section class="creed-pane" aria-label="Substrate creed">
         <blockquote>
             <p>The element is the substrate. The theme is the finish.</p>
         </blockquote>
@@ -703,13 +470,6 @@
 <script>
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
     const panes = document.querySelectorAll('.glass-pane');
-    const ceiling = document.getElementById('ceiling');
-    const ceilingOutput = document.getElementById('ceilingOutput');
-
-    ceiling.addEventListener('input', () => {
-        ceilingOutput.value = `${ceiling.value}%`;
-        ceilingOutput.textContent = `${ceiling.value}%`;
-    });
 
     panes.forEach((pane) => {
         pane.addEventListener('pointermove', (event) => {

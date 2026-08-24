@@ -1,30 +1,34 @@
 # Theme gallery
 
-Four finishes on the same console, showing the same data. Pick by eye, then
-read that theme's `page.html`.
+Four themes. **Four different kinds of surface** — not one console in four colours.
 
-Every page here passes both checks with zero failures, so whichever you choose
-you are copying a real substrate rather than a picture of one.
+Pick by eye, then read that theme's `page.html`. Everything here passes five
+checks with zero failures, so whichever you choose you are copying a real
+substrate rather than a picture of one.
 
-| | Theme | Character | Pick it for |
-|---|---|---|---|
-| [▦](#deep-lab-tech) | **Deep Lab Tech** | densest | matrices, live signals, anything scanned rather than read |
-| [▣](#gritty-cyberpunk) | **Gritty Cyberpunk** | highest stakes | destructive actions, arm/disarm, consequence |
-| [◍](#the-nocturnal-forge) | **The Nocturnal Forge** | most tactile | machine control, one dominant value, dark rooms |
-| [◌](#pristine-hyper-minimalism) | **Pristine Hyper-Minimalism** | quietest | one number read at a glance |
+| Theme | It is for | Its hero |
+|---|---|---|
+| [Deep Lab Tech](#deep-lab-tech) | scanning a matrix for the outlier | a 5-column table and nine gauges |
+| [Gritty Cyberpunk](#gritty-cyberpunk) | committing to something irreversible | an interlock you must arm *and* type past |
+| [The Nocturnal Forge](#the-nocturnal-forge) | driving a machine in a dark room | a rotary dial you can turn with arrow keys |
+| [Pristine Hyper-Minimalism](#pristine-hyper-minimalism) | one number, read from across a room | the number, enormous |
 
 ---
 
 ## Deep Lab Tech
 
-A rack-mounted instrument. Phosphor amber on charcoal, corner brackets instead
-of boxes, millimetre-paper ground, inline SVG trace with a real bloom filter.
+**Genre — data explorer.** The densest page in the registry, and the only one
+that leads with a table. That is correct: a comparison matrix *is* rows sharing
+columns, and this is the theme built to be scanned rather than read.
 
-**Composition** — the densest page in the registry: a full estate table, nine
-`<meter>` gauges, a four-fader detector channel bank, radio profile selection,
-and expandable notes.
+It owns the entire tabular vocabulary. `table caption thead tbody tfoot colgroup
+meter progress abbr dfn ol` appear on **no other theme** — eleven elements unique
+to this page, which is what a genre looks like when it is real.
 
-[`themes/deep-lab-tech/page.html`](deep-lab-tech/page.html)
+Phosphor amber on charcoal, corner brackets instead of boxes, millimetre-paper
+ground, an inline SVG trace with a genuine `feGaussianBlur` phosphor bloom.
+
+[`deep-lab-tech/page.html`](deep-lab-tech/page.html) · 246 elements, 49 distinct, 0% div/span
 
 ![Deep Lab Tech](deep-lab-tech/preview.png)
 
@@ -32,15 +36,22 @@ and expandable notes.
 
 ## Gritty Cyberpunk
 
-A security terminal where actions feel dangerous. Abyssal black, CRT scanlines,
-toxic green that only ignites on activation, chromatic-aberration glitch on
-commit.
+**Genre — confirm and execute.** Not a dashboard. A page where you are about to
+do something you cannot undo.
 
-**Composition** — one large arm/disarm override switch that gates the page
-accent, a command entry line, a register-dump table, and a log feed. Fewer
-controls than the lab rack, each one consequential.
+The whole surface is one decision: retire a detector that has thrown 31 false
+positives, at the cost of a full estate rescan. The interlock is real and
+double-gated — a heavy arm switch (`<input type="checkbox">`) *and* a
+type-the-exact-detector-id field. The `<button>` carries the native `disabled`
+attribute until both are satisfied, so the paint cannot disagree with the state.
 
-[`themes/gritty-cyberpunk/page.html`](gritty-cyberpunk/page.html)
+`table`, `meter` and `progress` are **forbidden** here. A surface about an act
+does not report a status.
+
+Abyssal black, CRT scanlines, an `oklch` accent that only ignites on arming,
+chromatic-aberration glitch on commit — all of it behind `prefers-reduced-motion`.
+
+[`gritty-cyberpunk/page.html`](gritty-cyberpunk/page.html) · 73 elements, 32 distinct, 7% div/span
 
 ![Gritty Cyberpunk](gritty-cyberpunk/preview.png)
 
@@ -48,15 +59,22 @@ controls than the lab rack, each one consequential.
 
 ## The Nocturnal Forge
 
-A late-night workshop. Warm tungsten on charcoal, powder-coated metal texture
-from `feTurbulence`, heavy inset and outset shadow arrays, a `conic-gradient`
-track that burns orange as it fills.
+**Genre — control panel.** Every number on this page is something you can
+*change*.
 
-**Composition** — one hero rotary dial carrying the primary value, three heavy
-latch switches, and a small number of large supporting readouts. The dial is an
-`<input type="range">` under the skin, so arrow keys move it.
+The dial is the registry's key proof. It looks like machined tungsten and it is
+an `<input type="range" min="0" max="40">` underneath — arrow keys move it,
+`:focus-visible` lights the bezel, and it announces as "Drift budget ceiling".
+Four channel faders and three latch switches sit beside it, all native, all named.
 
-[`themes/nocturnal-forge/page.html`](nocturnal-forge/page.html)
+No estate table: a control panel that lists rows of repository data is a
+dashboard wearing a dial.
+
+Warm tungsten on charcoal, powder-coated metal from `feTurbulence`, heavy
+inset/outset shadow arrays, a `conic-gradient` track that burns orange as the
+value rises. Eleven panels, no two alike.
+
+[`nocturnal-forge/page.html`](nocturnal-forge/page.html) · 104 elements, 28 distinct, 0% div/span
 
 ![The Nocturnal Forge](nocturnal-forge/preview.png)
 
@@ -64,71 +82,98 @@ latch switches, and a small number of large supporting readouts. The dial is an
 
 ## Pristine Hyper-Minimalism
 
-A private orbital deck. A saturated four-colour `oklch` mesh behind glass panes
-that actually refract it, extreme type scale, spring-eased tilt.
+**Genre — single metric.** One number. Everything else is subtraction.
 
-**Composition** — the restraint theme: one enormous hero metric, three quiet
-secondary figures, exactly two controls, an airy table with no gridlines.
+This is the strictest theme in the registry and the shortest page: 46 elements
+and 7 rich ones, against Deep Lab Tech's 246 and 24. Its forbidden list is the
+longest — no `table`, `fieldset`, `meter`, `progress`, `dl`, `ol` or `details`.
+A page whose job is one number does not need a gauge, a form group or a grid.
 
-[`themes/pristine-minimalism/page.html`](pristine-minimalism/page.html)
+It carries exactly **one** glass pane, around the hero. That scarcity is what
+makes the hero read as the hero. The three supporting figures sit unenclosed on
+the mesh at three different scales — deliberately not a row of three equal boxes.
+
+Saturated four-colour `oklch` mesh, `backdrop-filter` glass, extreme type scale,
+spring-eased tilt.
+
+[`pristine-minimalism/page.html`](pristine-minimalism/page.html) · 46 elements, 19 distinct, 0% div/span
 
 ![Pristine Hyper-Minimalism](pristine-minimalism/preview.png)
 
 ---
 
-## What the pages are actually demonstrating
+## Four layers, and only one is fixed
 
-Each page shows the identical payload from
-[`_shared/substrate-contract.md`](_shared/substrate-contract.md), so what
-differs between these four images is style, not content.
-
-Three layers, and only one of them is fixed:
-
-| Layer | Fixed across themes? | Example |
+| Layer | Varies? | Example |
 |---|---|---|
-| **Substrate** — the semantic element | **always** | dial and fader are both `<input type="range">` |
-| **Composition** — which controls, how many, hierarchy | no | Forge has one dial; Lab Tech has a twelve-cell rack |
-| **Finish** — colour, texture, type, motion | no | tungsten vs phosphor |
+| **Substrate** — the semantic element | **never** | forge's dial and lab tech's faders are both `<input type="range">` |
+| **Genre** — what kind of surface, and therefore what data | yes | explorer vs decision vs control vs metric |
+| **Composition** — which controls, how many, hierarchy | yes | 11 controls vs 1 |
+| **Finish** — colour, texture, type, motion | yes | tungsten vs phosphor |
 
-Measured, not asserted:
+**Genre is the layer this registry originally got wrong**, and the mistake is
+worth keeping on the record. An earlier contract froze one shared data payload so
+the four previews would be comparable. Because the data shape picks the element,
+that froze the elements too:
 
-| Theme | div/span | Distinct elements | Rich elements | grid-template | Custom props |
-|---|---|---|---|---|---|
-| Deep Lab Tech | **0%** | 49 | 24 | 28 | 23 |
-| Gritty Cyberpunk | **3%** | 45 | 18 | 23 | 20 |
-| The Nocturnal Forge | **0%** | 41 | 17 | 23 | 21 |
-| Pristine Hyper-Minimalism | **2%** | 35 | 14 | 22 | 24 |
-| *the same four themes, as single components, before the contract* | *83–95%* | *3–5* | *0* | *0–1* | *6–8* |
-| *shipped owner sites, for reference* | *22–46%* | *12–45* | *0–11* | *3–41* | *11–24* |
+| | Before | After |
+|---|---|---|
+| Vocabulary common to all four themes | **57%** | **18%** |
+| Elements shared by every theme | 16 | **5** — `time output blockquote cite code` |
+| Rich-element counts | 14, 17, 18, 24 | **7, 9, 12, 24** |
+| Distinct elements per page | 35, 41, 45, 49 | **19, 28, 32, 49** |
+| Themes with no unique element | 3 of 4 | lab tech alone owns 11 |
 
-The last two rows are the finding. The same aesthetic briefs, given to the same
-kind of agent, produced 83–95% `div`/`span` when the brief was only about the
-look. Fixing the substrate first and handing over an identical brief produced
-0–3%, with no loss of aesthetic. Nothing in these four pages was made uglier by
-being semantic.
+Before, the four pages were within 1.4x of each other on every structural
+measure — four consoles of near-identical build. After, the spread is 2.6x,
+because a page whose job is one number is now *allowed to be small*.
+
+Four monitoring consoles in four paint jobs is not four themes. The five
+still-shared elements are the ones that genuinely belong anywhere: a timestamp, a
+live value, a quotation, an identifier.
+
+## Escaping card soup twice
+
+The registry's first failure was card soup — themed components measuring 83–95%
+`div`/`span`. Fixing the markup produced a *second* monoculture: every page
+carrying one of every rich element, because a threshold ("8 or more") became a
+target.
+
+And clean markup still does not guarantee a page that doesn't *look* like cards.
+The single-metric page hit 0% div/span with 19 distinct elements while rendering
+three interchangeable glass boxes. `audit-visual-repetition.mjs` exists for that
+gap — it measures repeated identical panels, which no markup check can see.
+
+| Theme | Panels | Largest identical run |
+|---|---|---|
+| deep-lab-tech | 10 | 1 |
+| gritty-cyberpunk | 15 | 2 |
+| nocturnal-forge | 11 | 1 |
+| pristine-minimalism | 1 | 1 |
+
+Panels are not the defect. **Repeated identical panels are.** The forge carries
+eleven and reads as designed, because no two are the same box.
 
 ## Regenerating
 
 ```bash
-node scripts/shoot-themes.mjs            # all themes
-node scripts/shoot-themes.mjs forge      # one theme
-node scripts/shoot-themes.mjs --verify   # assert every theme has a page and an image
+npm run shoot                          # all themes
+node scripts/shoot-themes.mjs forge    # one theme
+npm test                               # all five gates
 ```
 
-Uses whatever Chrome or Edge is already installed; it downloads no browser.
+Uses whatever Chrome or Edge is installed; downloads no browser.
 
 ## Adding a theme
 
-1. Create `themes/<id>/page.html` following
+1. Choose a **genre no existing theme covers.** Two themes with the same genre
+   are one theme in two colours. Add `genre`, `premise`, `leads_with` and
+   `forbidden` to `index.json` — `forbidden` is the load-bearing field.
+2. Write `themes/<id>/page.html` against
    [`_shared/substrate-contract.md`](_shared/substrate-contract.md).
-2. Prove it:
-   ```bash
-   node .github/skills/ui-craft/scripts/check-ui-craft.mjs themes/<id>/page.html
-   node scripts/audit-a11y-names.mjs themes/<id>/page.html
-   ```
-   Both must exit 0.
-3. Add the theme to `index.json`, then `node scripts/shoot-themes.mjs <id>`.
-4. Add a section here.
+3. `npm test` must exit 0. That includes two registry-wide checks which grade
+   your theme against the others — a page cannot pass them alone.
+4. `node scripts/shoot-themes.mjs <id>`, then add a section here.
 
-A theme with no image is not choosable, so `--verify` treats a missing preview
-as a failure.
+A theme with no image is not choosable, so `--verify` treats a missing preview as
+a failure.

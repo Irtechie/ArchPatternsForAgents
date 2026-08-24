@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Architecture Conformance Console — Gritty Cyberpunk</title>
+<title>Retire Detector — Gritty Cyberpunk</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600;700&display=swap" rel="stylesheet">
@@ -18,7 +18,7 @@
         --cyber-accent: #686868;
         --cyber-active: oklch(75% 0.25 150);
         --cyber-magenta-live: oklch(70% 0.35 340);
-        --cyber-amber: #f2c45f;
+        --cyber-amber: oklch(85% 0.2 90);
         --cyber-text: #f0f0f0;
         --cyber-dim: #8a8f8d;
         --cyber-muted: #565b58;
@@ -50,15 +50,17 @@
         font: 500 1rem/1.55 var(--cyber-font);
     }
 
-    body:has(#overrideSwitch:checked) {
-        --cyber-glow: oklch(75% 0.25 150 / 0.68);
+    body:has(.commit-button:not(:disabled)) {
         --cyber-accent: var(--cyber-active);
+        --cyber-glow: oklch(75% 0.25 150 / 0.68);
     }
 
     .visually-hidden {
         position: absolute;
-        width: 1px; height: 1px;
-        margin: -1px; padding: 0;
+        width: 1px;
+        height: 1px;
+        margin: -1px;
+        padding: 0;
         overflow: hidden;
         clip-path: inset(50%);
         white-space: nowrap;
@@ -91,7 +93,7 @@
 
     .console-head {
         display: grid;
-        grid-template-columns: minmax(0, 1.35fr) minmax(16rem, 0.65fr);
+        grid-template-columns: minmax(0, 1.22fr) minmax(17rem, 0.78fr);
         gap: clamp(1rem, 3vw, 2.25rem);
         align-items: end;
         padding: clamp(1rem, 2vw, 1.4rem);
@@ -107,7 +109,7 @@
     }
 
     .console-head h1 {
-        max-width: 15ch;
+        max-width: 12ch;
         margin: 0;
         font-size: clamp(2.4rem, 7vw, 5.9rem);
         line-height: 0.88;
@@ -129,7 +131,7 @@
         text-transform: uppercase;
     }
 
-    .stamp-register {
+    .act-register {
         display: grid;
         grid-template-columns: max-content minmax(0, 1fr);
         gap: 0.35rem 0.8rem;
@@ -141,17 +143,22 @@
         font-size: 0.78rem;
     }
 
-    .stamp-register dt {
-        color: var(--cyber-muted);
+    .act-register dt,
+    .impact-list strong,
+    .interlock-field label,
+    .commit-button,
+    .creed-panel summary {
         letter-spacing: 0.12em;
         text-transform: uppercase;
     }
 
-    .stamp-register dd { margin: 0; text-align: right; }
+    .act-register dt { color: var(--cyber-muted); }
+    .act-register dd { margin: 0; text-align: right; }
 
     code,
     kbd,
-    samp {
+    samp,
+    pre {
         font-family: var(--cyber-font);
         font-size: 0.95em;
     }
@@ -170,9 +177,16 @@
         box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
     }
 
+    .retire-form {
+        display: grid;
+        grid-template-rows: auto auto;
+        gap: clamp(1rem, 2.4vw, 1.6rem);
+        margin: 0;
+    }
+
     .override-field {
         display: grid;
-        grid-template-columns: minmax(12rem, 0.42fr) minmax(19rem, 0.58fr);
+        grid-template-columns: minmax(12rem, 0.38fr) minmax(20rem, 0.62fr);
         grid-template-rows: auto auto;
         gap: clamp(1rem, 2.5vw, 1.8rem);
         align-items: center;
@@ -203,6 +217,16 @@
         grid-template-rows: auto auto;
         gap: 1rem;
         justify-items: center;
+    }
+
+    .switch-column h2,
+    .act-panel h2,
+    .output-panel h2 {
+        margin: 0;
+        font-size: clamp(1.1rem, 2.2vw, 1.6rem);
+        line-height: 1;
+        letter-spacing: 0.11em;
+        text-transform: uppercase;
     }
 
     .switch-wrapper {
@@ -282,149 +306,94 @@
         transition: color 0.3s ease, text-shadow 0.3s ease;
     }
 
-    #overrideSwitch:checked + .switch-track {
-        border-color: oklch(75% 0.25 150 / 0.5);
+    #armSwitch:checked + .switch-track {
+        border-color: oklch(85% 0.2 90 / 0.5);
         box-shadow:
             inset 0 16px 24px rgba(0, 0, 0, 0.82),
             inset 0 -18px 26px rgba(0, 0, 0, 0.88),
             inset 3px 3px 2px rgba(255, 255, 255, 0.045),
-            0 0 15px oklch(75% 0.25 150 / 0.42),
-            0 0 38px oklch(75% 0.25 150 / 0.18);
+            0 0 15px oklch(85% 0.2 90 / 0.42),
+            0 0 38px oklch(85% 0.2 90 / 0.18);
     }
 
-    #overrideSwitch:checked + .switch-track .switch-handle {
+    #armSwitch:checked + .switch-track .switch-handle {
         transform: translateY(-118%);
         box-shadow:
             0 16px 24px rgba(0, 0, 0, 0.92),
             inset 0 2px 1px rgba(255, 255, 255, 0.13),
-            0 0 24px oklch(75% 0.25 150 / 0.22);
+            0 0 24px oklch(85% 0.2 90 / 0.22);
     }
 
-    #overrideSwitch:checked + .switch-track .handle-label {
-        color: var(--cyber-accent);
-        animation: glitch 0.34s cubic-bezier(.36,.07,.19,.97) both;
+    #armSwitch:checked + .switch-track .handle-label {
+        color: var(--cyber-amber);
         text-shadow:
-            0 0 4px oklch(75% 0.25 150 / 0.84),
-            0 0 12px oklch(75% 0.25 150 / 0.62),
-            0 0 24px oklch(75% 0.25 150 / 0.38);
+            0 0 4px oklch(85% 0.2 90 / 0.84),
+            0 0 12px oklch(85% 0.2 90 / 0.62),
+            0 0 24px oklch(85% 0.2 90 / 0.38);
     }
 
-    #overrideSwitch:focus-visible + .switch-track {
+    #armSwitch:focus-visible + .switch-track {
         outline: 2px solid var(--cyber-amber);
         outline-offset: 6px;
     }
 
-    #overrideSwitch:disabled + .switch-track { opacity: 0.4; cursor: not-allowed; }
+    #armSwitch:disabled + .switch-track { opacity: 0.4; cursor: not-allowed; }
 
-    #overrideSwitch:active + .switch-track .handle-label { animation: glitch 0.3s cubic-bezier(.36,.07,.19,.97) both; }
+    #armSwitch:active + .switch-track .handle-label { animation: glitch 0.3s cubic-bezier(.36,.07,.19,.97) both; }
 
     .switch-wrapper:hover .switch-handle {
         background-color: #252525;
         filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.04));
     }
 
-    .override-telemetry {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 0.45rem 1.1rem;
-        width: min(100%, 21rem);
-        margin: 0;
-        color: var(--cyber-dim);
-        font-size: 0.75rem;
-    }
-
-    .override-telemetry dt {
-        color: var(--cyber-muted);
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
-    }
-
-    .override-telemetry dd {
-        margin: 0;
-        text-align: right;
-    }
-
-    .override-telemetry output { color: var(--cyber-accent); }
-
-    .threat-panel {
+    .act-panel {
         display: grid;
         grid-template-rows: auto auto auto;
         gap: 1rem;
         min-width: 0;
     }
 
-    .threat-panel h2,
-    .estate-section h2,
-    .log-section h2 {
-        margin: 0;
-        font-size: clamp(1.1rem, 2.2vw, 1.6rem);
-        line-height: 1;
-        letter-spacing: 0.11em;
-        text-transform: uppercase;
-    }
-
-    .metric-bank {
+    .act-copy {
         display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 0.8rem;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 0.7rem;
         margin: 0;
-    }
-
-    .metric-bank dt {
         color: var(--cyber-dim);
-        font-size: 0.76rem;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
     }
 
-    .metric-bank dd {
-        display: grid;
-        grid-template-rows: auto auto;
-        gap: 0.35rem;
-        margin: 0;
-        padding: 0.8rem;
-        border: 1px solid #191919;
-        background: linear-gradient(180deg, #101010, #060606);
-        box-shadow: inset 0 0 0 1px #242424, inset 0 -10px 18px rgba(0, 0, 0, 0.75);
-    }
-
-    meter,
-    progress {
-        width: 100%;
-        height: 0.9rem;
-        accent-color: var(--cyber-accent);
-        filter: drop-shadow(0 0 7px var(--cyber-glow));
-    }
-
-    .metric-bank strong {
+    .act-copy strong {
         color: var(--cyber-text);
-        font-size: clamp(1.25rem, 3vw, 2.15rem);
-        line-height: 1;
-        text-shadow: 0 0 10px var(--cyber-glow);
+        font-size: clamp(1.35rem, 3.5vw, 2.45rem);
+        line-height: 1.04;
+        letter-spacing: -0.04em;
+        text-transform: uppercase;
+        text-shadow: 0 0 2px #000, 1px 0 rgba(255, 49, 88, 0.55), -1px 0 rgba(0, 140, 255, 0.45);
     }
 
-    .command-line {
+    .interlock-field {
         display: grid;
-        grid-template-columns: max-content minmax(10rem, 1fr) auto;
-        gap: 0.75rem;
-        align-items: center;
-        padding: 0.9rem;
+        grid-template-columns: minmax(15rem, 1fr) minmax(12rem, 0.46fr);
+        gap: 0.85rem;
+        align-items: end;
+        padding: 1rem;
         border: 1px solid var(--cyber-border);
         background: #070707;
         box-shadow: inset 0 6px 16px rgba(0, 0, 0, 0.74);
     }
 
-    .command-line label {
+    .interlock-field label {
+        display: grid;
+        grid-template-rows: auto auto;
+        gap: 0.4rem;
         color: var(--cyber-active);
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
         text-shadow: 0 0 10px var(--cyber-glow);
     }
 
-    .command-line input,
-    .command-line button,
-    .command-line select {
-        min-height: 2.6rem;
+    .interlock-field small { color: var(--cyber-dim); text-transform: none; letter-spacing: 0; }
+
+    .interlock-field input,
+    .commit-button {
+        min-height: 2.8rem;
         border: 1px solid #2e2e2e;
         background: #0d0d0d;
         color: var(--cyber-text);
@@ -432,195 +401,210 @@
         box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.04), inset 0 -8px 14px rgba(0, 0, 0, 0.72);
     }
 
-    .command-line input {
+    .interlock-field input {
         width: 100%;
         padding: 0 0.8rem;
     }
 
-    .command-line button {
-        padding: 0 1rem;
-        color: #050505;
-        background: linear-gradient(180deg, var(--cyber-amber), #8e6815);
-        font-weight: 700;
-        text-transform: uppercase;
-        cursor: pointer;
-    }
-
-    .command-line :focus-visible,
-    .review-profile select:focus-visible {
+    .interlock-field input:focus-visible,
+    .commit-button:focus-visible,
+    .creed-panel summary:focus-visible {
         outline: 2px solid var(--cyber-amber);
         outline-offset: 3px;
     }
 
-    .command-line output {
-        grid-column: 2 / -1;
-        color: var(--cyber-dim);
-        font-size: 0.82rem;
+    .commit-button {
+        position: relative;
+        padding: 0 1rem;
+        color: #050505;
+        background: linear-gradient(180deg, var(--cyber-active), #248a52);
+        font-weight: 700;
+        cursor: pointer;
+        filter: drop-shadow(0 0 10px var(--cyber-glow));
     }
 
-    .matrix {
+    .commit-button:disabled {
+        color: #454545;
+        background: linear-gradient(180deg, #181818, #090909);
+        cursor: not-allowed;
+        filter: none;
+    }
+
+    .commit-button:active:not(:disabled) { animation: glitch 0.38s cubic-bezier(.36,.07,.19,.97) both; }
+
+    .interlock-state {
+        display: block;
+        padding: 0.8rem 1rem;
+        border: 1px solid #191919;
+        color: var(--cyber-accent);
+        background: #050505;
+        box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
+    }
+
+    .evidence-grid {
         display: grid;
-        grid-template-columns: minmax(0, 1.1fr) minmax(18rem, 0.9fr);
+        grid-template-columns: minmax(0, 0.92fr) minmax(20rem, 1.08fr);
         gap: clamp(1rem, 2.5vw, 1.5rem);
         min-width: 0;
     }
 
-    .estate-section,
-    .log-section,
-    .review-profile,
+    .impact-panel,
+    .output-panel,
     .creed-panel {
         border: 2px solid #151515;
         background: linear-gradient(180deg, rgba(17, 17, 17, 0.96), rgba(5, 5, 5, 0.97));
         box-shadow: var(--cyber-shadow);
     }
 
-    .estate-section,
-    .log-section {
+    .impact-panel,
+    .output-panel {
         display: grid;
-        grid-template-rows: auto minmax(0, 1fr);
+        grid-template-rows: auto auto;
         gap: 0.9rem;
         min-width: 0;
         padding: clamp(0.9rem, 2vw, 1.25rem);
     }
 
-    .estate-table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: clamp(0.72rem, 1.3vw, 0.9rem);
-    }
-
-    .estate-table caption {
-        caption-side: top;
-        padding: 0 0 0.8rem;
-        color: var(--cyber-amber);
-        text-align: left;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-    }
-
-    .estate-table tr {
+    .impact-list {
         display: grid;
-        grid-template-columns: minmax(8.5rem, 1.1fr) minmax(6rem, 0.9fr) minmax(4rem, 0.55fr) minmax(4rem, 0.55fr) minmax(6rem, 0.7fr) minmax(4rem, 0.45fr);
-    }
-
-    .estate-table th,
-    .estate-table td {
-        padding: 0.58rem 0.45rem;
-        border-bottom: 1px solid var(--cyber-line);
-        text-align: left;
-    }
-
-    .estate-table th {
-        color: var(--cyber-dim);
-        font-size: 0.72rem;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-    }
-
-    .estate-table td:nth-child(3),
-    .estate-table td:nth-child(4) { text-align: right; }
-
-    .estate-table [data-state="fail"] {
-        color: var(--cyber-danger);
-        text-shadow: 2px 0 red, -2px 0 blue, 0 0 10px rgba(255, 49, 88, 0.45);
-    }
-
-    .log-section ol {
-        display: grid;
-        grid-template-rows: repeat(3, auto);
-        gap: 0.6rem;
-        max-height: 17rem;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 0.65rem;
         margin: 0;
-        padding: 0;
-        overflow: auto;
-        list-style-position: inside;
+        padding-left: 1.2rem;
     }
 
-    .log-section li {
-        display: grid;
-        grid-template-columns: 4.4rem minmax(0, 1fr) 3.4rem;
-        gap: 0.55rem;
-        padding: 0.7rem;
+    .impact-list li {
+        padding: 0.6rem 0.7rem;
         border: 1px solid #191919;
         background: #080808;
     }
 
-    .log-section time { color: var(--cyber-amber); }
-    .log-section samp { color: var(--cyber-text); }
-    .log-section data { color: var(--cyber-accent); text-align: right; }
-
-    .lower-deck {
+    .dry-run {
         display: grid;
-        grid-template-columns: minmax(0, 0.7fr) minmax(18rem, 0.3fr);
-        gap: clamp(1rem, 2vw, 1.4rem);
+        grid-template-rows: auto auto;
+        gap: 0.7rem;
     }
 
-    .review-profile,
-    .creed-panel {
-        padding: 1rem;
-    }
-
-    .review-profile {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) minmax(12rem, 0.62fr);
-        gap: 0.9rem;
-        align-items: end;
-    }
-
-    .review-profile legend {
-        color: var(--cyber-amber);
-        letter-spacing: 0.14em;
+    .dry-run summary {
+        cursor: pointer;
+        color: var(--cyber-accent);
+        letter-spacing: 0.1em;
         text-transform: uppercase;
     }
 
-    .review-profile select {
-        width: 100%;
-        min-height: 2.5rem;
-        border: 1px solid #333;
-        background: #080808;
-        color: var(--cyber-text);
-        font: inherit;
+    .dry-run summary:focus-visible {
+        outline: 2px solid var(--cyber-amber);
+        outline-offset: 4px;
     }
+
+    .dry-run pre {
+        margin: 0;
+        padding: 1rem;
+        overflow: auto;
+        border: 1px solid #1b1b1b;
+        background: #050505;
+        color: var(--cyber-text);
+        box-shadow: inset 0 9px 20px rgba(0, 0, 0, 0.82);
+    }
+
+    .dry-run samp {
+        color: var(--cyber-text);
+        white-space: pre;
+    }
+
+    .lower-deck {
+        display: grid;
+        grid-template-columns: minmax(0, 0.64fr) minmax(18rem, 0.36fr);
+        gap: clamp(1rem, 2vw, 1.4rem);
+    }
+
+    .pulse-card {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) max-content;
+        gap: 0.85rem;
+        align-items: center;
+        padding: 1rem;
+        border: 2px solid #151515;
+        background:
+            linear-gradient(90deg, rgba(255, 49, 88, 0.14), transparent 40%),
+            #070707;
+        box-shadow: var(--cyber-shadow);
+    }
+
+    .pulse-card p { max-width: 66ch; margin: 0; color: var(--cyber-dim); }
+    .pulse-card output { color: var(--cyber-accent); font-weight: 700; }
 
     .creed-panel {
         display: grid;
         grid-template-rows: auto auto;
         gap: 0.65rem;
+        padding: 1rem;
         color: var(--cyber-dim);
     }
 
     .creed-panel summary {
         cursor: pointer;
         color: var(--cyber-accent);
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
     }
 
-    .creed-panel p {
-        max-width: 55ch;
+    .creed-panel blockquote {
         margin: 0;
+        padding-left: 1rem;
+        border-left: 3px solid var(--cyber-accent);
     }
 
-    .drift-figure {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr);
-        gap: 0.5rem;
-        margin: 0;
-        padding: 0.75rem;
-        border: 1px solid #1b1b1b;
-        background: #070707;
+    .creed-panel p { margin: 0; }
+    .creed-panel cite { color: var(--cyber-amber); font-style: normal; }
+
+    .override-field,
+    .impact-panel,
+    .output-panel,
+    .pulse-card,
+    .creed-panel,
+    .console-head { position: relative; }
+
+    .override-field::before,
+    .override-field::after,
+    .impact-panel::before,
+    .impact-panel::after,
+    .output-panel::before,
+    .output-panel::after,
+    .pulse-card::before,
+    .pulse-card::after,
+    .creed-panel::before,
+    .creed-panel::after,
+    .console-head::before,
+    .console-head::after {
+        content: "";
+        position: absolute;
+        width: 15px;
+        height: 15px;
+        border: 1px solid var(--cyber-border);
+        pointer-events: none;
     }
 
-    .drift-figure svg {
-        width: 100%;
-        min-height: 7rem;
-        color: var(--cyber-accent);
-        filter: drop-shadow(0 0 9px var(--cyber-glow));
+    .override-field::before,
+    .impact-panel::before,
+    .output-panel::before,
+    .pulse-card::before,
+    .creed-panel::before,
+    .console-head::before {
+        top: 5px;
+        left: 5px;
+        border-right: 0;
+        border-bottom: 0;
     }
 
-    .drift-figure figcaption {
-        color: var(--cyber-dim);
-        font-size: 0.8rem;
+    .override-field::after,
+    .impact-panel::after,
+    .output-panel::after,
+    .pulse-card::after,
+    .creed-panel::after,
+    .console-head::after {
+        right: 5px;
+        bottom: 5px;
+        border-left: 0;
+        border-top: 0;
     }
 
     abbr { text-decoration-color: var(--cyber-amber); }
@@ -648,19 +632,12 @@
     @media (max-width: 54rem) {
         .console-head,
         .override-field,
-        .matrix,
+        .interlock-field,
+        .evidence-grid,
         .lower-deck,
-        .review-profile {
+        .pulse-card {
             grid-template-columns: minmax(0, 1fr);
         }
-
-        .command-line {
-            grid-template-columns: minmax(0, 1fr);
-        }
-
-        .command-line output { grid-column: auto; }
-        .estate-table { min-width: 45rem; }
-        .estate-section { overflow-x: auto; }
     }
 </style>
 </head>
@@ -668,209 +645,143 @@
     <main class="cyber-console">
         <header class="console-head">
             <hgroup>
-                <small>Irtechie / ArchPatternsForAgents</small>
-                <h1>Architecture Conformance Console</h1>
-                <p>High-stakes terminal for substrate review. Press <kbd>Tab</kbd> to find the live controls; the metal can lie, the native element cannot.</p>
+                <small>Irtechie / ArchPatternsForAgents / retire detector</small>
+                <h1>Confirm the cut</h1>
+                <p>One detector is on the block. Press <kbd>Tab</kbd> through the real controls; the metal can lie, the native element cannot.</p>
             </hgroup>
 
-            <dl class="stamp-register">
-                <dt>Owner</dt>
-                <dd>Irtechie / ArchPatternsForAgents</dd>
-                <dt>Commit</dt>
-                <dd><code>ce75e79</code></dd>
-                <dt>Run</dt>
-                <dd><data value="12">12</data></dd>
-                <dt>Time</dt>
-                <dd><time datetime="2026-08-21T21:40">2026-08-21T21:40</time></dd>
+            <dl class="act-register" aria-label="Pending act register">
+                <dt>Detector</dt>
+                <dd><code>naming/icon-button-boundary</code></dd>
+                <dt>False hits</dt>
+                <dd><data value="31">31</data></dd>
+                <dt>Repositories hit</dt>
+                <dd><data value="9">9</data></dd>
+                <dt>Recorded</dt>
+                <dd><time datetime="2026-08-21T21:40">Aug 21, 2026 · 21:40</time></dd>
             </dl>
         </header>
 
-        <fieldset class="override-field">
-            <legend>System Override</legend>
+        <form class="retire-form" id="retireForm" autocomplete="off">
+            <fieldset class="override-field">
+                <legend>Irreversible action gate</legend>
 
-            <section class="switch-column" aria-labelledby="override-title">
-                <h2 id="override-title">Arm / disarm substrate enforcement</h2>
-                <label class="switch-wrapper">
-                    <span class="visually-hidden">Engage cyberpunk system override</span>
-                    <input type="checkbox" id="overrideSwitch" class="visually-hidden">
-                    <span class="switch-track" aria-hidden="true">
-                        <span class="switch-handle">
-                            <span class="handle-label" id="handleLabel">SAFE</span>
+                <section class="switch-column" aria-labelledby="arm-title">
+                    <h2 id="arm-title">Arm retirement</h2>
+                    <label class="switch-wrapper">
+                        <span class="visually-hidden">Arm detector retirement interlock for naming icon button boundary</span>
+                        <input type="checkbox" id="armSwitch" class="visually-hidden">
+                        <span class="switch-track" aria-hidden="true">
+                            <span class="switch-handle">
+                                <span class="handle-label" id="handleLabel">SAFE</span>
+                            </span>
                         </span>
-                    </span>
-                </label>
-            </section>
+                    </label>
+                </section>
 
-            <section class="threat-panel" aria-labelledby="threat-title">
-                <h2 id="threat-title">Threat / drift readout</h2>
-                <dl class="override-telemetry">
-                    <dt>Status</dt>
-                    <dd><output id="overrideState" for="overrideSwitch">SAFE</output></dd>
-                    <dt>Link</dt>
-                    <dd><code id="overrideLink">N/A</code></dd>
-                    <dt>Engaged</dt>
-                    <dd><time id="engagedAt" datetime="">never</time></dd>
-                    <dt><abbr title="Architecture conformance">Arch conf</abbr></dt>
-                    <dd><output id="conformanceState" for="overrideSwitch">monitoring</output></dd>
-                </dl>
+                <section class="act-panel" aria-labelledby="act-title">
+                    <h2 id="act-title">You are about to retire <code>naming/icon-button-boundary</code></h2>
+                    <p class="act-copy">
+                        <strong>There is no undo path in this rig.</strong>
+                        <span>Retiring this detector removes the current signal after 31 false positives across 9 repositories. Re-deriving it costs a full estate rescan.</span>
+                    </p>
 
-                <dl class="metric-bank">
-                    <dt>Declared conformance</dt>
-                    <dd><strong>7 / 9</strong><meter min="0" max="9" value="7">7 of 9 repos</meter></dd>
-                    <dt>Detector coverage</dt>
-                    <dd><strong>82%</strong><progress max="100" value="82">82%</progress></dd>
-                    <dt>Undeclared drift</dt>
-                    <dd><strong>14 / 40</strong><meter min="0" max="40" value="14" low="15" high="30" optimum="0">14 findings of 40 budget</meter></dd>
-                    <dt>Generic markup</dt>
-                    <dd><strong>15%</strong><meter min="0" max="100" value="15" low="25" high="45" optimum="0">15% div/span</meter></dd>
-                </dl>
+                    <section class="interlock-field" aria-labelledby="confirm-title">
+                        <label for="confirmText" id="confirm-title">
+                            Type detector id to confirm
+                            <small id="confirmHint">Required text: <code>naming/icon-button-boundary</code></small>
+                        </label>
+                        <input id="confirmText" name="detector" type="text" required pattern="naming/icon-button-boundary" spellcheck="false" autocapitalize="none" aria-describedby="confirmHint interlockState">
+                        <button class="commit-button" id="commitButton" type="submit" disabled>Retire detector</button>
+                    </section>
+                </section>
+            </fieldset>
 
-                <form class="command-line">
-                    <label for="commandInput">root@substrate:~$</label>
-                    <input id="commandInput" name="command" type="text" value="verify substrate">
-                    <button type="button" id="executeCommand">Execute</button>
-                    <output id="commandOutput" for="commandInput overrideSwitch">awaiting armed state</output>
-                </form>
-            </section>
-        </fieldset>
+            <output class="interlock-state" id="interlockState" for="armSwitch confirmText" aria-live="polite">blocked: arm the switch and type the detector id</output>
+        </form>
 
-        <section class="matrix" aria-label="Conformance evidence">
-            <article class="estate-section">
-                <h2>Estate register dump</h2>
-                <table class="estate-table">
-                    <caption>Repository conformance estate</caption>
-                    <thead>
-                        <tr>
-                            <th scope="col">Repository</th>
-                            <th scope="col">Pattern</th>
-                            <th scope="col">div/span</th>
-                            <th scope="col">Elements</th>
-                            <th scope="col">Checked</th>
-                            <th scope="col">State</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <th scope="row"><code>financeops</code></th>
-                            <td>plugin-host</td>
-                            <td>22%</td>
-                            <td>45</td>
-                            <td><time datetime="2026-08-21">2026-08-21</time></td>
-                            <td>pass</td>
-                        </tr>
-                        <tr>
-                            <th scope="row"><code>agent127</code></th>
-                            <td>llm-assisted</td>
-                            <td>24%</td>
-                            <td>31</td>
-                            <td><time datetime="2026-08-21">2026-08-21</time></td>
-                            <td>pass</td>
-                        </tr>
-                        <tr>
-                            <th scope="row"><code>healthops</code></th>
-                            <td>plugin-host</td>
-                            <td>29%</td>
-                            <td>18</td>
-                            <td><time datetime="2026-08-20">2026-08-20</time></td>
-                            <td>thin</td>
-                        </tr>
-                        <tr>
-                            <th scope="row"><code>learnops</code></th>
-                            <td>plugin-host</td>
-                            <td>33%</td>
-                            <td>16</td>
-                            <td><time datetime="2026-08-20">2026-08-20</time></td>
-                            <td>thin</td>
-                        </tr>
-                        <tr>
-                            <th scope="row"><code>fleetcontroller</code></th>
-                            <td>undeclared</td>
-                            <td>46%</td>
-                            <td>12</td>
-                            <td><time datetime="2026-08-21">2026-08-21</time></td>
-                            <td data-state="fail"><strong>fail</strong></td>
-                        </tr>
-                    </tbody>
-                </table>
+        <section class="evidence-grid" aria-label="Retirement evidence">
+            <article class="impact-panel">
+                <h2>What changes</h2>
+                <ul class="impact-list">
+                    <li><strong><code>financeops</code></strong> stops receiving this detector result on the next conformance run.</li>
+                    <li><strong><code>healthops</code></strong> keeps its other naming checks; this one is removed from the active set.</li>
+                    <li><strong><code>learnops</code></strong> loses the boundary check until the estate is rescanned and the detector is derived again.</li>
+                </ul>
             </article>
 
-            <article class="log-section">
-                <h2>Activity feed</h2>
-                <ol>
-                    <li><time datetime="2026-08-21T21:40">21:40</time><samp>Run 12 complete. 14 findings across 9 repositories. exit 0.</samp><data value="100">100%</data></li>
-                    <li><time datetime="2026-08-21T20:05">20:05</time><samp>Blind spot declared: accessible-name quality is unchecked, found by human comparison rather than by the detector.</samp><data value="62">62%</data></li>
-                    <li><time datetime="2026-08-21T17:22">17:22</time><samp>False positive retired: word-boundary match on .icon-button corrected to (?&lt;![\w-]).</samp><data value="100">100%</data></li>
-                </ol>
+            <article class="output-panel">
+                <h2>Dry-run disclosure</h2>
+                <details class="dry-run" open>
+                    <summary>Dry-run output</summary>
+                    <p>Equivalent terminal invocation: <kbd>archpatterns retire naming/icon-button-boundary --dry-run</kbd></p>
+                    <pre><samp>dry-run: detector naming/icon-button-boundary
+false-positive count: 31
+repository reach: 9
+affected repositories: financeops, healthops, learnops
+irreversible: true
+rescan required to derive again: full estate
+exit 0: ready for armed operator confirmation</samp></pre>
+                </details>
             </article>
         </section>
 
-        <section class="lower-deck" aria-label="Drift and review controls">
-            <figure class="drift-figure">
-                <svg viewBox="0 0 240 96" role="img" aria-labelledby="drift-title drift-desc">
-                    <title id="drift-title">Drift per run</title>
-                    <desc id="drift-desc">Twelve runs from 2026-06-14 to 2026-08-21: 38, 33, 30, 26, 24, 21, 34, 19, 17, 16, 15, 14. The spike at run 7 is fleetcontroller landing before its pattern entry did.</desc>
-                    <polyline points="4,10 25,22 46,30 67,39 88,44 109,51 130,20 151,56 172,61 193,63 214,66 236,68" fill="none" stroke="currentColor" stroke-width="3"></polyline>
-                    <line x1="4" y1="78" x2="236" y2="78" stroke="rgba(255,255,255,.2)"></line>
-                    <circle cx="130" cy="20" r="4" fill="#ff3158"></circle>
-                </svg>
-                <figcaption>Drift per run, twelve runs, <time datetime="2026-06-14">2026-06-14</time> → <time datetime="2026-08-21">2026-08-21</time>: <code>38, 33, 30, 26, 24, 21, 34, 19, 17, 16, 15, 14</code>. The spike at run 7 is <code>fleetcontroller</code> landing before its pattern entry did.</figcaption>
-            </figure>
+        <section class="lower-deck" aria-label="Commit status and creed">
+            <article class="pulse-card">
+                <p><strong>Commit channel:</strong> native disabled state holds the button cold until both interlocks are satisfied.</p>
+                <output id="commitPulse" for="commitButton armSwitch confirmText">no commit sent</output>
+            </article>
 
-            <aside>
-                <fieldset class="review-profile">
-                    <legend>Review profile</legend>
-                    <label for="profileSelect">Operator stance</label>
-                    <select id="profileSelect" name="profile">
-                        <option>Substrate hard gate</option>
-                        <option>Layout density audit</option>
-                        <option>Motion safety sweep</option>
-                    </select>
-                </fieldset>
-
-                <details class="creed-panel" open>
-                    <summary>Console creed</summary>
-                    <p><strong>The element is the substrate. The theme is the finish.</strong></p>
-                </details>
-            </aside>
+            <details class="creed-panel" open>
+                <summary>Console creed</summary>
+                <blockquote>
+                    <p>The element is the substrate. The theme is the finish.</p>
+                    <cite>ArchPatterns operator creed</cite>
+                </blockquote>
+            </details>
         </section>
     </main>
 
     <script>
-        const sw = document.getElementById('overrideSwitch');
+        const DETECTOR_ID = 'naming/icon-button-boundary';
+        const armSwitch = document.getElementById('armSwitch');
         const handleLabel = document.getElementById('handleLabel');
-        const overrideState = document.getElementById('overrideState');
-        const overrideLink = document.getElementById('overrideLink');
-        const engagedAt = document.getElementById('engagedAt');
-        const conformanceState = document.getElementById('conformanceState');
-        const commandButton = document.getElementById('executeCommand');
-        const commandInput = document.getElementById('commandInput');
-        const commandOutput = document.getElementById('commandOutput');
+        const confirmText = document.getElementById('confirmText');
+        const commitButton = document.getElementById('commitButton');
+        const interlockState = document.getElementById('interlockState');
+        const commitPulse = document.getElementById('commitPulse');
+        const retireForm = document.getElementById('retireForm');
 
-        sw.addEventListener('change', () => {
-            if (!sw.checked) {
-                handleLabel.textContent = overrideState.value = 'SAFE';
-                overrideLink.textContent = 'N/A';
-                engagedAt.removeAttribute('datetime');
-                engagedAt.textContent = 'never';
-                conformanceState.value = 'monitoring';
-                commandOutput.value = 'awaiting armed state';
-                return;
+        function refreshInterlock() {
+            const armed = armSwitch.checked;
+            const typed = confirmText.value === DETECTOR_ID;
+            commitButton.disabled = !(armed && typed);
+            handleLabel.textContent = armed ? 'ARMED' : 'SAFE';
+
+            if (!armed && !typed) {
+                interlockState.value = 'blocked: arm the switch and type the detector id';
+            } else if (!armed) {
+                interlockState.value = 'blocked: detector id accepted; arm switch still safe';
+            } else if (!typed) {
+                interlockState.value = 'blocked: switch armed; detector id mismatch';
+            } else {
+                interlockState.value = 'ready: retirement command can be executed';
             }
+        }
 
-            handleLabel.textContent = overrideState.value = 'ARMED';
-            overrideLink.textContent = 'OVR_LINK_v7.x';
+        armSwitch.addEventListener('change', refreshInterlock);
+        confirmText.addEventListener('input', refreshInterlock);
+        retireForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+            refreshInterlock();
+            if (commitButton.disabled) return;
+
             const now = new Date();
-            engagedAt.dateTime = now.toISOString();
-            engagedAt.textContent = now.toLocaleTimeString();
-            conformanceState.value = 'hard gate live';
-            commandOutput.value = 'override armed; command channel hot';
+            commitPulse.value = `commit accepted ${now.toLocaleTimeString()}: ${DETECTOR_ID} retirement queued`;
+            interlockState.value = 'executed: irreversible retirement command accepted';
         });
 
-        commandButton.addEventListener('click', () => {
-            commandOutput.value = sw.checked
-                ? `executed: ${commandInput.value}`
-                : 'blocked: arm system override first';
-        });
+        refreshInterlock();
     </script>
 </body>
 </html>
