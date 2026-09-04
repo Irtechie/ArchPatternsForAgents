@@ -757,6 +757,89 @@ This also supplies the catalog's first real entry, drawn from working code inste
 
 Repository boundaries should follow bounded contexts, as they do here. What does not follow automatically is that shared roles get replicated per repository. `packages/<owner>-universal-ui` exists five times, filling one role five ways. Shared published package versus replicated-and-validated is a genuine trade-off with a defensible answer either way — but it should be an explicit decision with a check behind it, and it is currently neither.
 
+### Resolved: replicated-and-validated, with a mandatory diff (2026-08-25)
+
+Closed, and closed against my own earlier recommendation. The forcing function is a
+stated intent to author **roughly forty owner sites**. Nine was a number you could
+inspect by eye; forty is not, so the answer had to stop being defensible-either-way.
+
+**The contract is not a required code dependency.** It is a declared source that every
+member is diffed against. Publishing it stays permitted and useful; requiring it is
+rejected.
+
+Three findings already recorded above decide this, and none of them is a preference:
+
+| Finding | Bearing on forty |
+|---|---|
+| Type enforcement blocked **three of eight** owners, none for a defect in its release, and caught zero real ones — see "Consequence: the permanent architecture is a package boundary" | The same rule at forty members projects to roughly fifteen false rejections. **This is arithmetic on a measured rate, not a measurement**; the rate itself may not be stable across a larger population. |
+| **Zero of nine** owner packages declare the contract in any dependency field — see "The drift cause, finally located" | Replication is not a proposal. It is the observed state, and the decision is only whether it is checked. |
+| Contributors **share no code**, so they cannot drift from each other — only from the contract | Drift is one version comparison per member. **O(n), not O(n²)** — the single property that makes forty tractable at all. |
+
+The reason the current arrangement fails is not that copies exist. It is stated by the
+host's own code, quoted in "The drift cause": *"Two copies of one vocabulary can only
+ever detect the two copies disagreeing — and here they did not even do that, because
+nothing compared them."* Replication is therefore permitted **only** under the rule
+already stated for vendored mirrors: name the source, and diff against it.
+
+**The check this decision owes** — required by the sentence above it, which says a
+decision without a check behind it does not count. `scope: family`, per "Consequence
+for V1":
+
+| # | Assertion | Evidence class |
+|---|---|---|
+| 1 | Every member's declared contract id and version resolve to a known contract revision | `exact` |
+| 2 | Each role in the shared contract is filled **exactly once** per member | `structural` |
+| 3 | Every replicated vocabulary diffs clean against its named source revision | `structural` |
+| 4 | The artifact **runs**: exactly one `data-owner-site`, and a recording `Proxy` traps access to any prop the shell does not deliver | `observed` |
+
+Assertion 4 is the enforcement mechanism settled in the host, and it is the one that
+carries the decision: it holds whatever produced the bytes, so a Rust or Go owner
+remains first-class and the loose column stays loose. Assertions 2 and 3 are what
+replication buys back. "This looks inconsistent" is `llm-inferred` and must be reported
+as such, never as a finding.
+
+**Falsification condition, stated before the check is built — and immediately corrected.**
+The first draft of this condition said: run the check against FinanceOps `974ee76`,
+HealthOps `4edf33b` and LifeOps `1806739` and require it to reproduce the twelve
+divergences tabulated in "Observed: a real pattern, silently drifted". That is the
+answer key **this document already rejected once**, under "Slice 2 corrected, second
+time": those twelve fields live in `integration.json`, the field set is inert, and
+reporting an inert divergence as a finding is the confident-but-meaningless drift
+report the check-independence rule exists to prevent. Writing it down twice, two
+weeks apart, is evidence that a rejected answer key stays attractive because it is
+the one with a ready-made table.
+
+The condition splits in two, and the split is the conformance-versus-fitness
+separation applied to a test of the checker itself:
+
+| | Question | Answer key | Verdict if failed |
+|---|---|---|---|
+| **Capability** | Can the check recover a divergence table that was found by hand? | The twelve `integration.json` divergences, including `proof` as an object in two members and a plain string in the third under an identical declared schema version | The check cannot see divergence at all, and replicated-and-validated is not validated. Revert to publish-and-depend. |
+| **Defect** | Does the check report the divergences that *matter*? | Enforcement-versus-declaration: `OWNER_ARTIFACT.json` and the provider table are load-bearing; `integration.json`, `cssRootClass`, `provider.kind`, `sdkVersion` and the release envelope are inert. Published by the host, therefore independent of this checker. | The check reports noise at volume, which at forty members is worse than silence. |
+
+Passing the capability test alone is **not** sufficient and must never be reported as
+success. Divergence recovered from an inert field set is `structural` evidence about
+the artifact and carries no claim about behaviour — the same discipline the thirty-six
+`_timestamp` implementations forced, where textual difference was demonstrated and
+behavioural divergence was not.
+
+**Declared blind spots.** The family check sees only members on the explicitly declared
+list, so a site nobody adds is invisible and its silence is not evidence — the same
+pathspec failure recorded twice in "The drift cause". It compares each member to the
+contract, never members to each other, so a defect all forty share is by construction
+undetectable. And it says nothing about whether a role is filled *well*.
+
+**What would reopen this.** If the owner population becomes overwhelmingly TypeScript,
+publishing makes the diff automatic rather than diligent and assertion 3 gets cheaper.
+That is an ergonomic upgrade to the same decision, not a reversal, and it must not
+become a requirement.
+
+Still open, and not decided here: **`config` has no role in any inventory in this
+document** — not in the LLM-Assisted Application draft, not in Plugin Host with Owner
+Contributions. It is the one layer of a routine site with no cardinality and no
+forbidden edge, and forty sites is forty chances for configuration to be read at the
+wrong layer.
+
 ## Deviation policy
 
 Code may extend beyond the selected pattern, and a project may decline the library's recommendation entirely. Neither is forbidden. Both must be **recorded rather than silent**, and the burden of justification scales with the strength of the evidence being overridden.
@@ -961,6 +1044,10 @@ Against the pre-repo plan:
 - **LLM-Assisted Application validated against real code before authoring** (2026-08-11). Largely already implemented in FinanceOps. One role corrected: `model_adapter` is not in-repo, because no Ops repository calls a model at all — a `route_receipt` crosses the boundary instead, which satisfies the forbidden edge by construction rather than by discipline.
 - **A hypothesis was executed and failed** (2026-08-11). Thirty-six `_timestamp` implementations were predicted to diverge on `Z`-suffix handling; running them showed identical behaviour on Python 3.11. Recorded because it sets the evidentiary bar: duplication is a maintenance fact, behavioural divergence must be demonstrated. The check must not infer the second from the first.
 - **Cardinality detector produced a real finding** (2026-08-11): six incompatible secret-redaction regexes, with `passwd` and `secret` covered by none and `token` by three of six. Exploitability deliberately not claimed — the blind spot is recorded instead.
+- **Topology trade-off closed: replicated-and-validated** (2026-08-25). The open "shared published package versus replicated-and-validated" question was decided by a stated intent to author ~40 owner sites, and decided against publish-and-depend on measured grounds: type enforcement blocked three of eight owners for zero real defects, and zero of nine owners depend on the contract today, so replication is the observed state and the only question was whether it is checked. The contract is a named source that must be diffed, never a required dependency; enforcement is behavioural, by running the artifact. Recorded with the four assertions the check owes, a falsification condition against three pinned Ops revisions, and declared blind spots — including that a defect shared by all forty members is undetectable by construction.
+- **`scope: family` promoted from nice-to-have to load-bearing** (2026-08-25). At nine members divergence is findable by eye; at forty it is not. This reorders V1 work: the family checker is what makes the estate's own topology decision enforceable.
+- **Second coverage gap recorded: `config` has no role** (2026-08-25). Memory, data, display and the model seam all map onto existing role inventories; configuration maps onto none, in either seed entry. Logged as open rather than quietly folded into an adjacent role, per the coverage-failure rule.
+- **A rejected answer key was re-proposed and caught by this document** (2026-08-25). The falsification condition for the family check was first written against the twelve `integration.json` divergences — the exact key rejected two weeks earlier under "Slice 2 corrected, second time" for being an inert field set. Recorded rather than silently fixed, because the cause generalises: **a rejected answer key stays attractive precisely because it is the one with a ready-made table**, and the pull is toward whichever evidence is already tabulated. The condition now splits into a *capability* test (can the check recover a hand-found divergence table at all) and a *defect* test (does it report the divergences that matter, keyed to enforcement-versus-declaration), with passing the first alone explicitly not reportable as success.
 
 ## Decisions needed before `kb-plan`
 
@@ -975,7 +1062,15 @@ Against the pre-repo plan:
 - *Companion resolution* — **configured path, with the catalog revision pinned in each consumer's decision record**, and graceful degradation when absent. This copies the existing `cmd/kbcheck` convention verbatim: the tool belongs to its source repository, does not ship with an installed skill, and its absence "never lowers the bar — it changes which command you run." A submodule was rejected because it forces the dependency on every consumer and cannot be absent; an unpinned clone was rejected because it gives up per-project version pinning.
 - *Selection is a phase, not a skill* — default confirmed. Extraction folds into `kb-brainstorm`, which already performs requirements discovery; the gate folds into `kb-plan`. No 46th skill, consistent with the ownership split and with slices 1–2 requiring no harness change.
 - *Deviation threshold* — counted **per pattern and per module**, because per-module alone misses a pattern being abandoned everywhere, and per-pattern alone misses one module being a disaster while the rest are clean. Re-selection is forced when a single module holds **≥3** accepted deviations against one pattern, **or** one pattern accumulates deviations across **≥50%** of the modules it governs. Reason code `no-pattern-covers-this` counts double, being evidence of a catalog gap rather than a local exception. These numbers are unvalidated defaults, tunable after slice 2, and must not be reported as findings.
+- *Shared roles across the family* — agreed 2026-08-25, forced by a stated intent to author ~40 owner sites. **Replicated-and-validated**, not published-and-depended: the contract is a declared source every member is diffed against, never a required code dependency. Enforcement is behavioural — run the artifact — because type enforcement was measured net-negative in the host. The check it owes, its falsification condition against the three pinned Ops revisions, and its blind spots are specified under "Resolved: replicated-and-validated, with a mandatory diff". This also promotes the `scope: family` check from nice-to-have to load-bearing: at nine members divergence can be found by eye, at forty it cannot.
 
 **Open**
 
-None blocking `kb-plan`. Reopen only if slice 2 invalidates a default above.
+- *`config` has no role* — noted 2026-08-25 under "Resolved: replicated-and-validated".
+  Every other layer of a routine site maps onto an existing role inventory; configuration
+  maps onto none. Not blocking `kb-plan`, but it is a catalog gap of the same kind as the
+  LLM coverage gap, and it should be closed by the same route: a role, a cardinality, and
+  a forbidden edge, drafted from first principles and then validated against real code
+  before it is trusted.
+
+Otherwise none blocking `kb-plan`. Reopen only if slice 2 invalidates a default above.
