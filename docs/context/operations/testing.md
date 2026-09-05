@@ -11,4 +11,3 @@
 ## Catalog proof
 
 The architecture catalog will use structural checks and review receipts. Those checks prove field coverage, links, examples, and internal consistency. They must state that they do not prove any application has adopted or executed a pattern.
-

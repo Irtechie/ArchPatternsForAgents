@@ -28,4 +28,3 @@ Card reviews establish documentation coverage. Owner-local deterministic tests e
 | ARCH-010 | [Attention loop](attention-loop.md) |
 | ARCH-011 | [Operational evidence](operational-evidence.md) |
 | ARCH-012 | [Evaluation boundary](evaluation-boundary.md) |
-

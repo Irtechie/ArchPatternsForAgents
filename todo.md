@@ -10,9 +10,7 @@ Deliver a machine-checkable, language-independent architecture-pattern catalog w
 
 ## Active Work
 
-| Work | Status | Scope | Verification |
-|---|---|---|---|
-| Architecture-pattern catalog | 🔧 in_progress | `docs/architecture-patterns`, planning and proof records | Per-card receipt, link/structure checks, and catalog consistency review |
+None.
 
 ## Blocked
 
@@ -21,4 +19,3 @@ None.
 ## Human Required
 
 None.
-

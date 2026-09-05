@@ -28,4 +28,3 @@ Documentation/skill companion repository with a static HTML theme registry and N
 
 - The planned architecture catalog needs a local, deterministic structure check before it can claim consistent card coverage.
 - Application adoption, runtime behavior, and model quality are intentionally outside this repository's proof boundary.
-

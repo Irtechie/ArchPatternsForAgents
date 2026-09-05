@@ -17,4 +17,3 @@ Every card supplies the following fields. The instruction under each field is pa
 | Adoption | What an application must pin and what evidence it must collect. |
 
 No field may infer application conformance from catalog presence, directory naming, or prose review.
-

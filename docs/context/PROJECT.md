@@ -1,6 +1,6 @@
 # Project Map
 
-Bootstrap: 2026-09-04  
+Bootstrap: 2026-09-04
 Confidence: verified for the checked-in theme registry and Node checks; the incoming architecture catalog is active work.
 
 ## What This Is
@@ -32,4 +32,3 @@ ArchPatternsForAgents is a private companion repository for machine-checkable ar
 
 - Per-page UI checks cannot detect a registry-wide visual monoculture; run the full `npm test` suite for theme changes.
 - A passing documentation review establishes catalog consistency only, never application conformance or runtime readiness.
-

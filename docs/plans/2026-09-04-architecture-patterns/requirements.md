@@ -49,4 +49,3 @@ No unresolved intent question prevents the documentation-authoring scope.
 ## Acceptance and self-check
 All R1-R10 map to the execution index. Every pattern plan contains a behavioral outcome, negative scenario, expected failure result, and non-goal. The dependency graph is acyclic. Pattern and application status cannot be inferred from prose alone. No code generation or application changes are required to finish the catalog.
 Requirements-wide external review: not required; scope is reversible documentation authoring with explicit contracts, negative cases, and no unresolved security or product authority decision. This is a self-check, not independent review.
-

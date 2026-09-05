@@ -7,7 +7,7 @@ workspace_isolation_contract: true
 proof_governor_contract: true
 blocker_lifecycle_contract: true
 workflow_shape: multi-slice-documentation
-status: ready
+status: reviewed
 objective: "Deliver a language-independent architecture-pattern catalog and adoption documentation without claiming application conformance."
 requirements_source: "docs/plans/2026-09-04-architecture-patterns/requirements.md"
 requirements_sha256: "285B137D5CE6566044E9A08F42B27DE2483FB861B45DC4C8CCBB3BEBF648DEB2"
@@ -57,8 +57,15 @@ This manifest owns only catalog documentation, examples, review receipts, projec
 |---|---|---|---|
 | requirements-to-plan | passed | Rebased requirements preserve R1-R10, scope, counterexamples, and proof boundary. | validate plan structure |
 | plan-to-work | passed | 2026-09-04 local structural validation found 14 slice plans, complete required metadata, all slice IDs referenced, and a local requirements source. | `kb-work docs/plans/2026-09-04-000-kb-architecture-pattern-catalog-manifest.md` |
-| work-to-complete | pending | All slice proof receipts and catalog checks required. | none |
-| complete-to-ship | pending | Final exact-tree proof and semantic review required. | none |
+| work-to-complete | passed | ARCH-000 through ARCH-012, adoption/composition files, and 14 receipts exist; structural catalog check, JSON parse, `git diff --check`, and `npm test` passed. | `kb-finalize docs/plans/2026-09-04-000-kb-architecture-pattern-catalog-manifest.md` |
+| complete-to-ship | passed | Docs-only conservative review skip: no executable contract changed. Final tree must pass `npm test`, catalog structural checks, JSON parse, and Git whitespace validation. | `kb-ship docs/plans/2026-09-04-000-kb-architecture-pattern-catalog-manifest.md` |
+
+## Finalization record
+
+- Review: conservative docs-only skip; no P0/P1 findings.
+- Functional proof: not applicable; no UI, API, CLI, persistence, auth, streaming, or integration behavior changed.
+- Memory: `kb-map-bootstrap` created the initial route map because the repository lacked standard project memory.
+- Cleanup: no run-owned generated artifacts to remove; `node_modules` remains ignored local dependency state.
 
 ## Protected claims
 

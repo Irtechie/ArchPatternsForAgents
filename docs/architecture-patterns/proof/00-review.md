@@ -18,4 +18,3 @@
 ## Limits
 
 This receipt reviews catalog material only. No application repository, live caller, deployment, or model-quality evaluation was inspected.
-

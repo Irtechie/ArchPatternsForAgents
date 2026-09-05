@@ -1,7 +1,7 @@
 # ARCH-000 — Domain ownership and explicit seams
 
-Version: `0.1.0-draft`  
-Status: proposed  
+Version: `0.1.0-draft`
+Status: proposed
 Parent: none
 
 ## Invariants
@@ -25,4 +25,3 @@ Repositories, processes, and languages are deployment choices. Multiple roles ma
 ## Evidence rule
 
 The relevant evidence is produced at the boundary a consumer crosses. A mocked transport, a source import, or a diagram can describe a seam but cannot prove the caller crossed it successfully.
-
