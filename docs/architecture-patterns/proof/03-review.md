@@ -20,4 +20,3 @@ The card maps each invariant to invalid-input, uncertain-outcome, repeated-ident
 ## Consistency review
 
 The card retains ARCH-000 ownership, does not prescribe a framework, and treats application adoption as an owner-local evidence claim. No application execution, live caller probe, or probabilistic quality evaluation was run.
-

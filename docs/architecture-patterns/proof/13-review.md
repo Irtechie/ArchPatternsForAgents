@@ -17,4 +17,3 @@ The JSON example parses as JSON and uses a plainly synthetic application. The co
 ## Limits
 
 This is a documentation review. No application source was inspected for adoption, no runtime or deployment was exercised, and no model-quality evaluation was executed.
-

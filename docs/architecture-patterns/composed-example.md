@@ -15,4 +15,3 @@ A browser UI sends a research request to an application domain. The domain owns 
 No one repository is required per pattern. One role may share a process with another when authority remains explicit. A read-only three-pattern application may use only ARCH-001, ARCH-004, and ARCH-005; it does not inherit tools, jobs, memory, or attention.
 
 Bad changes are detectable: a foreign database write violates ARCH-001; a duplicated eligibility decision violates ARCH-001/002; provider SDK imports in handlers violate ARCH-003; an undocumented invariant waiver changes the adoption status to `diverged`.
-

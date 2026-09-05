@@ -28,4 +28,3 @@ An application keeps this record locally, normally at `docs/architecture/pattern
 Allowed statuses are `proposed`, `adopted-unverified`, `verified-at-revision`, `diverged`, and `retired`. A hash proves the referenced content's identity, not the application's behavior. A changed invariant makes the local record `diverged` until an explicit migration records the new contract.
 
 Use `historically-derived-from` only with an origin record. Otherwise use `uses` or `adapted-from`.
-

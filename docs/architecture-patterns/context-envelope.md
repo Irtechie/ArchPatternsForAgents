@@ -1,7 +1,7 @@
 # ARCH-004 — Context envelope
 
-Version: 0.1.0-draft  
-Status: proposed  
+Version: 0.1.0-draft
+Status: proposed
 Parent: [ARCH-000](ownership-and-seams.md)
 
 ## Problem, use, and avoid
@@ -74,4 +74,3 @@ An application pins ARCH-004@0.1.0-draft with a content hash, maps roles to actu
 ## Change history
 
 - 0.1.0-draft — initial catalog proposal.
-

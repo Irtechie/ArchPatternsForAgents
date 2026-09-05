@@ -17,4 +17,3 @@ Conservative docs-only skip. The change adds no executable contract and its requ
 ## Limits
 
 Passing this receipt means the catalog is internally complete and the existing repository checks remain green. It does not prove adoption, historical derivation, application behavior, live caller readiness, or model quality.
-

@@ -9,4 +9,3 @@
 7. Record evidence with revision, environment, timestamp, observed result, and coverage limit. Recheck after any changed declared role, invariant, contract, provider, or runtime environment.
 
 This template plans adoption; adding an adoption JSON file alone is not adoption or conformance.
-
