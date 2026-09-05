@@ -2,7 +2,7 @@
 
 This is a specification catalog, not a framework, shared runtime, or claim that an application conforms. Each card describes one optional pattern: its invariant, ownership boundary, failure behavior, counterexample, and proof scenarios. Application owners decide whether to adopt a card and must record their own source and runtime evidence.
 
-Start with [ARCH-000: ownership and seams](ownership-and-seams.md), then use the [card template](pattern-template.md). The catalog currently contains ARCH-001 through ARCH-012 plus an [adoption record](adoption-record.md) and [composed example](composed-example.md).
+Start with [ARCH-000: ownership and seams](ownership-and-seams.md), then use the [card template](pattern-template.md). The catalog currently contains ARCH-001 through ARCH-013 plus an [adoption record](adoption-record.md) and [composed example](composed-example.md).
 
 ## Versioning and identity
 
@@ -28,3 +28,4 @@ Card reviews establish documentation coverage. Owner-local deterministic tests e
 | ARCH-010 | [Attention loop](attention-loop.md) |
 | ARCH-011 | [Operational evidence](operational-evidence.md) |
 | ARCH-012 | [Evaluation boundary](evaluation-boundary.md) |
+| ARCH-013 | [Deterministic boundary](deterministic-boundary.md) |

@@ -7,6 +7,7 @@ A browser UI sends a research request to an application domain. The domain owns 
 | Task and business decision | Application domain repository | ARCH-001, ARCH-002 |
 | Retrieval corpus and index | Evidence repository / derived index | ARCH-005 |
 | Context and model translation | Application integration module | ARCH-003, ARCH-004 |
+| Structured source extraction | Consumer integration adapter | ARCH-013 |
 | Effect validation and receipt | Effect-owning provider | ARCH-007, ARCH-011 |
 | Long-running execution | Job-owning provider | ARCH-008, ARCH-009 |
 | Attention | Application observer | ARCH-010 |
@@ -14,4 +15,4 @@ A browser UI sends a research request to an application domain. The domain owns 
 
 No one repository is required per pattern. One role may share a process with another when authority remains explicit. A read-only three-pattern application may use only ARCH-001, ARCH-004, and ARCH-005; it does not inherit tools, jobs, memory, or attention.
 
-Bad changes are detectable: a foreign database write violates ARCH-001; a duplicated eligibility decision violates ARCH-001/002; provider SDK imports in handlers violate ARCH-003; an undocumented invariant waiver changes the adoption status to `diverged`.
+Bad changes are detectable: a foreign database write violates ARCH-001; a duplicated eligibility decision violates ARCH-001/002; provider SDK imports in handlers violate ARCH-003; a model invocation for a declared deterministic extraction violates ARCH-013; an undocumented invariant waiver changes the adoption status to `diverged`.

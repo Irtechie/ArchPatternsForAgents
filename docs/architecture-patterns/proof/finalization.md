@@ -2,7 +2,7 @@
 
 ## Scope
 
-The delivered scope is catalog and repository-memory documentation only. It adds ARCH-000 through ARCH-012, local planning records, adoption/composition guidance, and review receipts. It does not change the Node theme checks, UI pages, runtime behavior, external contracts, or application repositories.
+The delivered scope is catalog and repository-memory documentation only. It adds ARCH-000 through ARCH-013, local planning records, adoption/composition guidance, and review receipts. It does not change the Node theme checks, UI pages, runtime behavior, external contracts, or application repositories.
 
 ## Review decision
 
