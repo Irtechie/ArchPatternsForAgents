@@ -18,4 +18,3 @@ ARCH-013 does not redefine repository contracts, model adapters, workflow state,
 ## Limits
 
 This review establishes card consistency only. No target API, DOM selector, browser flow, application repository, or model evaluation was exercised.
-

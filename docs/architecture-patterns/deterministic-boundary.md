@@ -80,4 +80,3 @@ An adopting application records operation IDs, allowed modes, adapter locations,
 ## Change history
 
 - 0.1.0-draft — initial proposal.
-
