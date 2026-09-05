@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "roots": ["themes", "scripts", ".github/skills", "docs"],
+  "docs_dir": "docs/context/architecture",
+  "components": [
+    { "id": "theme-registry", "path": "themes", "owner": "theme registry" },
+    { "id": "verification-scripts", "path": "scripts", "owner": "Node verification" },
+    { "id": "ui-craft-skill", "path": ".github/skills/ui-craft", "owner": "UI craft guidance" },
+    { "id": "documentation", "path": "docs", "owner": "repository documentation" }
+  ],
+  "exempt": ["node_modules", ".git"]
+}
