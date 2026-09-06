@@ -1,0 +1,20 @@
+{
+  "fixture": true,
+  "expected": "valid",
+  "declaration": {
+    "id": "operator-topology",
+    "surface_kind": "operate",
+    "primary_user_verb": "diagnose",
+    "primary_structure": "topology",
+    "primary_structure_basis": "spatial-relationships",
+    "primary_structure_rationale": "Connected equipment occupies and affects physical space.",
+    "rendering": {
+      "lane": "gpu-scene",
+      "rationale": "The operator inspects connected equipment in physical space.",
+      "fallback": "Semantic DOM inspector with a 2D topology diagram."
+    },
+    "supporting_elements": ["inspector", "event-stream"],
+    "semantic_requirements": ["keyboard-operable-controls", "text-equivalent-for-visual-state"],
+    "proof_obligations": ["rendered-state-check", "keyboard-path-check"]
+  }
+}

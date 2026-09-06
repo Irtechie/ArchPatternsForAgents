@@ -1,0 +1,22 @@
+{
+  "id": "deployment-topology",
+  "surface_kind": "operate",
+  "primary_user_verb": "diagnose",
+  "primary_structure": "topology",
+  "primary_structure_basis": "spatial-relationships",
+  "primary_structure_rationale": "The operator locates unhealthy components and their connections before taking action.",
+  "catalog_reference": {
+    "catalog_id": "ui-surface-catalog",
+    "catalog_version": "1.0.0",
+    "catalog_locator": "https://github.com/Irtechie/ArchPatternsForAgents/tree/main/docs/ui-surfaces",
+    "schema_sha256": "60FAC5EF1411E0823099867BC9A458B288E115179888DB18836909ACBF29F4DA"
+  },
+  "rendering": {
+    "lane": "expressive-2d",
+    "rationale": "A 2D topology makes relationships visible without requiring immersive geometry.",
+    "fallback": "Semantic relationship list with an inspector."
+  },
+  "supporting_elements": ["inspector-workbench", "event-stream"],
+  "semantic_requirements": ["keyboard-operable-controls", "text-equivalent-for-visual-state"],
+  "proof_obligations": ["rendered-state-check", "keyboard-path-check"]
+}

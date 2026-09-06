@@ -1,0 +1,20 @@
+{
+  "fixture": true,
+  "expected": "valid",
+  "declaration": {
+    "id": "dependency-map",
+    "surface_kind": "explore",
+    "primary_user_verb": "trace",
+    "primary_structure": "dependency-map",
+    "primary_structure_basis": "spatial-relationships",
+    "primary_structure_rationale": "Dependency direction and relationships are the primary evidence.",
+    "rendering": {
+      "lane": "expressive-2d",
+      "rationale": "The user follows relationships and dependency direction across a bounded graph.",
+      "fallback": "Filterable semantic relationship list with detail inspector."
+    },
+    "supporting_elements": ["inspector", "filter-bar", "evidence-list"],
+    "semantic_requirements": ["keyboard-operable-controls", "text-equivalent-for-visual-state"],
+    "proof_obligations": ["rendered-state-check", "keyboard-path-check"]
+  }
+}

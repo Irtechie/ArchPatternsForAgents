@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://archpatterns.example/ui-surface-declaration.schema.json",
+  "title": "UI surface declaration",
+  "type": "object",
+  "required": [
+    "id",
+    "surface_kind",
+    "primary_user_verb",
+    "primary_structure",
+    "primary_structure_basis",
+    "primary_structure_rationale",
+    "rendering",
+    "supporting_elements",
+    "semantic_requirements",
+    "proof_obligations"
+  ],
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+    "surface_kind": { "enum": ["explore", "operate", "decide", "create", "monitor"] },
+    "primary_user_verb": { "type": "string", "pattern": "\\S" },
+    "primary_structure": { "enum": ["canvas", "card-grid", "comparison-sheet", "dependency-map", "document-workspace", "event-stream", "inspector-workbench", "single-signal", "staged-review", "table", "timeline", "topology"] },
+    "primary_structure_basis": {
+      "enum": ["spatial-relationships", "time-sequence", "heterogeneous-items", "shared-columns", "document-composition", "direct-manipulation", "event-sequence", "single-signal", "comparison" ]
+    },
+    "primary_structure_rationale": { "type": "string", "pattern": "\\S" },
+    "catalog_reference": {
+      "type": "object",
+      "required": ["catalog_id", "catalog_version", "catalog_locator", "schema_sha256"],
+      "properties": {
+        "catalog_id": { "type": "string", "pattern": "\\S" },
+        "catalog_version": { "type": "string", "pattern": "\\S" },
+        "catalog_locator": { "type": "string", "pattern": "\\S" },
+        "schema_sha256": { "type": "string", "pattern": "^[A-Fa-f0-9]{64}$" }
+      }
+    },
+    "rendering": {
+      "type": "object",
+      "required": ["lane", "rationale", "fallback"],
+      "properties": {
+        "lane": { "enum": ["semantic-dom", "expressive-2d", "gpu-scene", "native-composition"] },
+        "rationale": { "type": "string", "pattern": "\\S" },
+        "fallback": { "type": "string", "pattern": "\\S" }
+      }
+    },
+    "supporting_elements": { "type": "array", "minItems": 1, "items": { "type": "string", "pattern": "\\S" } },
+    "semantic_requirements": { "type": "array", "minItems": 1, "items": { "type": "string", "pattern": "\\S" } },
+    "proof_obligations": { "type": "array", "minItems": 1, "items": { "type": "string", "pattern": "\\S" } }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "primary_structure": { "const": "card-grid" } }, "required": ["primary_structure"] },
+      "then": { "properties": { "primary_structure_basis": { "const": "heterogeneous-items" } } }
+    },
+    {
+      "if": { "properties": { "primary_structure": { "const": "table" } }, "required": ["primary_structure"] },
+      "then": { "properties": { "primary_structure_basis": { "const": "shared-columns" } } }
+    }
+  ]
+}

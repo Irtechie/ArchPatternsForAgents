@@ -1,0 +1,19 @@
+{
+  "fixture": true,
+  "expected": "invalid",
+  "declaration": {
+    "id": "missing-verb",
+    "surface_kind": "monitor",
+    "primary_structure": "event-stream",
+    "primary_structure_basis": "event-sequence",
+    "primary_structure_rationale": "The user follows an ordered sequence of events.",
+    "rendering": {
+      "lane": "expressive-2d",
+      "rationale": "The workflow follows time-ordered events.",
+      "fallback": "Semantic event list."
+    },
+    "supporting_elements": ["time-range"],
+    "semantic_requirements": ["keyboard-operable-controls"],
+    "proof_obligations": ["rendered-state-check"]
+  }
+}

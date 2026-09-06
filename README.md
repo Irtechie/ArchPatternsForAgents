@@ -1,99 +1,86 @@
 # ArchPatternsForAgents
 
-Machine-checkable patterns for coding agents, so that architecture and interface
-decisions are **constrained and verified** rather than improvised per session.
+Practical, evidence-oriented architecture patterns for AI-enabled applications
+and coding agents.
 
-The working premise, which everything here is built to test: an agent given only
-a description of good work will produce plausible-looking output that fails on
-the parts nobody measures. Given a contract plus a checker it must satisfy
-itself, it produces work that holds up. So far that has been true every time it
-has been tested.
+This repository is not a framework or a runtime. It is a catalog of bounded
+patterns that let an application make its ownership, contracts, failure modes,
+and proof obligations explicit. It also contains a machine-checked UI-craft
+registry for agents building interfaces.
 
-## What's here now
+## Start here
 
-### `themes/` — UI theme registry
+Read the [architecture-pattern catalog](docs/architecture-patterns/README.md).
+Start with [ARCH-000: ownership and seams](docs/architecture-patterns/ownership-and-seams.md),
+which establishes the parent boundary: each domain has an authoritative owner,
+and repositories cross explicit seams rather than copying authority.
 
-Four aesthetic profiles, each with a full working page and a rendered image.
-They are four **different kinds of surface**, not one console in four colours: a
-data explorer, an irreversible-action gate, a control panel, and a single-metric
-readout. Each declares a `genre` and, crucially, a `forbidden` element list — the
-control panel may not render an estate table, the single-metric page may not
-render a gauge.
+Each optional card defines:
 
-**Start at [`themes/GALLERY.md`](themes/GALLERY.md)** to pick a look, then read
-[`themes/index.json`](themes/index.json) for the machine-readable entry.
+- an invariant that must remain true;
+- the owner and consumer boundary;
+- expected failure behavior;
+- a deliberately bolted-on counterexample; and
+- owner-local and consumer-boundary proof scenarios.
 
-Need one control rather than a whole look? `index.json` has a `controls` index
-keyed by kind — toggle, dial, fader, gated action — resolving to a conformant
-element inside a working page.
+The current catalog spans domain authority, repository contracts, model ports,
+context and retrieval, decision memory, authorized tools, bounded workflows,
+durable jobs, attention and operational evidence, evaluation boundaries, and
+deterministic execution before probabilistic inference.
 
-### `.github/skills/ui-craft/` — the skill
+## Adopt a pattern in an application
 
-The rules an agent follows when authoring a view, plus the checker that grades
-the result. Portable: copy the directory into any repo.
+1. Pick the smallest useful composition of cards for one real workflow.
+2. Implement the ownership boundary and contracts in that application's own
+   codebase; this repository supplies no shared runtime.
+3. Record the card version, immutable locator, content hash, implementation
+   locations, deliberate deviations, and verification evidence in an
+   [application adoption record](docs/architecture-patterns/adoption-record.md).
+4. Run the relevant deterministic tests and consumer-boundary probes.
 
-The governing rule is **the element is the substrate, the theme is the finish**.
-A machined toggle is still `<input type="checkbox">`; a dial is still
-`<input type="range">`. Aesthetic direction and semantic substrate are
-independent, and treating them as a trade is the most expensive mistake in this
-area.
+An adoption record is evidence bookkeeping, not a conformance claim. A
+documentation review verifies a card is complete; it does not prove that an
+application works. Likewise, model-quality evaluation is distinct from
+behavioral and live-boundary proof. See the catalog's [proof boundary](docs/architecture-patterns/README.md#proof-boundary).
 
-### `scripts/` — the checks
+For an end-to-end illustration, see the
+[composed example](docs/architecture-patterns/composed-example.md). To draft a
+new card consistently, use the [pattern template](docs/architecture-patterns/pattern-template.md).
 
-| Command | What it proves | Scope |
-|---|---|---|
-| `npm run check:pages` | element vocabulary, layout density, tokens, operability | one file |
-| `npm run a11y` | every control has a real, computed accessible name | one page |
-| `npm run controls` | every control-index pointer resolves to its declared substrate | registry |
-| `npm run divergence` | each genre avoids its forbidden elements; shared vocabulary stays under a ceiling | registry |
-| `npm run repetition` | no page renders a run of identical panels | registry |
-| `npm run verify` | every theme has a page and a preview image | registry |
-| `npm test` | all six |
+## UI craft registry
 
-The registry-wide checks exist because **a per-page check can never see a
-monoculture.** All four themes once passed the per-page checks individually while
-sharing 57% of their element vocabulary — sameness only exists across a set.
+The [`themes/`](themes/README.md) directory is a separate, complementary
+resource: four distinct UI surface profiles with real semantic controls and
+machine checks. Use it when an agent needs to build a usable interface without
+collapsing into generic card layouts or inaccessible `div`-based controls.
 
-`npm install` pulls `playwright-core` only. The scripts drive whichever Chrome
-or Edge is already installed and download no browser.
+Start with [`themes/GALLERY.md`](themes/GALLERY.md), then read the
+[UI-craft skill](.github/skills/ui-craft/SKILL.md). The governing rule is that
+the element is the substrate and the theme is the finish: visual direction must
+not replace semantic, keyboard-operable HTML.
 
-## Using this from another project
+## Verify the checked-in UI registry
 
-Point your agent here and tell it to use `ui-craft`:
+```powershell
+npm ci
+npm test
+```
 
-1. Read [`themes/GALLERY.md`](themes/GALLERY.md), choose a theme by eye.
-2. Read [`.github/skills/ui-craft/SKILL.md`](.github/skills/ui-craft/SKILL.md)
-   for the element and layout rules.
-3. Read [`themes/_shared/substrate-contract.md`](themes/_shared/substrate-contract.md)
-   for what the markup must satisfy.
-4. Copy the **finish** from the chosen theme's `page.html`; author your own
-   markup from Rule 1.
-5. Run the checks against your artifact. Do not self-report.
+`npm test` runs the semantic-page, accessibility-name, control-index, theme
+divergence, visual-repetition, and preview checks. Those checks verify the UI
+registry; they do not establish conformance of a consumer application to an
+architecture card.
 
-## Why the checks exist rather than review
+## Repository layout
 
-Four themed components were generated from a detailed, high-quality creative
-brief and measured afterwards. All four came back at **83–95% `div`/`span`**,
-against a shipped-estate range of 22–46%. One hid its checkbox with
-`display: none`, making a beautiful control unreachable by Tab. One built a dial
-from drag handlers with no form control at all — no keyboard, no value, no role.
+| Path | Purpose |
+|---|---|
+| [`docs/architecture-patterns/`](docs/architecture-patterns/README.md) | Architecture cards, adoption format, composed example, and review receipts |
+| [`themes/`](themes/README.md) | UI profiles, gallery, contracts, and machine-readable registry |
+| [`.github/skills/ui-craft/`](.github/skills/ui-craft/SKILL.md) | Portable UI-authoring guidance and checker |
+| [`scripts/`](scripts) | Deterministic checks for the theme registry |
+| [`docs/context/`](docs/context/PROJECT.md) | Project map, decisions, research, and operational context |
 
-**Nothing about the visual result revealed any of it.** They looked excellent.
-That is precisely why this is checked rather than reviewed.
+## License
 
-Rebuilt against a contract, with the same briefs, the same four themes measured
-0–7%. See [`themes/README.md`](themes/README.md) for the full before and after.
-
-Then the checks caught a failure one level up. All four rebuilt pages passed
-every per-page check — and shared **57%** of their element vocabulary, with three
-of the four having no element unique to them. A threshold I wrote ("8 or more
-rich elements") is a *breadth* metric, so the cheapest way to satisfy it is one
-of everything. Escaping card soup into checklist soup is not an escape. The fix
-was a fourth layer, **genre**, with an explicit `forbidden` list per theme;
-common vocabulary is now 18%.
-
-And the checks are not sufficient either. Real defects in these pages were found
-only by rendering them and looking: a preview that displayed a value
-contradicting its own caption, and a page at 0% `div`/`span` with 19 distinct
-elements that still rendered as three interchangeable glass boxes. **Render it
-and look at it.**
+UNLICENSED. This is a private repository.

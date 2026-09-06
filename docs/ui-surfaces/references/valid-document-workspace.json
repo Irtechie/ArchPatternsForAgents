@@ -1,0 +1,20 @@
+{
+  "fixture": true,
+  "expected": "valid",
+  "declaration": {
+    "id": "document-workspace",
+    "surface_kind": "create",
+    "primary_user_verb": "compose",
+    "primary_structure": "document-workspace",
+    "primary_structure_basis": "document-composition",
+    "primary_structure_rationale": "The user creates and revises a durable structured document.",
+    "rendering": {
+      "lane": "semantic-dom",
+      "rationale": "The work is authored and reviewed as structured text with adjacent evidence and revision state.",
+      "fallback": "The semantic DOM surface is the baseline path."
+    },
+    "supporting_elements": ["evidence-margin", "outline", "revision-stream"],
+    "semantic_requirements": ["keyboard-operable-controls", "document-heading-structure"],
+    "proof_obligations": ["rendered-state-check", "keyboard-path-check"]
+  }
+}

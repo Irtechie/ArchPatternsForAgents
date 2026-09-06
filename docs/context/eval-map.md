@@ -12,11 +12,12 @@ Documentation/skill companion repository with a static HTML theme registry and N
 |---|---|---|---|---|
 | Theme registry conformance | HTML files and `themes/index.json` | `npm test` | Visual judgment remains human review | high |
 | UI-craft semantic substrate | Skill and HTML pages | `npm run check:pages`, `npm run a11y` | No app-runtime proof intended | high |
-| Architecture catalog consistency | Markdown and review receipts | Planned structural/review checks | No catalog check exists yet | high |
+| UI surface declaration contract | JSON declarations and catalog fixtures | `npm run check:surfaces`, `npm run test:surfaces` | Does not prove a consuming app renders or honors its declaration | high |
+| Architecture card consistency | Markdown and review receipts | Structural/review checks remain planned | No architecture-card checker exists yet | high |
 
 ## Existing Harnesses
 
-`package.json` exposes Node scripts for page, accessibility, controls, divergence, repetition, and preview verification. No LLM-judged test is currently a release gate.
+`package.json` exposes Node scripts for UI-surface declarations, page, accessibility, controls, divergence, repetition, and preview verification. No LLM-judged test is currently a release gate.
 
 ## Deterministic vs LLM-Judged
 
@@ -26,5 +27,5 @@ Documentation/skill companion repository with a static HTML theme registry and N
 
 ## Open Eval Gaps
 
-- The planned architecture catalog needs a local, deterministic structure check before it can claim consistent card coverage.
+- The architecture card catalog still needs a local, deterministic structure check before it can claim consistent card coverage.
 - Application adoption, runtime behavior, and model quality are intentionally outside this repository's proof boundary.

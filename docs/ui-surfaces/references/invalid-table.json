@@ -1,0 +1,20 @@
+{
+  "fixture": true,
+  "expected": "invalid",
+  "declaration": {
+    "id": "unearned-table",
+    "surface_kind": "operate",
+    "primary_user_verb": "adjust",
+    "primary_structure": "table",
+    "primary_structure_basis": "direct-manipulation",
+    "primary_structure_rationale": "The workflow is primarily direct manipulation.",
+    "rendering": {
+      "lane": "semantic-dom",
+      "rationale": "The workflow is primarily direct manipulation.",
+      "fallback": "Use an inspector workbench."
+    },
+    "supporting_elements": ["command-bar"],
+    "semantic_requirements": ["keyboard-operable-controls"],
+    "proof_obligations": ["keyboard-path-check"]
+  }
+}

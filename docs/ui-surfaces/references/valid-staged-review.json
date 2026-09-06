@@ -1,0 +1,20 @@
+{
+  "fixture": true,
+  "expected": "valid",
+  "declaration": {
+    "id": "staged-review",
+    "surface_kind": "decide",
+    "primary_user_verb": "approve",
+    "primary_structure": "staged-review",
+    "primary_structure_basis": "comparison",
+    "primary_structure_rationale": "Evidence and alternatives must be considered in a defined review order.",
+    "rendering": {
+      "lane": "semantic-dom",
+      "rationale": "The user evaluates bounded evidence, alternatives, and an explicit commitment gate.",
+      "fallback": "The semantic DOM surface is the baseline path."
+    },
+    "supporting_elements": ["evidence-margin", "comparison-sheet", "approval-gate"],
+    "semantic_requirements": ["keyboard-operable-controls", "native-form-controls"],
+    "proof_obligations": ["rendered-state-check", "keyboard-path-check", "approval-state-check"]
+  }
+}
