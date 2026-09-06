@@ -1,0 +1,20 @@
+{
+  "fixture": true,
+  "expected": "valid",
+  "declaration": {
+    "id": "event-stream",
+    "surface_kind": "monitor",
+    "primary_user_verb": "diagnose",
+    "primary_structure": "event-stream",
+    "primary_structure_basis": "event-sequence",
+    "primary_structure_rationale": "Time-ordered events are the diagnostic unit of work.",
+    "rendering": {
+      "lane": "expressive-2d",
+      "rationale": "The user follows ordered changes, intervals, and correlations across a live trace.",
+      "fallback": "Filterable semantic event list with timestamps and alert state."
+    },
+    "supporting_elements": ["time-range", "signal-readout", "inspector"],
+    "semantic_requirements": ["keyboard-operable-controls", "text-equivalent-for-visual-state"],
+    "proof_obligations": ["rendered-state-check", "keyboard-path-check", "time-order-check"]
+  }
+}

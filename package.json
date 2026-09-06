@@ -10,7 +10,9 @@
     "divergence": "node scripts/audit-theme-divergence.mjs",
     "repetition": "node scripts/audit-visual-repetition.mjs",
     "check:pages": "node .github/skills/ui-craft/scripts/check-ui-craft.mjs themes/deep-lab-tech/page.html && node .github/skills/ui-craft/scripts/check-ui-craft.mjs themes/gritty-cyberpunk/page.html && node .github/skills/ui-craft/scripts/check-ui-craft.mjs themes/nocturnal-forge/page.html && node .github/skills/ui-craft/scripts/check-ui-craft.mjs themes/pristine-minimalism/page.html",
-    "test": "npm run check:pages && npm run a11y && npm run controls && npm run divergence && npm run repetition && npm run verify",
+    "test": "npm run test:surfaces && npm run check:surfaces && npm run check:pages && npm run a11y && npm run controls && npm run divergence && npm run repetition && npm run verify",
+    "check:surfaces": "node scripts/check-ui-surface-catalog.mjs",
+    "test:surfaces": "node --test tests/check-ui-surface-catalog.test.mjs",
     "controls": "node scripts/audit-control-index.mjs"
   },
   "repository": {
@@ -31,6 +33,7 @@
   },
   "homepage": "https://github.com/Irtechie/ArchPatternsForAgents#readme",
   "devDependencies": {
+    "ajv": "^8.20.0",
     "playwright-core": "^1.62.1"
   }
 }

@@ -8,6 +8,31 @@ description: Build interfaces from real HTML objects, purposeful layout and a na
 Drabness is not a colour problem. It is an **element-selection** problem and a
 **layout-density** problem, and both are measurable.
 
+## Rule 0 — choose the surface before the finish
+
+Before selecting a theme, component, or rendering library, name the work the
+user is doing and choose a declared surface from the
+[UI surface catalog](../../../docs/ui-surfaces/README.md). The declaration
+names the primary user verb, dominant structure, rendering lane, semantic
+control plane, and proof obligation.
+
+Use the catalog to choose a topology, timeline, inspector workbench, staged
+review, document workspace, event stream, or other structure that represents
+the work. A card grid is a primary structure only for heterogeneous items; a
+table is a primary structure only when rows share stable columns. Neither is a
+fallback layout for an undecided page.
+
+High-fidelity rendering is earned by the interaction. Use expressive 2D for
+maps, diagrams, timelines, and dense signals. Use a GPU scene for spatial state,
+simulation, or direct geometry inspection, with a semantic control plane and
+fallback. Do not add a GPU layer as decoration around an ordinary form or data
+table. The [platform lanes](../../../docs/ui-surfaces/platform-lanes.md) name
+non-binding web, Rust, and C# starting points; the service language does not
+dictate the client renderer.
+
+A theme supplies the finish after this decision. It never substitutes for an
+interaction topology or for semantic, keyboard-operable HTML.
+
 ## The finding this skill is built on
 
 Measured across nine shipped UniversalUI owner sites (`ce75e79`, 2026-08-21):
@@ -186,6 +211,7 @@ identical visuals, 83% → 15% div/span, three `FAIL`s → zero.
 ## Themes
 
 Aesthetic direction lives in [`themes/`](../../../themes/), not in this skill.
+Choose a surface declaration first; then choose a theme for its finish.
 
 Pick a look from [`themes/GALLERY.md`](../../../themes/GALLERY.md) — four full
 pages, the same data, four finishes, each with a rendered image. Then read

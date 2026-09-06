@@ -1,0 +1,20 @@
+{
+  "fixture": true,
+  "expected": "invalid",
+  "declaration": {
+    "id": "unearned-card-grid",
+    "surface_kind": "explore",
+    "primary_user_verb": "compare",
+    "primary_structure": "card-grid",
+    "primary_structure_basis": "shared-columns",
+    "primary_structure_rationale": "No item-specific layout rationale is present.",
+    "rendering": {
+      "lane": "semantic-dom",
+      "rationale": "No item-specific layout rationale is present.",
+      "fallback": "Use a table when rows share columns."
+    },
+    "supporting_elements": ["filter-bar"],
+    "semantic_requirements": ["keyboard-operable-controls"],
+    "proof_obligations": ["rendered-state-check"]
+  }
+}

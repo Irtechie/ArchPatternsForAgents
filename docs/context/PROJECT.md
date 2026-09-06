@@ -19,7 +19,8 @@ ArchPatternsForAgents is a private companion repository for machine-checkable ar
 | Theme registry | `themes/README.md`, `themes/GALLERY.md`, `themes/index.json` | Editing or selecting a UI finish | verified |
 | UI craft skill | `.github/skills/ui-craft/SKILL.md` | Building or reviewing a UI surface | verified |
 | Registry checks | `scripts/`, `package.json` | Running or changing deterministic theme proof | verified |
-| Architecture catalog | `docs/architecture-patterns/README.md` | Selecting, adopting, or reviewing a documented pattern | pending delivery |
+| Architecture catalog | `docs/architecture-patterns/README.md` | Selecting, adopting, or reviewing a documented pattern | verified for catalog structure; consumer conformance remains external |
+| UI surface catalog | `docs/ui-surfaces/README.md`, `docs/ui-surfaces/platform-lanes.md` | Selecting a user-work topology and rendering lane before theme/component work | verified declarations and Node checker |
 | Research | `docs/context/research/README.md` | Reusing decision-oriented prior research | verified |
 
 ## Current Work Pointers
@@ -32,3 +33,4 @@ ArchPatternsForAgents is a private companion repository for machine-checkable ar
 
 - Per-page UI checks cannot detect a registry-wide visual monoculture; run the full `npm test` suite for theme changes.
 - A passing documentation review establishes catalog consistency only, never application conformance or runtime readiness.
+- GPU rendering is earned by spatial interaction, simulation, or geometry; it does not replace a semantic control plane or become a default visual treatment.
