@@ -2,6 +2,10 @@
 
 Completed work summaries move here after verification.
 
+## 2026-09-08
+
+- Architecture drift evidence and README: added a portable Node CLI for consumer-owned scope/ownership rules, non-suppressing exceptions, integrity-bound create-only reports, and baseline comparisons that flag policy changes. Added adoption/workflow-review guidance and incorporated the explicitly authorized README rationale and harness-independence explanation. Full npm test passed: 18 drift tests passed with one Windows file-symlink setup skip; directory-junction tests and 11 surface tests passed, as did the existing UI checks. One integrated CLI review returned no actionable findings. [Manifest](docs/plans/2026-09-08-kb-architecture-drift-manifest.md) and [proof](docs/reviews/2026-09-08-drift-proof.json). External application conformance remains unverified.
+
 ## 2026-09-06
 
 - UI surface catalog — added checked declarations for explore, operate, decide,
