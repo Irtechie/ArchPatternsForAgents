@@ -1,0 +1,18 @@
+{
+  "status": "passed",
+  "date": "2026-09-08",
+  "profile": "cli-readiness-reviewer",
+  "mode": "read-only-subagent",
+  "base": "44303f1dc82660a5d07f9fb4cb3d27dbd23cdd84",
+  "requirements_sha256": "8798101828c9cca5112ce4786093d709e0964a81b522ba0f362335b7be48e5c8",
+  "proof_receipt": "docs/reviews/2026-09-08-drift-proof.json",
+  "proof_sha256": "b6bb94543cfa61ac0e93a149e9fda80e6b604e44149054acf60d659a226f96a2",
+  "scope": "Eight file hashes in the proof receipt verified unchanged by reviewer.",
+  "findings": [],
+  "conclusion": "Accepted contract, negative proof, CLI failure behavior and proportional structure reviewed; no actionable findings.",
+  "limits": [
+    "Reviewer inspected proof and assertions without repeating aggregate execution",
+    "File-symlink creation denied by Windows; directory junction proofs passed",
+    "Semantic conformance, authenticated approval and atomic filesystem snapshots are outside contract"
+  ]
+}
