@@ -6,6 +6,8 @@ Start with [ARCH-000: ownership and seams](ownership-and-seams.md), then use the
 
 ## Versioning and identity
 
+For checks that can be repeated as an application changes, see [Spot architecture drift over time](drift-detection.md): a portable ownership and boundary checker, immutable reports, baseline comparisons, and a workflow-review guide. These scoped checks complement the cards; they do not establish semantic or runtime conformance.
+
 A consumer records the exact card ID, semantic version, immutable locator, and content hash. A changed invariant is a breaking major-version change; a corrected typo or clarified example is not. Draft versions remain proposed and never replace a consumer's pinned reference. `uses`, `adapted-from`, and `historically-derived-from` are different relations: only an origin record supports the last claim.
 
 ## Proof boundary

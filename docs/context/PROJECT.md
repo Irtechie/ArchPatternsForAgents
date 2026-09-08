@@ -19,6 +19,7 @@ ArchPatternsForAgents is a private companion repository for machine-checkable ar
 | Theme registry | `themes/README.md`, `themes/GALLERY.md`, `themes/index.json` | Editing or selecting a UI finish | verified |
 | UI craft skill | `.github/skills/ui-craft/SKILL.md` | Building or reviewing a UI surface | verified |
 | Registry checks | `scripts/`, `package.json` | Running or changing deterministic theme proof | verified |
+| Architecture drift checks | `docs/architecture-patterns/drift-detection.md`, `scripts/check-architecture-drift.mjs` | Checking consumer-owned source scope and comparing historic evidence | scoped text rules and inventory; semantic/runtime conformance remains consumer-owned |
 | Architecture catalog | `docs/architecture-patterns/README.md` | Selecting, adopting, or reviewing a documented pattern | verified for catalog structure; consumer conformance remains external |
 | UI surface catalog | `docs/ui-surfaces/README.md`, `docs/ui-surfaces/platform-lanes.md` | Selecting a user-work topology and rendering lane before theme/component work | verified declarations and Node checker |
 | Research | `docs/context/research/README.md` | Reusing decision-oriented prior research | verified |

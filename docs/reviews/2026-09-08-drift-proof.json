@@ -1,0 +1,64 @@
+{
+  "status": "passed",
+  "timestamp": "2026-09-08T13:34:12.201893Z",
+  "base": "44303f1dc82660a5d07f9fb4cb3d27dbd23cdd84",
+  "requirements_sha256": "8798101828c9cca5112ce4786093d709e0964a81b522ba0f362335b7be48e5c8",
+  "commands": [
+    "npm test",
+    "node --check scripts/check-architecture-drift.mjs",
+    "node --check tests/check-architecture-drift.test.mjs",
+    "git diff --check"
+  ],
+  "drift_tests": {
+    "skip_reason": "Windows denied file symlink creation (EPERM); directory junction tests passed",
+    "failed": 0,
+    "total": 19,
+    "passed": 18,
+    "skipped": 1
+  },
+  "surface_tests": {
+    "passed": 11,
+    "total": 11
+  },
+  "functional_example": "Actual published policy against temporary Python/TypeScript source: clean exit 0, forbidden import exit 1, removed rule compared to original baseline exit 1",
+  "qa_browser": "No UI behavior changed; existing headless UI accessibility suite passed in aggregate",
+  "files": [
+    {
+      "path": "README.md",
+      "sha256": "63f0b524d6e13f54dc22d2dbef046570d10e62d8013ea1c051af2ee48a6f762c"
+    },
+    {
+      "path": "docs/architecture-patterns/README.md",
+      "sha256": "9d7a8bdbb5404f14b2481eafbf23d8f00984dd0d0657fb01a48a467f251ee19d"
+    },
+    {
+      "path": "docs/architecture-patterns/drift-detection.md",
+      "sha256": "97bd5594f5eef925fcc766b3317132621f83cfb330e2dcde2861ce7425b5df24"
+    },
+    {
+      "path": "docs/architecture-patterns/drift-policy.example.json",
+      "sha256": "d5121d4638ee20baac4765e2c04faecee2076b8f8dff88e079c6b75e67f9d7f8"
+    },
+    {
+      "path": "docs/context/PROJECT.md",
+      "sha256": "ac97776c798cfe1de5d172984274d086de07cb588b0bafa4114e78face9e558d"
+    },
+    {
+      "path": "package.json",
+      "sha256": "31f9fd19eead9183267ffcd201be03b3ab82f9adee921eed7b85b89c7b683649"
+    },
+    {
+      "path": "scripts/check-architecture-drift.mjs",
+      "sha256": "80b623ae45d6bff37b3207368df31b8bde293482cba1077ae3a77acc40efd8d7"
+    },
+    {
+      "path": "tests/check-architecture-drift.test.mjs",
+      "sha256": "adc91c1ed2ac59f54280f6417d7b65282962db78f7eccc4c9ce451b654c88894"
+    }
+  ],
+  "limitations": [
+    "Text rules do not prove semantic architecture or runtime conformance",
+    "No external application adoption performed",
+    "Report digest is integrity, not authenticity"
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "application": "example-app",
+  "source_roots": [
+    "src"
+  ],
+  "extensions": [
+    ".py",
+    ".ts"
+  ],
+  "ignore": [],
+  "components": [
+    {
+      "id": "consumer",
+      "path": "src/consumer",
+      "owner": "application team",
+      "responsibility": "Present results and call the provider contract"
+    },
+    {
+      "id": "domain",
+      "path": "src/domain",
+      "owner": "domain team",
+      "responsibility": "Own business decisions and authoritative writes"
+    }
+  ],
+  "rules": [
+    {
+      "id": "no-provider-internals",
+      "description": "Consumer must not import provider internals",
+      "component": "consumer",
+      "forbidden_regex": "provider[./]internal"
+    }
+  ],
+  "exceptions": []
+}
